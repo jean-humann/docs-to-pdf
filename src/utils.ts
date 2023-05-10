@@ -1,16 +1,22 @@
-import chalk = require('chalk');
-import puppeteer = require('puppeteer');
+import chalk from 'chalk';
+import console_stamp from 'console-stamp';
+import * as puppeteer from 'puppeteer';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
+import { Page } from 'puppeteer-core';
+
+console_stamp(console);
 
 let contentHTML = '';
-export interface generatePDFOptions {
+export interface GeneratePDFOptions {
   initialDocURLs: Array<string>;
   excludeURLs: Array<string>;
   outputPDFFilename: string;
   pdfMargin: puppeteer.PDFOptions['margin'];
   contentSelector: string;
   paginationSelector: string;
-  pdfFormat: puppeteer.PDFFormat;
+  // deprecated - user paperFormat
+  pdfFormat?: puppeteer.PaperFormat;
+  paperFormat: puppeteer.PaperFormat;
   excludeSelectors: Array<string>;
   cssStyle: string;
   puppeteerArgs: Array<string>;
@@ -26,11 +32,11 @@ export interface generatePDFOptions {
 export async function generatePDF({
   initialDocURLs,
   excludeURLs,
-  outputPDFFilename = 'mr-pdf.pdf',
+  outputPDFFilename = 'docs-to-pdf.pdf',
   pdfMargin = { top: 32, right: 32, bottom: 32, left: 32 },
   contentSelector,
   paginationSelector,
-  pdfFormat,
+  paperFormat,
   excludeSelectors,
   cssStyle,
   puppeteerArgs,
@@ -41,8 +47,11 @@ export async function generatePDF({
   waitForRender,
   headerTemplate,
   footerTemplate,
-}: generatePDFOptions): Promise<void> {
-  const browser = await puppeteer.launch({ args: puppeteerArgs });
+}: GeneratePDFOptions): Promise<void> {
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: puppeteerArgs,
+  });
   const page = await browser.newPage();
 
   for (const url of initialDocURLs) {
@@ -50,28 +59,23 @@ export async function generatePDF({
 
     // Create a list of HTML for the content section of all pages by looping
     while (nextPageURL) {
-      console.log();
       console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
-      console.log();
 
+      // Go to the page specified by nextPageURL
+      await page.goto(`${nextPageURL}`, {
+        waitUntil: 'networkidle0',
+        timeout: 0,
+      });
       if (waitForRender) {
-        await page.goto(`${nextPageURL}`);
-        console.log(chalk.green('Rendering...'));
-        await page.waitFor(waitForRender);
-      } else {
-        // Go to the page specified by nextPageURL
-        await page.goto(`${nextPageURL}`, {
-          waitUntil: 'networkidle0',
-          timeout: 0,
-        });
+        console.log(chalk.green('Waiting for render...'));
+        await new Promise((r) => setTimeout(r, waitForRender));
       }
 
       // Get the HTML string of the content section.
       const html = await page.evaluate(
         ({ contentSelector }) => {
-          const element: HTMLElement | null = document.querySelector(
-            contentSelector,
-          );
+          const element: HTMLElement | null =
+            document.querySelector(contentSelector);
           if (element) {
             // Add pageBreak for PDF
             element.style.pageBreakAfter = 'always';
@@ -112,11 +116,21 @@ export async function generatePDF({
 
   // Download buffer of coverImage if exists
   let imgBase64 = '';
+  let coverImageHtml = '';
   if (coverImage) {
     const imgSrc = await page.goto(coverImage);
     const imgSrcBuffer = await imgSrc?.buffer();
     imgBase64 = imgSrcBuffer?.toString('base64') || '';
+    coverImageHtml = `<img
+    class="cover-img"
+    src="data:image/png;base64, ${imgBase64}"
+    alt=""
+    width="140"
+    height="140"
+  />`;
   }
+
+  console.log(chalk.cyan('Start generating PDF...'));
 
   // Go to initial page
   await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
@@ -136,13 +150,7 @@ export async function generatePDF({
   >
     ${coverTitle ? `<h1>${coverTitle}</h1>` : ''}
     ${coverSub ? `<h3>${coverSub}</h3>` : ''}
-    <img
-      class="cover-img"
-      src="data:image/png;base64, ${imgBase64}"
-      alt=""
-      width="140"
-      height="140"
-    />
+    ${coverImageHtml}
   </div>`;
 
   // Add Toc
@@ -168,6 +176,7 @@ export async function generatePDF({
   );
 
   // Remove unnecessary HTML by using excludeSelectors
+  console.log(chalk.cyan('Remove unnecessary HTML...'));
   excludeSelectors &&
     excludeSelectors.map(async (excludeSelector) => {
       // "selector" is equal to "excludeSelector"
@@ -179,22 +188,28 @@ export async function generatePDF({
     });
 
   // Add CSS to HTML
+  console.log(chalk.cyan('Add CSS to HTML...'));
   if (cssStyle) {
     await page.addStyleTag({ content: cssStyle });
   }
 
   // Scroll to the bottom of the page with puppeteer-autoscroll-down
   // This forces lazy-loading images to load
-  await scrollPageToBottom(page, {});
+  console.log(chalk.cyan('Scroll to the bottom of the page...'));
+  const pageTypeHack = page as unknown; //see issue regarding types between puppeteer and puppeteer-core https://github.com/puppeteer/puppeteer/issues/6904
+  await scrollPageToBottom(pageTypeHack as Page, {}); //cast to puppeteer-core type
 
+  // Generate PDF
+  console.log(chalk.cyan('Generate PDF...'));
   await page.pdf({
     path: outputPDFFilename,
-    format: pdfFormat,
+    format: paperFormat,
     printBackground: true,
     margin: pdfMargin,
     displayHeaderFooter: !!(headerTemplate || footerTemplate),
     headerTemplate,
     footerTemplate,
+    timeout: 0,
   });
 }
 
@@ -204,6 +219,8 @@ function generateToc(contentHtml: string) {
     level: number;
     id: string;
   }> = [];
+
+  console.log(chalk.cyan('Start generating TOC...'));
 
   // Create TOC only for h1~h3
   const modifiedContentHTML = contentHtml.replace(
@@ -218,9 +235,8 @@ function generateToc(contentHtml: string) {
       .replace(/<[^>]*>/g, '')
       .trim();
 
-    const headerId = `${Math.random().toString(36).substr(2, 5)}-${
-      headers.length
-    }`;
+    const headerId = `${Math.random().toString(36).slice(2, 5)}-${headers.length
+      }`;
 
     // level is h<level>
     const level = Number(matchedStr[matchedStr.indexOf('h') + 1]);
@@ -245,8 +261,7 @@ function generateToc(contentHtml: string) {
   const toc = headers
     .map(
       (header) =>
-        `<li class="toc-item toc-item-${header.level}" style="margin-left:${
-          (header.level - 1) * 20
+        `<li class="toc-item toc-item-${header.level}" style="margin-left:${(header.level - 1) * 20
         }px"><a href="#${header.id}">${header.header}</a></li>`,
     )
     .join('\n');

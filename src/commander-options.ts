@@ -1,17 +1,13 @@
-import puppeteer = require('puppeteer');
+import * as puppeteer from 'puppeteer';
 
-export function commaSeparatedList(
-  value: string,
-  dummyPrevious: any,
-): Array<string> {
+export function commaSeparatedList(value: string): Array<string> {
   return value.split(',');
 }
 
 export function generatePuppeteerPDFMargin(
   value: string,
-  dummyPrevious: any,
 ): puppeteer.PDFOptions['margin'] {
-  const marginStrings = value.split(',');
+  const marginStrings = commaSeparatedList(value);
 
   const marginTop = marginStrings[0];
   const marginRight = marginStrings[1];
