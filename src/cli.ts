@@ -10,11 +10,10 @@ import {
   generatePuppeteerPDFMargin,
 } from './commander-options';
 
-
 console_stamp(console);
 
 program
-  .name('docusaurus-pdf')
+  .name('docs-to-pdf')
   .requiredOption(
     '--initialDocURLs <urls>',
     'set urls to start generating PDF from',

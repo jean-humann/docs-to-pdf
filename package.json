@@ -1,5 +1,5 @@
 {
-  "name": "docusaurus-pdf",
+  "name": "docs-to-pdf",
   "version": "0.1.0",
   "description": "Generate PDF from Docusaurus",
   "main": "lib/cli.js",
@@ -14,14 +14,14 @@
     "node": ">=18.0.0"
   },
   "bin": {
-    "docusaurus-pdf": "lib/cli.js"
+    "docs-to-pdf": "lib/cli.js"
   },
   "keywords": [
     "pdf",
     "docusaurus",
     "gitbook"
   ],
-  "homepage": "https://github.com/jean-humann/docusaurus-pdf",
+  "homepage": "https://github.com/jean-humann/docs-to-pdf",
   "author": "Jean Humann <jean.humann@gmail.com> (https://github.com/jean-humann)",
   "license": "MIT",
   "dependencies": {
