@@ -1,7 +1,10 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
+import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import { Page } from 'puppeteer-core';
+
+console_stamp(console);
 
 let contentHTML = '';
 export interface GeneratePDFOptions {
@@ -56,9 +59,7 @@ export async function generatePDF({
 
     // Create a list of HTML for the content section of all pages by looping
     while (nextPageURL) {
-      console.log();
-      console.log(chalk.default.cyan(`Retrieving html from ${nextPageURL}`));
-      console.log();
+      console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
 
       // Go to the page specified by nextPageURL
       await page.goto(`${nextPageURL}`, {
@@ -66,8 +67,8 @@ export async function generatePDF({
         timeout: 0,
       });
       if (waitForRender) {
-        console.log(chalk.default.green('Waiting for render...'));
-        await page.waitForTimeout(waitForRender);
+        console.log(chalk.green('Waiting for render...'));
+        await new Promise((r) => setTimeout(r, waitForRender));
       }
 
       // Get the HTML string of the content section.
@@ -95,10 +96,10 @@ export async function generatePDF({
 
       // Make joined content html
       if (excludeURLs && excludeURLs.includes(nextPageURL)) {
-        console.log(chalk.default.green('This URL is excluded.'));
+        console.log(chalk.green('This URL is excluded.'));
       } else {
         contentHTML += html;
-        console.log(chalk.default.green('Success'));
+        console.log(chalk.green('Success'));
       }
 
       // Find next page url before DOM operations
@@ -128,6 +129,8 @@ export async function generatePDF({
     height="140"
   />`;
   }
+
+  console.log(chalk.cyan('Start generating PDF...'));
 
   // Go to initial page
   await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
@@ -173,6 +176,7 @@ export async function generatePDF({
   );
 
   // Remove unnecessary HTML by using excludeSelectors
+  console.log(chalk.cyan('Remove unnecessary HTML...'));
   excludeSelectors &&
     excludeSelectors.map(async (excludeSelector) => {
       // "selector" is equal to "excludeSelector"
@@ -184,15 +188,19 @@ export async function generatePDF({
     });
 
   // Add CSS to HTML
+  console.log(chalk.cyan('Add CSS to HTML...'));
   if (cssStyle) {
     await page.addStyleTag({ content: cssStyle });
   }
 
   // Scroll to the bottom of the page with puppeteer-autoscroll-down
   // This forces lazy-loading images to load
+  console.log(chalk.cyan('Scroll to the bottom of the page...'));
   const pageTypeHack = page as unknown; //see issue regarding types between puppeteer and puppeteer-core https://github.com/puppeteer/puppeteer/issues/6904
   await scrollPageToBottom(pageTypeHack as Page, {}); //cast to puppeteer-core type
 
+  // Generate PDF
+  console.log(chalk.cyan('Generate PDF...'));
   await page.pdf({
     path: outputPDFFilename,
     format: paperFormat,
@@ -201,6 +209,7 @@ export async function generatePDF({
     displayHeaderFooter: !!(headerTemplate || footerTemplate),
     headerTemplate,
     footerTemplate,
+    timeout: 0,
   });
 }
 
@@ -210,6 +219,8 @@ function generateToc(contentHtml: string) {
     level: number;
     id: string;
   }> = [];
+
+  console.log(chalk.cyan('Start generating TOC...'));
 
   // Create TOC only for h1~h3
   const modifiedContentHTML = contentHtml.replace(
@@ -224,9 +235,8 @@ function generateToc(contentHtml: string) {
       .replace(/<[^>]*>/g, '')
       .trim();
 
-    const headerId = `${Math.random().toString(36).substr(2, 5)}-${
-      headers.length
-    }`;
+    const headerId = `${Math.random().toString(36).slice(2, 5)}-${headers.length
+      }`;
 
     // level is h<level>
     const level = Number(matchedStr[matchedStr.indexOf('h') + 1]);
@@ -251,8 +261,7 @@ function generateToc(contentHtml: string) {
   const toc = headers
     .map(
       (header) =>
-        `<li class="toc-item toc-item-${header.level}" style="margin-left:${
-          (header.level - 1) * 20
+        `<li class="toc-item toc-item-${header.level}" style="margin-left:${(header.level - 1) * 20
         }px"><a href="#${header.id}">${header.header}</a></li>`,
     )
     .join('\n');

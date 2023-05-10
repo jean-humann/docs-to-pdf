@@ -1,18 +1,15 @@
-## ⚠️ Caution!
-
-Currently, this package is not catching up with docusaurus v2 HTML markup, so command may not find the correct HTML to loop through docs. Please modify the command to find correct HTML markup by yourself.
-
 ## 📌 Introduction
 
-This is a PDF generator from document website such as `docusaurus`, `vuepress`, `mkdocs`.
+This is a PDF generator from document website such as `docusaurus`. This is a fork of [mr-pdf](https://github.com/KohheePeace/mr-pdf>) which was not maintained anymore.
+Feel free to contribute to this project.
 
 
 ## ⚡ Usage
 
-For [docusaurus v1](https://v1.docusaurus.io/docs/en/installation)
+For [docusaurus v2](https://docusaurus.io/docs)
 
 ```shell
-npx mr-pdf --initialDocURLs="https://v1.docusaurus.io/docs/en/installation" --paginationSelector=".docs-prevnext > a.docs-next" --excludeSelectors=".fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext" --cssStyle=".navPusher {padding-top: 0;}" --contentSelector="article"
+npx docusaurus-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
 
 ## 🍗 CLI Options
@@ -25,7 +22,7 @@ npx mr-pdf --initialDocURLs="https://v1.docusaurus.io/docs/en/installation" --pa
 | `--excludeURLs`        | No       | URLs to be excluded in PDF                                                                                                                                                         |
 | `--excludeSelectors`   | No       | exclude selectors from PDF. Separate each selector **with comma and no space**. But you can use space in each selector. ex: `--excludeSelectors=".nav,.next > a"`                  |
 | `--cssStyle`           | No       | CSS style to adjust PDF output ex: `--cssStyle="body{padding-top: 0;}"` \*If you're project owner you can use `@media print { }` to edit CSS for PDF.                              |
-| `--outputPDFFilename`  | No       | name of the output PDF file. Default is `mr-pdf.pdf`                                                                                                                               |
+| `--outputPDFFilename`  | No       | name of the output PDF file. Default is `docusaurus-pdf.pdf`                                                                                                                       |
 | `--pdfMargin`          | No       | set margin around PDF file. Separate each margin **with comma and no space**. ex: `--pdfMargin="10,20,30,40"`. This sets margin `top: 10px, right: 20px, bottom: 30px, left: 40px` |
 | `--pdfFormat`          | No       | pdf format ex: `--pdfFormat="A3"`. Please check this link for available formats [Puppeteer document](https://pptr.dev/#?product=Puppeteer&version=v5.2.1&show=api-pagepdfoptions)  |
 | `--disableTOC`         | No       | Optional toggle to show the table of contents or not                                                                                                                               |
@@ -38,21 +35,9 @@ npx mr-pdf --initialDocURLs="https://v1.docusaurus.io/docs/en/installation" --pa
 
 ## 🎨 Examples and Demo PDF
 
-### Docusaurus v1
 
-<https://docusaurus.io/en/>
 
-`initialDocURLs`: <https://docusaurus.io/docs/en/installation>
-
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/v1-docusaurus.pdf>
-
-`command`:
-
-```shell
-npx mr-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --paginationSelector=".docs-prevnext > a.docs-next" --excludeSelectors=".fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext" --cssStyle=".navPusher {padding-top: 0;}" --pdfMargin="20"
-```
-
-### Docusaurus v2 beta
+### Docusaurus v2
 
 ![20210603060438](https://user-images.githubusercontent.com/29557494/120552058-b4299e00-c431-11eb-833e-1ac1338b0a70.gif)
 
@@ -60,79 +45,37 @@ npx mr-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --pagin
 
 `initialDocURLs`: <https://docusaurus.io/docs>
 
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/v2-docusaurus.pdf>
+`demoPDF`: <https://github.com/jean-humann/docusaurus-pdf/blob/master/v2-docusaurus.pdf>
 
 `command`:
 
 ```shell
-npx mr-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector=".pagination-nav__item--next > a" --excludeSelectors=".margin-vert--xl a" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+npx docusaurus-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
 
-### Vuepress v1
+### Docusaurus v1 - Legacy
 
-<https://vuepress.vuejs.org/>
+<https://docusaurus.io/en/>
 
-`initialDocURLs`:
+`initialDocURLs`: <https://docusaurus.io/docs/en/installation>
 
-<https://vuepress.vuejs.org/guide/>
-
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/v1-vuepress.pdf>
-`command`:
-
-```shell
-npx mr-pdf --initialDocURLs="https://vuepress.vuejs.org/guide/" --contentSelector="main" --paginationSelector=".page-nav .next a" --excludeSelectors="header.navbar,aside.sidebar,footer.page-edit .edit-link,.global-ui,.page-nav" --coverImage="https://vuepress.vuejs.org/hero.png" --coverTitle="VuePress" --coverSub="Vue-powered Static Site Generator"
-```
-
-### Vuepress v2 beta
-
-<https://v2.vuepress.vuejs.org/>
-
-`initialDocURLs`:
-
-<https://v2.vuepress.vuejs.org/guide/>
-
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/v2-vuepress.pdf>
-`command`:
-
-```shell
-npx mr-pdf --initialDocURLs="https://v2.vuepress.vuejs.org/guide/" --contentSelector="main" --paginationSelector=".page-nav .next a" --excludeSelectors="header.navbar,aside.sidebar,footer.page-edit .edit-link,.global-ui,.page-nav" --coverImage="https://v2.vuepress.vuejs.org/images/hero.png" --coverTitle="VuePress" --coverSub="Vue-powered Static Site Generator"
-```
-
-### Mkdocs
-
-<https://www.mkdocs.org/>
-
-`initialDocURLs`: <https://www.mkdocs.org/>
-
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/mkdocs.pdf>
+`demoPDF`: <https://github.com/jean-humann/docusaurus-pdf/blob/master/v1-docusaurus.pdf>
 
 `command`:
 
 ```shell
-npx mr-pdf --initialDocURLs="https://www.mkdocs.org/" --paginationSelector="ul.navbar-nav li.nav-item a[rel~='next']" --excludeSelectors=".navbar.fixed-top,footer,.homepage .container .row .col-md-3,#toc-collapse" --cssStyle=".col-md-9 {flex: 0 0 100%; max-width: 100%;}"
+npx docusaurus-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --paginationSelector=".docs-prevnext > a.docs-next" --excludeSelectors=".fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext" --cssStyle=".navPusher {padding-top: 0;}" --pdfMargin="20"
 ```
 
-### Material for Mkdocs
-
-<https://squidfunk.github.io/mkdocs-material/>
-
-`initialDocURLs`: <https://squidfunk.github.io/mkdocs-material/getting-started/>
-
-`demoPDF`: <https://github.com/kohheepeace/mr-pdf/blob/master/material-for-mkdocs.pdf>
-`command`:
-
-```shell
-npx mr-pdf --initialDocURLs="https://squidfunk.github.io/mkdocs-material/getting-started/" --paginationSelector="a.md-footer-nav__link--next" --excludeSelectors="header.md-header,.announce,nav.md-tabs,.md-main__inner .md-sidebar--primary,.md-main__inner .md-sidebar--secondary,footer" --cssStyle=".md-content {max-width: 100%!important;}"
-```
 
 #### PR to add new docs is welcome here... 😸
 
-## 📄 How `mr-pdf` works
+## 📄 How `docusaurus-pdf` works
 
 1. [puppter](https://pptr.dev/) can make html to PDF like you can print HTML page in chrome browser
-2. so, the idea of mr-pdf is **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/v13.1.3/docs/api.md#pagepdfoptions)** from puppter to generate PDF.
+2. so, the idea of docusaurus-pdf is **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/v13.1.3/docs/api.md#pagepdfoptions)** from puppter to generate PDF.
 
-![mr-pdf-diagram](https://user-images.githubusercontent.com/29557494/90359040-c8fb9780-e092-11ea-89c7-1868bc32919f.png)
+![docusaurus-pdf-diagram](https://user-images.githubusercontent.com/29557494/90359040-c8fb9780-e092-11ea-89c7-1868bc32919f.png)
 
 ## 🎉 Thanks
 

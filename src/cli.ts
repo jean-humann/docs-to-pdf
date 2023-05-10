@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import * as chalk from 'chalk';
+import chalk from 'chalk';
+import console_stamp from 'console-stamp';
 import { program } from 'commander';
 
 import { generatePDF, GeneratePDFOptions } from './utils';
@@ -8,6 +9,9 @@ import {
   commaSeparatedList,
   generatePuppeteerPDFMargin,
 } from './commander-options';
+
+
+console_stamp(console);
 
 program
   .name('docusaurus-pdf')
@@ -61,18 +65,16 @@ program
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {
-      console.log(
-        chalk.default.red('--pdfFormat is deprecated, use --paperFormat'),
-      );
+      console.log(chalk.red('--pdfFormat is deprecated, use --paperFormat'));
       process.exit(1);
     }
     generatePDF(options)
       .then(() => {
-        console.log(chalk.default.green('Finish generating PDF!'));
+        console.log(chalk.green('Finish generating PDF!'));
         process.exit(0);
       })
       .catch((err: { stack: unknown }) => {
-        console.error(chalk.default.red(err.stack));
+        console.error(chalk.red(err.stack));
         process.exit(1);
       });
   });
