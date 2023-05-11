@@ -72,8 +72,8 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --
 
 ## 📄 How `docs-to-pdf` works
 
-1. [puppter](https://pptr.dev/) can make html to PDF like you can print HTML page in chrome browser
-2. so, the idea of docs-to-pdf is **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/v13.1.3/docs/api.md#pagepdfoptions)** from puppter to generate PDF.
+1. [puppeteer](https://pptr.dev/) can make html to PDF like you can print HTML page in chrome browser
+2. so, the idea of docs-to-pdf is **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/main/docs/api/puppeteer.page.pdf.md)** from puppeteer to generate PDF.
 
 ![docs-to-pdf-diagram](https://user-images.githubusercontent.com/29557494/90359040-c8fb9780-e092-11ea-89c7-1868bc32919f.png)
 
