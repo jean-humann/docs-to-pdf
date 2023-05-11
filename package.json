@@ -25,7 +25,11 @@
   "author": "Jean Humann <jean.humann@gmail.com> (https://github.com/jean-humann)",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^10.0.0",
     "console-stamp": "^3.1.1",
+    "puppeteer": "^20.0.1",
+    "puppeteer-core": "^20.0.1",
     "puppeteer-autoscroll-down": "^1.1.2"
   },
   "devDependencies": {
@@ -33,16 +37,12 @@
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
-    "chalk": "^4.1.2",
-    "commander": "^10.0.0",
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
     "prettier": "^2.8.3",
-    "puppeteer": "^20.0.1",
-    "puppeteer-core": "^20.0.1",
     "typescript": "^5.0.0"
   },
   "files": [
