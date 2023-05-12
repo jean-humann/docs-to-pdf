@@ -9,7 +9,8 @@
     "commitlint": "commitlint --from=HEAD~1",
     "prepare": "husky install",
     "lint": "eslint \"*/**/*.{js,ts}\"",
-    "lintfix": "eslint \"*/**/*.{js,ts}\" --fix"
+    "lintfix": "eslint \"*/**/*.{js,ts}\" --fix",
+    "test": "jest"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -31,13 +32,14 @@
     "console-stamp": "^3.1.1",
     "puppeteer": "^20.0.1",
     "puppeteer-autoscroll-down": "^1.1.2",
-    "puppeteer-core": "^20.0.1",
-    "sanitize-html": "^2.10.0"
+    "sanitize-html": "^2.10.0",
+    "puppeteer-core": "^20.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
     "@commitlint/config-conventional": "17.6.3",
     "@tsconfig/node18": "^2.0.1",
+    "@types/jest": "^29.5.1",
     "@types/node": "^18.11.18",
     "@types/sanitize-html": "^2.9.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
@@ -47,8 +49,10 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
+    "jest": "^29.5.0",
     "lint-staged": "^13.1.0",
     "prettier": "^2.8.3",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.0"
   },
   "files": [
