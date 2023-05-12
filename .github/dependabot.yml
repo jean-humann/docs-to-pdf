@@ -6,3 +6,7 @@ updates:
       interval: daily
       time: '17:00'
       timezone: 'Europe/Berlin'
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
