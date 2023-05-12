@@ -231,10 +231,9 @@ function generateToc(contentHtml: string) {
   function htmlReplacer(matchedStr: string) {
     // docusaurus inserts #s into headers for direct links to the header
     const headerText = matchedStr
-      .replace(/<a[^>]*>#<\/a( )*>/g, '')
-      .replace(/<[^>]*>/g, '')
+      .replace(/<a\b[^>]*>#<\/a\s*>/g, '')
+      .replace(/<(?!\/?a\b)[^>]*>/g, '')
       .trim();
-
     const headerId = `${Math.random().toString(36).slice(2, 5)}-${headers.length
       }`;
 
