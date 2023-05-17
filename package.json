@@ -32,12 +32,13 @@
     "console-stamp": "^3.1.1",
     "puppeteer": "^20.0.1",
     "puppeteer-autoscroll-down": "^1.1.2",
-    "sanitize-html": "^2.10.0",
-    "puppeteer-core": "^20.0.1"
+    "puppeteer-core": "^20.0.1",
+    "sanitize-html": "^2.10.0"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
     "@commitlint/config-conventional": "17.6.3",
+    "@jest/globals": "^29.5.0",
     "@tsconfig/node18": "^2.0.1",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.11.18",
