@@ -61,6 +61,11 @@ program
     'add puppeteer arguments ex: --sandbox',
     commaSeparatedList,
   )
+  .option(
+    '--protocolTimeout <timeout>',
+    'timeout setting for individual protocol calls in milliseconds',
+    commaSeparatedList,
+  )
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {
