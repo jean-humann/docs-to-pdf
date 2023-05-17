@@ -37,7 +37,7 @@
   "devDependencies": {
     "@commitlint/cli": "17.6.1",
     "@commitlint/config-conventional": "17.6.3",
-    "@tsconfig/node18": "^1.0.1",
+    "@tsconfig/node18": "^2.0.1",
     "@types/node": "^18.11.18",
     "@types/sanitize-html": "^2.9.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
