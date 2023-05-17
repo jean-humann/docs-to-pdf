@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 import * as puppeteer from 'puppeteer';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import { Page } from 'puppeteer-core';
