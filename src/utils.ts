@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
+import sanitizeHtml from 'sanitize-html';
 import * as puppeteer from 'puppeteer';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import { Page } from 'puppeteer-core';
@@ -233,11 +234,14 @@ function generateToc(contentHtml: string) {
 
   function htmlReplacer(matchedStr: string) {
     // docusaurus inserts #s into headers for direct links to the header
-    const headerText = matchedStr
-      .replace(/<a[^>]*>#<\/a( )*>/g, '')
-      .replace(/<[^>]*>/g, '')
-      .trim();
+    // sanitize matchedStr to prevent injection of html
 
+    const sanitizedStr = sanitizeHtml(matchedStr);
+
+    const headerText = sanitizedStr
+      .replace(/<a\b[^>]*>#<\/a\s*>/g, '')
+      .replace(/<(?!\/?a\b)[^>]*>/g, '')
+      .trim();
     const headerId = `${Math.random().toString(36).slice(2, 5)}-${headers.length
       }`;
 

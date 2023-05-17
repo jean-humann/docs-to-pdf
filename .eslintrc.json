@@ -1,4 +1,3 @@
-// https://www.robertcooper.me/using-eslint-and-prettier-in-a-typescript-project
 {
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
