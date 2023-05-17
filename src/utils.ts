@@ -27,6 +27,7 @@ export interface GeneratePDFOptions {
   waitForRender: number;
   headerTemplate: string;
   footerTemplate: string;
+  protocolTimeout: number;
 }
 
 export async function generatePDF({
@@ -47,10 +48,12 @@ export async function generatePDF({
   waitForRender,
   headerTemplate,
   footerTemplate,
+  protocolTimeout,
 }: GeneratePDFOptions): Promise<void> {
   const browser = await puppeteer.launch({
     headless: 'new',
     args: puppeteerArgs,
+    protocolTimeout: protocolTimeout,
   });
   const page = await browser.newPage();
 
