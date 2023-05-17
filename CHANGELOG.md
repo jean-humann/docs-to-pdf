@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.1.1...v0.1.2) (2023-05-17)
+
+
+### Bug Fixes
+
+* add puppeteer protocolTimeout BrowserConnectOptions ([#26](https://github.com/jean-humann/docs-to-pdf/issues/26)) ([1a72370](https://github.com/jean-humann/docs-to-pdf/commit/1a723706c40e409a8305828f1991f6f4830f8c7f))
+
 ## [0.1.1](https://github.com/jean-humann/docs-to-pdf/compare/0.1.0...v0.1.1) (2023-05-11)
 
 
