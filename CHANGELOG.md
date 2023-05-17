@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/jean-humann/docs-to-pdf/compare/v0.1.2...v0.1.3) (2023-05-17)
+
+
+### Bug Fixes
+
+* **utils:** improve sanitization ([#19](https://github.com/jean-humann/docs-to-pdf/issues/19)) ([2fee3ca](https://github.com/jean-humann/docs-to-pdf/commit/2fee3ca94b133ab496a567be4bb695a26248d076))
+
 ## [0.1.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.1.1...v0.1.2) (2023-05-17)
 
 
