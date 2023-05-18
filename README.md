@@ -55,7 +55,7 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 
 `initialDocURLs`: <https://docusaurus.io/docs>
 
-`demoPDF`: <https://github.com/jean-humann/docs-to-pdf/blob/master/v2-docusaurus.pdf>
+`demoPDF`: <https://github.com/jean-humann/docs-to-pdf/blob/master/pdf/v2-docusaurus.pdf>
 
 `command`:
 
@@ -69,7 +69,7 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 
 `initialDocURLs`: <https://docusaurus.io/docs/en/installation>
 
-`demoPDF`: <https://github.com/jean-humann/docs-to-pdf/blob/master/v1-docusaurus.pdf>
+`demoPDF`: <https://github.com/jean-humann/docs-to-pdf/blob/master/pdf/v1-docusaurus.pdf>
 
 `command`:
 
