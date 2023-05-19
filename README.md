@@ -3,7 +3,6 @@
 [![npm](https://img.shields.io/npm/v/docs-to-pdf?label=NPM%20STABLE&style=for-the-badge)](https://www.npmjs.com/package/docs-to-pdf)
 ![node-current](https://img.shields.io/node/v/docs-to-pdf?style=for-the-badge)
 ![npm](https://img.shields.io/npm/dt/docs-to-pdf?style=for-the-badge)
-![npm bundle size](https://img.shields.io/bundlephobia/min/docs-to-pdf?style=for-the-badge)
 ![GitHub](https://img.shields.io/github/license/jean-humann/docs-to-pdf?style=for-the-badge)
 
 ## 📌 Introduction
