@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.1.3...v0.2.0) (2023-05-19)
+
+
+### Features
+
+* **cover:** remove png restriction on cover image ([#38](https://github.com/jean-humann/docs-to-pdf/issues/38)) ([5bf1a69](https://github.com/jean-humann/docs-to-pdf/commit/5bf1a69a64020c9e38f9edd162127689a60c2d17))
+
 ## [0.1.3](https://github.com/jean-humann/docs-to-pdf/compare/v0.1.2...v0.1.3) (2023-05-17)
 
 
