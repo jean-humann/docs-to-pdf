@@ -3,7 +3,6 @@ import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import { Page } from 'puppeteer-core';
-import { Console } from 'console';
 
 console_stamp(console);
 
@@ -116,7 +115,10 @@ export async function generatePDF({
 
   await page.evaluate(
     concatHtml,
-    coverHTML, tocHTML, modifiedContentHTML, disableTOC,
+    coverHTML,
+    tocHTML,
+    modifiedContentHTML,
+    disableTOC,
   );
 
   // Remove unnecessary HTML by using excludeSelectors
@@ -157,28 +159,34 @@ export async function generatePDF({
  * @param selector - The CSS selector of the element.
  * @returns The HTML content of the element.
  */
-async function getHtmlContent(page: puppeteer.Page, selector: string) {
-  const html = await page.evaluate(
-    ({ selector }) => {
-      const element: HTMLElement | null = document.querySelector(selector);
-      if (element) {
-        // Add pageBreak for PDF
-        element.style.pageBreakAfter = 'always';
-
-        // Open <details> tag
-        const detailsArray = element.getElementsByTagName('details');
-        Array.from(detailsArray).forEach((element) => {
-          element.open = true;
-        });
-
-        return element.outerHTML;
-      } else {
-        return '';
-      }
-    },
-    { selector },
-  );
+export async function getHtmlContent(page: puppeteer.Page, selector: string) {
+  const html = await page.evaluate(getHtmlFromSelector, selector);
   return html;
+}
+
+/**
+ * Retrieves the HTML content of an element matching the specified selector.
+ * Adds page break styling and opens <details> tags for PDF generation.
+ *
+ * @param selector - The CSS selector of the element to retrieve.
+ * @returns The HTML content of the matched element, or an empty string if no element is found.
+ */
+export function getHtmlFromSelector(selector: string): string {
+  const element: HTMLElement | null = document.querySelector(selector);
+  if (element) {
+    // Add pageBreak for PDF
+    element.style.pageBreakAfter = 'always';
+
+    // Open <details> tag
+    const detailsArray = element.getElementsByTagName('details');
+    Array.from(detailsArray).forEach((element) => {
+      element.open = true;
+    });
+
+    return element.outerHTML;
+  } else {
+    return '';
+  }
 }
 
 /**
@@ -187,18 +195,25 @@ async function getHtmlContent(page: puppeteer.Page, selector: string) {
  * @param selector - The CSS selector of the element containing the link to the next page.
  * @returns The URL of the next page.
  */
-async function findNextUrl(page: puppeteer.Page, selector: string) {
-  const nextPageURL = await page.evaluate((selector) => {
-    const element = document.querySelector(selector);
-    if (element) {
-      // If the element is found, return its href property as the next page URL
-      return (element as HTMLLinkElement).href;
-    } else {
-      // If the element is not found, return an empty string
-      return '';
-    }
-  }, selector);
+export async function findNextUrl(page: puppeteer.Page, selector: string) {
+  const nextPageURL = await page.evaluate(getUrlFromSelector, selector);
   return nextPageURL;
+}
+
+/**
+ * Retrieves the URL from an HTML element specified by the selector.
+ * @param selector - The CSS selector to target the HTML element.
+ * @returns The URL of the element, or an empty string if the element is not found.
+ */
+export function getUrlFromSelector(selector: string): string {
+  const element = document.querySelector(selector);
+  if (element) {
+    // If the element is found, return its href property as the next page URL
+    return (element as HTMLLinkElement).href;
+  } else {
+    // If the element is not found, return an empty string
+    return '';
+  }
 }
 
 /**
@@ -209,7 +224,12 @@ async function findNextUrl(page: puppeteer.Page, selector: string) {
  * @param disable - A boolean indicating whether to disable the table of contents.
  * @returns The concatenated HTML content.
  */
-function concatHtml(cover: string, toc: string, content: string, disable: boolean) {
+export function concatHtml(
+  cover: string,
+  toc: string,
+  content: string,
+  disable: boolean,
+) {
   // Clear the body content
   const body = document.body;
   body.innerHTML = '';
@@ -229,14 +249,13 @@ function concatHtml(cover: string, toc: string, content: string, disable: boolea
   return body.innerHTML;
 }
 
-
 /**
  * Retrieves the cover image from the specified URL using Puppeteer.
  * @param page - The Puppeteer page object.
  * @param url - The URL of the cover image.
  * @returns An object containing the base64-encoded image content and the content type.
  */
-async function getCoverImage(page: puppeteer.Page, url: string) {
+export async function getCoverImage(page: puppeteer.Page, url: string) {
   // Download buffer of coverImage if it exists
   const imgSrc = await page.goto(url);
   const imgSrcBuffer = await imgSrc?.buffer();
@@ -254,7 +273,7 @@ async function getCoverImage(page: puppeteer.Page, url: string) {
  * @param height - The height of the image. Defaults to 140.
  * @returns The HTML code for the image.
  */
-function generateImageHtml(
+export function generateImageHtml(
   imgBase64: string,
   contentType = 'image/png',
   width = 140,
@@ -277,7 +296,7 @@ function generateImageHtml(
  * @param coverSub - The subtitle for the cover page.
  * @returns The HTML code for the cover page.
  */
-function generateCoverHtml(
+export function generateCoverHtml(
   coverTitle: string,
   coverImageHtml: string,
   coverSub: string,
@@ -308,7 +327,7 @@ function generateCoverHtml(
  * @param maxLevel - The maximum header level to include in the TOC. Defaults to 3.
  * @returns An object containing the modified content HTML and the TOC HTML.
  */
-function generateToc(contentHtml: string, maxLevel = 4) {
+export function generateToc(contentHtml: string, maxLevel = 4) {
   const headers: Array<{
     header: string;
     level: number;
@@ -343,7 +362,7 @@ function generateToc(contentHtml: string, maxLevel = 4) {
  * @param headers - An array of header objects containing level, id, and header properties.
  * @returns The HTML code for the table of contents.
  */
-function generateTocHtml(headers: any[]) {
+export function generateTocHtml(headers: any[]) {
   // Map the headers array to create a list item for each header with the appropriate indentation
   const toc = headers
     .map(
@@ -360,7 +379,6 @@ function generateTocHtml(headers: any[]) {
     ${toc}
   </div>
   `;
-
 }
 
 /**
@@ -369,7 +387,7 @@ function generateTocHtml(headers: any[]) {
  * @param matchedStr - The matched string containing the header information.
  * @returns An object containing the header text, header ID, and level.
  */
-function generateHeader(headers: any[], matchedStr: string) {
+export function generateHeader(headers: any[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
   const headerText = matchedStr
     .replace(/<a[^>]*>#<\/a( )*>/g, '')
@@ -393,15 +411,18 @@ function generateHeader(headers: any[], matchedStr: string) {
  * @param headerId - The ID value to replace the existing IDs with.
  * @returns The modified string with replaced header IDs.
  */
-function replaceHeader(matchedStr: string, headerId: string, maxLevel = 3) {
+export function replaceHeader(
+  matchedStr: string,
+  headerId: string,
+  maxLevel = 3,
+) {
   // Create a regular expression to match the header tags
-  const re = new RegExp("<h[1-" + maxLevel + "].*?>", "g");
+  const re = new RegExp('<h[1-' + maxLevel + '].*?>', 'g');
   // Replaces the ID attribute of the headers using regular expressions and the headerId parameter
   const modifiedContentHTML = matchedStr.replace(re, (header) => {
     if (header.match(/id( )*=( )*"/g)) {
       // If the header already has an ID attribute, replace its value with the headerId parameter
       return header.replace(/id\s*=\s*"([^"]*)"/g, `id="${headerId}"`);
-
     } else {
       // If the header doesn't have an ID attribute, add the headerId parameter as a new ID attribute
       return header.substring(0, header.length - 1) + ` id="${headerId}">`;
@@ -416,14 +437,24 @@ function replaceHeader(matchedStr: string, headerId: string, maxLevel = 3) {
  * @param page - The Puppeteer page object.
  * @param excludeSelectors - An array of CSS selectors for elements to be removed.
  */
-async function removeExcludeSelector(page: puppeteer.Page, excludeSelectors: string[]) {
+export async function removeExcludeSelector(
+  page: puppeteer.Page,
+  excludeSelectors: string[],
+) {
   excludeSelectors.map(async (excludeSelector) => {
-    await page.evaluate((selector) => {
-      // Find all elements that match the selector
-      const matches = document.querySelectorAll(selector);
-
-      // Remove each matched element
-      matches.forEach((match) => match.remove());
-    }, excludeSelector);
+    await page.evaluate(removeElementFromSelector, excludeSelector);
   });
+}
+
+/**
+ * Removes all elements that match the specified selector from the document.
+ *
+ * @param selector - The CSS selector of the elements to remove.
+ */
+export function removeElementFromSelector(selector: string): void {
+  // Find all elements that match the selector
+  const matches = document.querySelectorAll(selector);
+
+  // Remove each matched element
+  matches.forEach((match) => match.remove());
 }
