@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.2...v0.2.3) (2023-05-23)
+
+
+### Bug Fixes
+
+* **publish:** change build in lib ([#54](https://github.com/jean-humann/docs-to-pdf/issues/54)) ([e491659](https://github.com/jean-humann/docs-to-pdf/commit/e491659a638e4072cc01b44b9de30bfd6226e80f))
+
 ## [0.2.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.1...v0.2.2) (2023-05-23)
 
 
