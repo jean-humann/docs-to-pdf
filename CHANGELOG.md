@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.1...v0.2.2) (2023-05-23)
+
+
+### Bug Fixes
+
+* **publish:** add !build in .npmignore ([#52](https://github.com/jean-humann/docs-to-pdf/issues/52)) ([929295a](https://github.com/jean-humann/docs-to-pdf/commit/929295acf8de6bdefeb08dd5538f82e8daf3b137))
+
 ## [0.2.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.0...v0.2.1) (2023-05-23)
 
 
