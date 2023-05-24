@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.4...v0.3.0) (2023-05-24)
+
+
+### Features
+
+* **docker:** add docker image ([#58](https://github.com/jean-humann/docs-to-pdf/issues/58)) ([5432c88](https://github.com/jean-humann/docs-to-pdf/commit/5432c88b5181d424a6169eb942a7c803eddd6cab))
+
+
+### Bug Fixes
+
+* **docker:** add permissions GITHUB_TOKEN ([#60](https://github.com/jean-humann/docs-to-pdf/issues/60)) ([2cd141d](https://github.com/jean-humann/docs-to-pdf/commit/2cd141da5c6f72ea564bb1a29677439832c4835e))
+
 ## [0.2.4](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.3...v0.2.4) (2023-05-23)
 
 
