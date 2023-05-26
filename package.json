@@ -30,10 +30,8 @@
     "chalk": "^4.1.2",
     "commander": "^10.0.0",
     "console-stamp": "^3.1.1",
-    "puppeteer": "^20.0.1",
     "puppeteer-autoscroll-down": "^1.1.2",
-    "puppeteer-core": "^20.0.1",
-    "sanitize-html": "^2.10.0"
+    "puppeteer-core": "^20.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
@@ -42,7 +40,6 @@
     "@tsconfig/node18": "^2.0.1",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.11.18",
-    "@types/sanitize-html": "^2.9.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
     "commitlint": "17.6.3",
