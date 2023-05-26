@@ -1,4 +1,4 @@
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core';
 
 export function commaSeparatedList(value: string): Array<string> {
   return value.split(',');

@@ -1,4 +1,4 @@
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core';
 import {
   getHtmlContent,
   findNextUrl,
@@ -16,7 +16,8 @@ describe('getHtmlContent', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new' });
+    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
   });
 
@@ -45,7 +46,8 @@ describe('findNextUrl', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new' });
+    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
   });
 
@@ -72,7 +74,8 @@ describe('removeExcludeSelector', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new' });
+    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
   });
 
@@ -124,7 +127,8 @@ describe('getCoverImage', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new' });
+    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
   });
 

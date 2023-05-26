@@ -4,7 +4,7 @@ services:
 
   docs-to-pdf:
     build:
-      context: .
+      context: docker
     command:
     - bash
     - -c

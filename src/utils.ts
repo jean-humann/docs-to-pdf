@@ -1,8 +1,7 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
-import { Page } from 'puppeteer-core';
 
 console_stamp(console);
 
@@ -50,8 +49,11 @@ export async function generatePDF({
   footerTemplate,
   protocolTimeout,
 }: GeneratePDFOptions): Promise<void> {
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+  console.log(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: execPath,
     args: puppeteerArgs,
     protocolTimeout: protocolTimeout,
   });
@@ -136,8 +138,7 @@ export async function generatePDF({
   // Scroll to the bottom of the page with puppeteer-autoscroll-down
   // This forces lazy-loading images to load
   console.log(chalk.cyan('Scroll to the bottom of the page...'));
-  const pageTypeHack = page as unknown; //see issue regarding types between puppeteer and puppeteer-core https://github.com/puppeteer/puppeteer/issues/6904
-  await scrollPageToBottom(pageTypeHack as Page, {}); //cast to puppeteer-core type
+  await scrollPageToBottom(page, {}); //cast to puppeteer-core type
 
   // Generate PDF
   console.log(chalk.cyan('Generate PDF...'));
