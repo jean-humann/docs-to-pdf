@@ -59,6 +59,7 @@
     "lib/**/*",
     "bin/**/*"
   ],
+  "setupFiles": ["core-js"],
   "lint-staged": {
     "*.{js,ts}": [
       "./node_modules/.bin/eslint --fix"
