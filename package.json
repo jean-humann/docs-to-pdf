@@ -10,7 +10,7 @@
     "prepare": "husky install",
     "lint": "eslint \"*/**/*.{js,ts}\"",
     "lintfix": "eslint \"*/**/*.{js,ts}\" --fix",
-    "test": "jest"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "engines": {
     "node": ">=18.0.0"

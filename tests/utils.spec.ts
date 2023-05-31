@@ -11,15 +11,17 @@ import {
   replaceHeader,
 } from '../src/utils';
 
+const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+console.log(`Using executable path: ${execPath}`);
+
 describe('getHtmlContent', () => {
   let page: puppeteer.Page;
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
     browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
-  });
+  }, 30000 );
 
   afterAll(async () => {
     await browser.close();
@@ -46,10 +48,9 @@ describe('findNextUrl', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
     browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
-  });
+  }, 30000 );
 
   afterAll(async () => {
     await browser.close();
@@ -74,10 +75,9 @@ describe('removeExcludeSelector', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
     browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
-  });
+  }, 30000);
 
   afterAll(async () => {
     await browser.close();
@@ -127,10 +127,9 @@ describe('getCoverImage', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
     browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
     page = await browser.newPage();
-  });
+  }, 30000);
 
   afterAll(async () => {
     await browser.close();
