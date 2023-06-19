@@ -28,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.2",
-    "commander": "^10.0.0",
+    "commander": "^11.0.0",
     "console-stamp": "^3.1.1",
     "puppeteer-autoscroll-down": "^1.1.2",
     "puppeteer-core": "^20.0.1"
