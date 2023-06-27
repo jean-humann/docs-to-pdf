@@ -34,7 +34,7 @@
     "puppeteer-core": "^20.0.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "17.6.5",
+    "@commitlint/cli": "17.6.6",
     "@commitlint/config-conventional": "17.6.6",
     "@jest/globals": "^29.5.0",
     "@tsconfig/node18": "^2.0.1",
