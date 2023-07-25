@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
+import * as fs from 'fs-extra';
 
 console_stamp(console);
 
@@ -50,13 +51,17 @@ export async function generatePDF({
   protocolTimeout,
 }: GeneratePDFOptions): Promise<void> {
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
-  console.log(chalk.cyan(`Using Chromium from ${execPath}`));
+  console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
     headless: 'new',
     executablePath: execPath,
     args: puppeteerArgs,
     protocolTimeout: protocolTimeout,
   });
+
+  const chromeTmpDataDir = browser.process()?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))?.split('=')[1] as string;
+  console.debug(chalk.cyan(`Chrome user data dir: ${chromeTmpDataDir}`));
+
   const page = await browser.newPage();
 
   for (const url of initialDocURLs) {
@@ -152,6 +157,15 @@ export async function generatePDF({
     footerTemplate,
     timeout: 0,
   });
+
+  console.log(chalk.green(`PDF generated at ${outputPDFFilename}`));
+  await browser.close();
+  console.log(chalk.green('Browser closed'));
+
+  if (chromeTmpDataDir !== null) {
+    fs.removeSync(chromeTmpDataDir);
+  }
+  console.debug(chalk.cyan('Chrome user data dir removed'));
 }
 
 /**
