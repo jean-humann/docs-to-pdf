@@ -299,25 +299,9 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@commitlint/cli@17.6.6":
-  version "17.6.6"
-  resolved "https://registry.npmjs.org/@commitlint/cli/-/cli-17.6.6.tgz"
-  integrity sha512-sTKpr2i/Fjs9OmhU+beBxjPavpnLSqZaO6CzwKVq2Tc4UYVTMFgpKOslDhUBVlfAUBfjVO8ParxC/MXkIOevEA==
-  dependencies:
-    "@commitlint/format" "^17.4.4"
-    "@commitlint/lint" "^17.6.6"
-    "@commitlint/load" "^17.5.0"
-    "@commitlint/read" "^17.5.1"
-    "@commitlint/types" "^17.4.4"
-    execa "^5.0.0"
-    lodash.isfunction "^3.0.9"
-    resolve-from "5.0.0"
-    resolve-global "1.0.0"
-    yargs "^17.0.0"
-
-"@commitlint/cli@^17.6.7":
+"@commitlint/cli@17.6.7", "@commitlint/cli@^17.6.7":
   version "17.6.7"
-  resolved "https://registry.npmjs.org/@commitlint/cli/-/cli-17.6.7.tgz"
+  resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-17.6.7.tgz#1d352a6cfdb6b6a6ae49a959e6c13dcef1b63782"
   integrity sha512-nzZmfO5KIOupYppn1MsnYX/80I+KDlxiwkks3CJT0XT+t34UgqGi3eSyEuzgcIjPlORk5/GMaAEiys78iLfGMg==
   dependencies:
     "@commitlint/format" "^17.4.4"
@@ -379,7 +363,7 @@
     "@commitlint/types" "^17.4.4"
     semver "7.5.2"
 
-"@commitlint/lint@^17.6.6", "@commitlint/lint@^17.6.7":
+"@commitlint/lint@^17.6.7":
   version "17.6.7"
   resolved "https://registry.npmjs.org/@commitlint/lint/-/lint-17.6.7.tgz"
   integrity sha512-TW+AozfuOFMrHn+jdwtz0IWu8REKFp0eryOvoBp2r8IXNc4KihKB1spAiUB6SFyHD6hVVeolz12aHnJ3Mb+xVQ==
@@ -389,7 +373,7 @@
     "@commitlint/rules" "^17.6.7"
     "@commitlint/types" "^17.4.4"
 
-"@commitlint/load@^17.5.0", "@commitlint/load@^17.6.7":
+"@commitlint/load@^17.6.7":
   version "17.6.7"
   resolved "https://registry.npmjs.org/@commitlint/load/-/load-17.6.7.tgz"
   integrity sha512-QZ2rJTbX55BQdYrCm/p6+hh/pFBgC9nTJxfsrK6xRPe2thiQzHN0AQDBqBwAirn6gIkHrjIbCbtAE6kiDYLjrw==
