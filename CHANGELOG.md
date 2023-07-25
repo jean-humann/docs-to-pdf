@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.3.0...v0.3.1) (2023-07-25)
+
+
+### Bug Fixes
+
+* clean puppeteer_dev_chrome_profile ([#133](https://github.com/jean-humann/docs-to-pdf/issues/133)) ([5e42856](https://github.com/jean-humann/docs-to-pdf/commit/5e42856988550de459b122369704f048120a91a4))
+
 ## [0.3.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.2.4...v0.3.0) (2023-05-24)
 
 
