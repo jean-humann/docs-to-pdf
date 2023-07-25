@@ -10,3 +10,4 @@ updates:
       prefix: chore
       prefix-development: chore
       include: scope
+    open-pull-requests-limit: 15
