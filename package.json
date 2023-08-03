@@ -32,7 +32,7 @@
     "commander": "^11.0.0",
     "console-stamp": "^3.1.1",
     "puppeteer-autoscroll-down": "^1.1.2",
-    "puppeteer-core": "^20.0.1"
+    "puppeteer-core": "^21.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.7",
