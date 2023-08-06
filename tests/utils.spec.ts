@@ -9,9 +9,11 @@ import {
   generateImageHtml,
   generateCoverHtml,
   replaceHeader,
+  matchKeyword,
 } from '../src/utils';
 
-const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+const execPath =
+  process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
 console.log(`Using executable path: ${execPath}`);
 
 describe('getHtmlContent', () => {
@@ -19,9 +21,12 @@ describe('getHtmlContent', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
     page = await browser.newPage();
-  }, 30000 );
+  }, 30000);
 
   afterAll(async () => {
     await browser.close();
@@ -48,9 +53,12 @@ describe('findNextUrl', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
     page = await browser.newPage();
-  }, 30000 );
+  }, 30000);
 
   afterAll(async () => {
     await browser.close();
@@ -75,7 +83,10 @@ describe('removeExcludeSelector', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
     page = await browser.newPage();
   }, 30000);
 
@@ -127,7 +138,10 @@ describe('getCoverImage', () => {
   let browser: puppeteer.Browser;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: 'new', executablePath: execPath });
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
     page = await browser.newPage();
   }, 30000);
 
@@ -252,5 +266,40 @@ describe('replaceHeader', () => {
 
     const output = replaceHeader(matchedStr, headerId, maxLevel);
     expect(output).toBe(expectedOutput);
+  });
+});
+
+describe('matchKeyword', () => {
+  let page: puppeteer.Page;
+  let browser: puppeteer.Browser;
+
+  beforeAll(async () => {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
+    page = await browser.newPage();
+    await page.setContent(`
+      <html>
+        <head>
+          <meta name="keywords" content="hallo,match" />
+        </head>
+        <body>
+          <div id="content">Hello, world!</div>
+        </body>
+      </html>
+    `);
+  }, 30000);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('should be true with a existing filterKeyword', async () => {
+    expect(await matchKeyword(page, 'match')).toBe(true);
+  });
+
+  it('should be false with a nonexisting filterKeyword', async () => {
+    expect(await matchKeyword(page, 'no-match')).toBe(false);
   });
 });
