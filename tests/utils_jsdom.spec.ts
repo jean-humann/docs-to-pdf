@@ -72,13 +72,23 @@ describe('getHtmlFromSelector', () => {
 });
 
 describe('concatHtml', () => {
-  it('should concatenate the HTML elements correctly', () => {
-    const cover = '<div class="cover">Cover</div>';
-    const toc = '<ul><li>TOC</li></ul>';
-    const content = '<div class="content">Content</div>';
-    const disable = false;
+  const cover = '<div class="cover">Cover</div>';
+  const toc = '<ul><li>TOC</li></ul>';
+  const content = '<div class="content">Content</div>';
+  const disable = false;
 
-    const result = concatHtml(cover, toc, content, disable);
+  it('should concatenate the HTML elements correctly', () => {
+    const baseUrl = 'http://example.com/';
+    const result = concatHtml(cover, toc, content, disable, baseUrl);
+
+    expect(result).toBe(
+      `<base href="http://example.com/"><div class="cover">Cover</div><ul><li>TOC</li></ul><div class="content">Content</div>`,
+    );
+  });
+
+  it('should not add base when no baseUrl given', () => {
+    const baseUrl = '';
+    const result = concatHtml(cover, toc, content, disable, baseUrl);
 
     expect(result).toBe(
       `<div class="cover">Cover</div><ul><li>TOC</li></ul><div class="content">Content</div>`,
