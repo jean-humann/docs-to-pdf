@@ -66,6 +66,7 @@ program
     'timeout setting for individual protocol calls in milliseconds',
     commaSeparatedList,
   )
+  .option('--filterKeyword <filterKeyword>', 'meta keyword to filter pages')
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {
