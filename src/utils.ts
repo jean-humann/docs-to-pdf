@@ -71,6 +71,15 @@ export async function generatePDF({
 
   const page = await browser.newPage();
 
+  // Block PDFs as puppeteer can not access them
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    if (request.url().endsWith('.pdf')) {
+      console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
+      request.abort();
+    } else request.continue();
+  });
+
   for (const url of initialDocURLs) {
     let nextPageURL = url;
 
