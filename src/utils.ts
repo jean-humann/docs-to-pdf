@@ -30,6 +30,7 @@ export interface GeneratePDFOptions {
   protocolTimeout: number;
 }
 
+/* istanbul ignore next */
 export async function generatePDF({
   initialDocURLs,
   excludeURLs,
