@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.3.1...v0.4.0) (2023-08-08)
+
+
+### Features
+
+* **cli:** Add Option --filterKeyword ([#165](https://github.com/jean-humann/docs-to-pdf/issues/165)) ([2d0cd5a](https://github.com/jean-humann/docs-to-pdf/commit/2d0cd5a74c639e24a3c1ccabadbc7377a4867e53))
+
+
+### Bug Fixes
+
+* **generatePDF:** Ignore pdf requests ([#166](https://github.com/jean-humann/docs-to-pdf/issues/166)) ([9b80eb0](https://github.com/jean-humann/docs-to-pdf/commit/9b80eb0898b1a1df2674db33fa42246350da8107))
+
 ## [0.3.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.3.0...v0.3.1) (2023-07-25)
 
 
