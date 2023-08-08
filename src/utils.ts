@@ -30,7 +30,7 @@ export interface GeneratePDFOptions {
   protocolTimeout: number;
 }
 
-/* c8 ignore next */
+/* c8 ignore start */
 export async function generatePDF({
   initialDocURLs,
   excludeURLs,
@@ -168,6 +168,7 @@ export async function generatePDF({
   }
   console.debug(chalk.cyan('Chrome user data dir removed'));
 }
+/* c8 ignore stop */
 
 /**
  * Retrieves the HTML content of a specific element on a page using Puppeteer.
