@@ -67,6 +67,10 @@ program
     commaSeparatedList,
   )
   .option('--filterKeyword <filterKeyword>', 'meta keyword to filter pages')
+  .option(
+    '--baseUrl <baseUrl>',
+    'base URL for all relative URLs. Allows to render the pdf on localhost while referencing the deployed page.',
+  )
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {

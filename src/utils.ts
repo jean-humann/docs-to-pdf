@@ -29,6 +29,7 @@ export interface GeneratePDFOptions {
   footerTemplate: string;
   protocolTimeout: number;
   filterKeyword: string;
+  baseUrl: string;
 }
 
 /* c8 ignore start */
@@ -52,6 +53,7 @@ export async function generatePDF({
   footerTemplate,
   protocolTimeout,
   filterKeyword,
+  baseUrl,
 }: GeneratePDFOptions): Promise<void> {
   const execPath =
     process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
@@ -146,6 +148,7 @@ export async function generatePDF({
     tocHTML,
     modifiedContentHTML,
     disableTOC,
+    baseUrl,
   );
 
   // Remove unnecessary HTML by using excludeSelectors
@@ -283,10 +286,17 @@ export function concatHtml(
   toc: string,
   content: string,
   disable: boolean,
+  baseUrl: string,
 ) {
   // Clear the body content
   const body = document.body;
   body.innerHTML = '';
+
+  // Add base tag for relative links 
+  // see: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+  if (baseUrl) {
+    body.innerHTML += `<base href="${baseUrl}" />`;
+  }
 
   // Add the cover HTML to the body
   body.innerHTML += cover;
