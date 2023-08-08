@@ -28,6 +28,7 @@ export interface GeneratePDFOptions {
   headerTemplate: string;
   footerTemplate: string;
   protocolTimeout: number;
+  filterKeyword: string;
 }
 
 /* c8 ignore start */
@@ -50,8 +51,10 @@ export async function generatePDF({
   headerTemplate,
   footerTemplate,
   protocolTimeout,
+  filterKeyword,
 }: GeneratePDFOptions): Promise<void> {
-  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+  const execPath =
+    process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -60,7 +63,10 @@ export async function generatePDF({
     protocolTimeout: protocolTimeout,
   });
 
-  const chromeTmpDataDir = browser.process()?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))?.split('=')[1] as string;
+  const chromeTmpDataDir = browser
+    .process()
+    ?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))
+    ?.split('=')[1] as string;
   console.debug(chalk.cyan(`Chrome user data dir: ${chromeTmpDataDir}`));
 
   const page = await browser.newPage();
@@ -91,14 +97,18 @@ export async function generatePDF({
         await new Promise((r) => setTimeout(r, waitForRender));
       }
 
-      // Get the HTML string of the content section.
-      const html = await getHtmlContent(page, contentSelector);
-
       // Make joined content html
       if (excludeURLs && excludeURLs.includes(nextPageURL)) {
         console.log(chalk.green('This URL is excluded.'));
+      } else if (filterKeyword && !(await matchKeyword(page, filterKeyword))) {
+        console.log(
+          chalk.yellowBright(
+            `Page excluded by keyword filter: ${filterKeyword}`,
+          ),
+        );
       } else {
-        contentHTML += html;
+        // Get the HTML string of the content section.
+        contentHTML += await getHtmlContent(page, contentSelector);
         console.log(chalk.green('Success'));
       }
 
@@ -178,6 +188,24 @@ export async function generatePDF({
   console.debug(chalk.cyan('Chrome user data dir removed'));
 }
 /* c8 ignore stop */
+
+/**
+ * Checks whether a page contains a given keyword
+ * @param page - The Puppeteer page instance.
+ * @param keyword - The mata keyword to search for
+ * @returns boolean if the keyword was found
+ */
+export async function matchKeyword(page: puppeteer.Page, keyword: string) {
+  try {
+    const metaKeywords = await page.$eval(
+      "head > meta[name='keywords']",
+      (element) => element.content,
+    );
+    return metaKeywords.split(',').includes(keyword);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Retrieves the HTML content of a specific element on a page using Puppeteer.
