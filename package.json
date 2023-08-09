@@ -31,6 +31,7 @@
     "chalk": "^4.1.2",
     "commander": "^11.0.0",
     "console-stamp": "^3.1.1",
+    "puppeteer": "^21.0.2",
     "puppeteer-autoscroll-down": "^1.1.2",
     "puppeteer-core": "^21.0.2"
   },
