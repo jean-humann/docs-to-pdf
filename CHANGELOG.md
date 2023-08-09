@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.4.0...v0.5.0) (2023-08-08)
+
+
+### Features
+
+* **generatePDF:** add option --baseUrl ([#167](https://github.com/jean-humann/docs-to-pdf/issues/167)) ([131517b](https://github.com/jean-humann/docs-to-pdf/commit/131517be69c49e0383e93f7124842afea078da96))
+
 ## [0.4.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.3.1...v0.4.0) (2023-08-08)
 
 
