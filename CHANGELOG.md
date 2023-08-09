@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.5.0...v0.5.1) (2023-08-09)
+
+
+### Bug Fixes
+
+* add puppeteer dependencie ([#181](https://github.com/jean-humann/docs-to-pdf/issues/181)) ([e3afecc](https://github.com/jean-humann/docs-to-pdf/commit/e3afecced6b26072aaffc115b7da3d7c7bbcb7f4))
+
 ## [0.5.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.4.0...v0.5.0) (2023-08-08)
 
 
