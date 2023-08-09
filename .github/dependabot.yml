@@ -4,8 +4,6 @@ updates:
     directory: '/'
     schedule:
       interval: daily
-      time: '17:00'
-      timezone: 'Europe/Berlin'
     commit-message:
       prefix: chore
       prefix-development: chore
@@ -14,10 +12,16 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
       interval: daily
     commit-message:
       prefix: ci
       include: scope
     open-pull-requests-limit: 10
-    
+  - package-ecosystem: docker
+    directory: '/docker/'
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: ci
+      include: scope
+    open-pull-requests-limit: 10
