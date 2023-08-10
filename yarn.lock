@@ -304,7 +304,7 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@commitlint/cli@17.7.0", "@commitlint/cli@^17.7.0":
+"@commitlint/cli@17.7.0":
   version "17.7.0"
   resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-17.7.0.tgz#c62213abdf47764704c8dc3d2ca5f53fb1fa1371"
   integrity sha512-28PNJaGuBQZNoz3sd+6uO3b4+5PY+vWzyBfy5JOvFB7QtoZVXf2FYTQs5VO1cn7yAd3y9/0Rx0x6Vx82W/zhuA==
@@ -312,6 +312,22 @@
     "@commitlint/format" "^17.4.4"
     "@commitlint/lint" "^17.7.0"
     "@commitlint/load" "^17.7.0"
+    "@commitlint/read" "^17.5.1"
+    "@commitlint/types" "^17.4.4"
+    execa "^5.0.0"
+    lodash.isfunction "^3.0.9"
+    resolve-from "5.0.0"
+    resolve-global "1.0.0"
+    yargs "^17.0.0"
+
+"@commitlint/cli@^17.7.1":
+  version "17.7.1"
+  resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-17.7.1.tgz#f3ab35bd38d82fcd4ab03ec5a1e9db26d57fe1b0"
+  integrity sha512-BCm/AT06SNCQtvFv921iNhudOHuY16LswT0R3OeolVGLk8oP+Rk9TfQfgjH7QPMjhvp76bNqGFEcpKojxUNW1g==
+  dependencies:
+    "@commitlint/format" "^17.4.4"
+    "@commitlint/lint" "^17.7.0"
+    "@commitlint/load" "^17.7.1"
     "@commitlint/read" "^17.5.1"
     "@commitlint/types" "^17.4.4"
     execa "^5.0.0"
@@ -394,6 +410,26 @@
     lodash.merge "^4.6.2"
     lodash.uniq "^4.5.0"
     resolve-from "^5.0.0"
+
+"@commitlint/load@^17.7.1":
+  version "17.7.1"
+  resolved "https://registry.yarnpkg.com/@commitlint/load/-/load-17.7.1.tgz#0723b11723a20043a304a74960602dead89b5cdd"
+  integrity sha512-S/QSOjE1ztdogYj61p6n3UbkUvweR17FQ0zDbNtoTLc+Hz7vvfS7ehoTMQ27hPSjVBpp7SzEcOQu081RLjKHJQ==
+  dependencies:
+    "@commitlint/config-validator" "^17.6.7"
+    "@commitlint/execute-rule" "^17.4.0"
+    "@commitlint/resolve-extends" "^17.6.7"
+    "@commitlint/types" "^17.4.4"
+    "@types/node" "20.4.7"
+    chalk "^4.1.0"
+    cosmiconfig "^8.0.0"
+    cosmiconfig-typescript-loader "^4.0.0"
+    lodash.isplainobject "^4.0.6"
+    lodash.merge "^4.6.2"
+    lodash.uniq "^4.5.0"
+    resolve-from "^5.0.0"
+    ts-node "^10.8.1"
+    typescript "^4.6.4 || ^5.0.0"
 
 "@commitlint/message@^17.4.2":
   version "17.4.2"
@@ -995,6 +1031,11 @@
   version "20.4.9"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.9.tgz#c7164e0f8d3f12dfae336af0b1f7fdec8c6b204f"
   integrity sha512-8e2HYcg7ohnTUbHk8focoklEQYvemQmu9M/f43DZVx43kHn0tE3BY/6gSDxS7k0SprtS0NHvj+L80cGLnoOUcQ==
+
+"@types/node@20.4.7":
+  version "20.4.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.7.tgz#74d323a93f1391a63477b27b9aec56669c98b2ab"
+  integrity sha512-bUBrPjEry2QUTsnuEjzjbS7voGWCc30W0qzgMf90GPeDGFRakvrz47ju+oqDAKCXLUCe39u57/ORMl/O/04/9g==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -1623,12 +1664,12 @@ commander@^11.0.0:
   resolved "https://registry.npmjs.org/commander/-/commander-11.0.0.tgz"
   integrity sha512-9HMlXtt/BNoYr8ooyjjNRdIilOTkVJXB+GhxMTtOKwk0R4j4lS4NpjuqmRxroBfnfTSHQIHQB7wryHhXarNjmQ==
 
-commitlint@17.7.0:
-  version "17.7.0"
-  resolved "https://registry.yarnpkg.com/commitlint/-/commitlint-17.7.0.tgz#51c923ab6267c60192cda94a9884904f7c707b10"
-  integrity sha512-aUuDuW1Qye30A89LnPWXtxXz5XClb0ezPjj45JlkXV4HAjKFyYUOQ+Lip6eIUDW+qZ5oRONCnJ57NdZoFp6nAQ==
+commitlint@17.7.1:
+  version "17.7.1"
+  resolved "https://registry.yarnpkg.com/commitlint/-/commitlint-17.7.1.tgz#80af68075991da75c46c4687f47a53719f778a49"
+  integrity sha512-DVsF4pNpcGfQPu8KOVohNJAHE6ZBT7qTo33yG2SYiojrMnUOjh3eUOjQSjn5sP60/w2UndZqpQNsfQJrXU1bFA==
   dependencies:
-    "@commitlint/cli" "^17.7.0"
+    "@commitlint/cli" "^17.7.1"
     "@commitlint/types" "^17.4.4"
 
 compare-func@^2.0.0:
@@ -1690,6 +1731,11 @@ core-js@^3.30.2:
   version "3.31.1"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.31.1.tgz#f2b0eea9be9da0def2c5fece71064a7e5d687653"
   integrity sha512-2sKLtfq1eFST7l7v62zaqXacPc7uG8ZAya8ogijLhTtaKNcpzpB4TMoTw2Si+8GYKRwFPMMtUT0263QFWFfqyQ==
+
+cosmiconfig-typescript-loader@^4.0.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/cosmiconfig-typescript-loader/-/cosmiconfig-typescript-loader-4.4.0.tgz#f3feae459ea090f131df5474ce4b1222912319f9"
+  integrity sha512-BabizFdC3wBHhbI4kJh0VkQP9GkBfoHPydD0COMce1nJ1kJAB3F2TmJ/I7diULBKtmEWSwEbuN/KDtgnmUUVmw==
 
 cosmiconfig-typescript-loader@^5.0.0:
   version "5.0.0"
@@ -4582,7 +4628,7 @@ ts-jest@^29.1.0:
     semver "^7.5.3"
     yargs-parser "^21.0.1"
 
-ts-node@^10.9.1:
+ts-node@^10.8.1, ts-node@^10.9.1:
   version "10.9.1"
   resolved "https://registry.npmjs.org/ts-node/-/ts-node-10.9.1.tgz"
   integrity sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==
@@ -4672,7 +4718,7 @@ type-fest@^0.8.1:
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.8.1.tgz"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-typescript@^5.0.0:
+"typescript@^4.6.4 || ^5.0.0", typescript@^5.0.0:
   version "5.1.6"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
   integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==

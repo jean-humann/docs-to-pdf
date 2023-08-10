@@ -44,7 +44,7 @@
     "@types/node": "^20.4.4",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
-    "commitlint": "17.7.0",
+    "commitlint": "17.7.1",
     "core-js": "^3.30.2",
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^9.0.0",
