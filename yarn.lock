@@ -1653,9 +1653,9 @@ concat-map@0.0.1:
   integrity sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
 
 console-stamp@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/console-stamp/-/console-stamp-3.1.1.tgz"
-  integrity sha512-NTbqQ9X57xffQKTJbAm4h/ro7JNR2uD3369NeTjmRdfPJ2QmkmCUnMvC1QSxZPQOof3WPrkuA6DQV5+n35ZiIA==
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/console-stamp/-/console-stamp-3.1.2.tgz#35dac393e16069a4d9d37b71ca6d5d13d7f3f8fd"
+  integrity sha512-ab66x3NxOTxPuq71dI6gXEiw2X6ql4Le5gZz0bm7FW3FSCB00eztra/oQUuCoCGlsyKOxtULnHwphzMrRtzMBg==
   dependencies:
     chalk "^4.1.2"
     dateformat "^4.6.3"
