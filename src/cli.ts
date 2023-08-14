@@ -71,6 +71,15 @@ program
     '--baseUrl <baseUrl>',
     'base URL for all relative URLs. Allows to render the pdf on localhost while referencing the deployed page.',
   )
+  .option(
+    '--excludePaths <paths>',
+    'paths to be excluded in PDF',
+    commaSeparatedList,
+  )
+  .option(
+    '--restrictPaths',
+    'only the paths in the --initialDocURLs will be included in the PDF',
+  )
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {

@@ -30,6 +30,8 @@ export interface GeneratePDFOptions {
   protocolTimeout: number;
   filterKeyword: string;
   baseUrl: string;
+  excludePaths: Array<string>;
+  restrictPaths: boolean;
 }
 
 /* c8 ignore start */
@@ -54,6 +56,8 @@ export async function generatePDF({
   protocolTimeout,
   filterKeyword,
   baseUrl,
+  excludePaths,
+  restrictPaths,
 }: GeneratePDFOptions): Promise<void> {
   const execPath =
     process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
@@ -84,6 +88,7 @@ export async function generatePDF({
 
   for (const url of initialDocURLs) {
     let nextPageURL = url;
+    const urlPath = new URL(url).pathname;
 
     // Create a list of HTML for the content section of all pages by looping
     while (nextPageURL) {
@@ -99,16 +104,17 @@ export async function generatePDF({
         await new Promise((r) => setTimeout(r, waitForRender));
       }
 
-      // Make joined content html
-      if (excludeURLs && excludeURLs.includes(nextPageURL)) {
-        console.log(chalk.green('This URL is excluded.'));
-      } else if (filterKeyword && !(await matchKeyword(page, filterKeyword))) {
-        console.log(
-          chalk.yellowBright(
-            `Page excluded by keyword filter: ${filterKeyword}`,
-          ),
-        );
-      } else {
+      if (
+        await isPageKept(
+          page,
+          nextPageURL,
+          urlPath,
+          excludeURLs,
+          filterKeyword,
+          excludePaths,
+          restrictPaths,
+        )
+      ) {
         // Get the HTML string of the content section.
         contentHTML += await getHtmlContent(page, contentSelector);
         console.log(chalk.green('Success'));
@@ -204,8 +210,20 @@ export async function matchKeyword(page: puppeteer.Page, keyword: string) {
       "head > meta[name='keywords']",
       (element) => element.content,
     );
-    return metaKeywords.split(',').includes(keyword);
-  } catch {
+    if (metaKeywords.split(',').includes(keyword)) {
+      console.log(
+        chalk.green('Keyword found: ' + keyword + ' in ' + metaKeywords),
+      );
+      return true;
+    }
+    console.log(
+      chalk.yellowBright(
+        'Keyword not found: ' + keyword + ' in ' + metaKeywords,
+      ),
+    );
+    return false;
+  } catch (e) {
+    console.error(chalk.red('No meta keywords found: ' + e));
     return false;
   }
 }
@@ -292,7 +310,7 @@ export function concatHtml(
   const body = document.body;
   body.innerHTML = '';
 
-  // Add base tag for relative links 
+  // Add base tag for relative links
   // see: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
   if (baseUrl) {
     body.innerHTML += `<base href="${baseUrl}" />`;
@@ -521,4 +539,53 @@ export function removeElementFromSelector(selector: string): void {
 
   // Remove each matched element
   matches.forEach((match) => match.remove());
+}
+
+/**
+ * Check if a page should be kept based on exclusion and filtering conditions.
+ *
+ * @param page - The Puppeteer page instance
+ * @param nextPageURL The URL of the next page to be checked.
+ * @param urlPath The path of the URL to be checked.
+ * @param excludeURLs List of URLs to exclude.
+ * @param filterKeyword Keyword to filter pages.
+ * @param excludePaths List of path patterns to exclude.
+ * @param restrictPaths Whether to restrict by path.
+ * @returns True if the page should be kept, false if it should be excluded.
+ */
+export async function isPageKept(
+  page: puppeteer.Page,
+  nextPageURL: string,
+  urlPath: string,
+  excludeURLs: string[] | undefined,
+  filterKeyword: string | undefined,
+  excludePaths: string[] | undefined,
+  restrictPaths: boolean | undefined,
+): Promise<boolean> {
+  if (excludeURLs && excludeURLs.includes(nextPageURL)) {
+    console.log(chalk.green('This URL is excluded.'));
+    return false;
+  } else if (filterKeyword && !(await matchKeyword(page, filterKeyword))) {
+    console.log(
+      chalk.yellowBright(`Page excluded by keyword filter: ${filterKeyword}`),
+    );
+    return false;
+  } else if (
+    excludePaths &&
+    excludePaths.some((path) => nextPageURL.includes(path))
+  ) {
+    console.log(
+      chalk.yellowBright(`Page excluded by path filter: ${excludePaths}`),
+    );
+    return false;
+  } else if (restrictPaths && nextPageURL.includes(urlPath) === false) {
+    console.log(
+      chalk.yellowBright(
+        `Page excluded by path restriction: ${urlPath} !== ${urlPath}`,
+      ),
+    );
+    return false;
+  }
+
+  return true;
 }
