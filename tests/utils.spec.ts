@@ -318,7 +318,7 @@ describe('isPageKept function', () => {
     await page.setContent(`
       <html>
         <head>
-          <meta name="keywords" content="hallo,match" />
+          <meta name="keywords" content="keep" />
         </head>
         <body>
           <div id="content">Hello, world!</div>
@@ -415,7 +415,7 @@ describe('isPageKept function', () => {
       'https://example.com/keep',
       '',
       [],
-      'match',
+      'keep',
       [],
       false,
     );
