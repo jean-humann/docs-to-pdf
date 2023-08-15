@@ -80,6 +80,7 @@ program
     '--restrictPaths',
     'only the paths in the --initialDocURLs will be included in the PDF',
   )
+  .option('--openDetail', 'open details elements in the PDF, default is open')
 
   .action((options: GeneratePDFOptions) => {
     if (options.pdfFormat) {
