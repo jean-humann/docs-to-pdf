@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.5.1...v0.6.0) (2023-08-18)
+
+
+### Features
+
+* add option to restrict URL paths ([#202](https://github.com/jean-humann/docs-to-pdf/issues/202)) ([4e38c14](https://github.com/jean-humann/docs-to-pdf/commit/4e38c14987b46078fa9f0ec9e59942925482510d))
+* **docker:** add debian image ([#186](https://github.com/jean-humann/docs-to-pdf/issues/186)) ([0fc0056](https://github.com/jean-humann/docs-to-pdf/commit/0fc00569c716d6d311556bb9780915946a4fc940))
+
+
+### Bug Fixes
+
+* details not opened in PDF ([#203](https://github.com/jean-humann/docs-to-pdf/issues/203)) ([3dea229](https://github.com/jean-humann/docs-to-pdf/commit/3dea22996543e5f88614634afc90913a45682e51))
+
 ## [0.5.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.5.0...v0.5.1) (2023-08-09)
 
 
