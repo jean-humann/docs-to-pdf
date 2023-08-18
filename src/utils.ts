@@ -32,6 +32,7 @@ export interface GeneratePDFOptions {
   baseUrl: string;
   excludePaths: Array<string>;
   restrictPaths: boolean;
+  openDetail: boolean;
 }
 
 /* c8 ignore start */
@@ -58,6 +59,7 @@ export async function generatePDF({
   baseUrl,
   excludePaths,
   restrictPaths,
+  openDetail = true,
 }: GeneratePDFOptions): Promise<void> {
   const execPath =
     process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
@@ -115,6 +117,10 @@ export async function generatePDF({
           restrictPaths,
         )
       ) {
+        // Open all <details> elements on the page
+        if (openDetail) {
+          await openDetails(page);
+        }
         // Get the HTML string of the content section.
         contentHTML += await getHtmlContent(page, contentSelector);
         console.log(chalk.green('Success'));
@@ -241,7 +247,7 @@ export async function getHtmlContent(page: puppeteer.Page, selector: string) {
 
 /**
  * Retrieves the HTML content of an element matching the specified selector.
- * Adds page break styling and opens <details> tags for PDF generation.
+ * Adds page break styling for PDF generation.
  *
  * @param selector - The CSS selector of the element to retrieve.
  * @returns The HTML content of the matched element, or an empty string if no element is found.
@@ -252,15 +258,39 @@ export function getHtmlFromSelector(selector: string): string {
     // Add pageBreak for PDF
     element.style.pageBreakAfter = 'always';
 
-    // Open <details> tag
-    const detailsArray = element.getElementsByTagName('details');
-    Array.from(detailsArray).forEach((element) => {
-      element.open = true;
-    });
-
     return element.outerHTML;
   } else {
     return '';
+  }
+}
+
+type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
+type WaitFunction = (milliseconds: number) => Promise<void>;
+
+/**
+ * Recursively opens all <details> elements on a page.
+ *
+ * @param page - The Puppeteer page instance.
+ * @param clickFunction - A function to click the summary element of a <details> element.
+ * @param waitFunction - A function to wait for a specified number of milliseconds.
+ */
+export async function openDetails(
+  page: puppeteer.Page,
+  clickFunction?: ClickFunction,
+  waitFunction?: WaitFunction
+  ) {
+  const detailsHandles = await page.$$('details');
+
+  console.debug(`Found ${detailsHandles.length} elements`);
+
+  for (const detailsHandle of detailsHandles) {
+    const summaryHandle = await detailsHandle.$('summary');
+    if (summaryHandle){
+      console.debug(`Clicking summary: ${await summaryHandle.evaluate((node) => node.textContent)}`);
+      await (clickFunction ? clickFunction(summaryHandle) : summaryHandle.click());
+      await (waitFunction ? waitFunction(800) : new Promise((r) => setTimeout(r, 800)));
+    }
+      
   }
 }
 

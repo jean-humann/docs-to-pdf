@@ -11,6 +11,7 @@ import {
   replaceHeader,
   matchKeyword,
   isPageKept,
+  openDetails,
 } from '../src/utils';
 
 const execPath =
@@ -452,5 +453,56 @@ describe('isPageKept function', () => {
       true,
     );
     expect(result).toBe(true);
+  });
+});
+
+describe('openDetails function', () => {
+  let page: puppeteer.Page;
+  let browser: puppeteer.Browser;
+
+  beforeAll(async () => {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: execPath,
+    });
+    page = await browser.newPage();
+  }, 30000);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('should open all details elements recursively', async () => {
+    // Mock the click and wait functions
+    const clickFunction = jest.fn(async () => {});
+    const waitFunction = jest.fn(async () => {});
+
+    // Mock a simple HTML page with nested <details> elements
+    await page.setContent(`
+      <details>
+        <summary>Toggle me!</summary>
+        <div>
+          <div>This is the detailed content</div>
+          <br/>
+          <details>
+            <summary>
+              Nested toggle! Some surprise inside...
+            </summary>
+            <div>😲😲😲😲😲</div>
+          </details>
+        </div>
+      </details>
+    `);
+
+    // Call the recursive function to open details elements
+    await openDetails(page, clickFunction, waitFunction);
+
+    // Assertions based on the mock functions
+    expect(clickFunction).toHaveBeenCalledTimes(2);
+    expect(waitFunction).toHaveBeenCalledTimes(2);
+    expect(waitFunction).toHaveBeenCalledWith(800);
+
+    // Close the browser
+    await browser.close();
   });
 });
