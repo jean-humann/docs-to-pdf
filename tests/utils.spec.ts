@@ -473,6 +473,10 @@ describe('openDetails function', () => {
   });
 
   it('should open all details elements recursively', async () => {
+    // Mock the click and wait functions
+    const clickFunction = jest.fn(async () => {});
+    const waitFunction = jest.fn(async () => {});
+
     // Mock a simple HTML page with nested <details> elements
     await page.setContent(`
       <details>
@@ -490,15 +494,13 @@ describe('openDetails function', () => {
       </details>
     `);
 
-    // Mock a click event for Jest's purpose (not necessary in real usage)
-    const mockClick = jest.fn();
-    page.$eval = jest.fn().mockResolvedValue({ click: mockClick });
-
     // Call the recursive function to open details elements
-    await openDetails(page);
+    await openDetails(page, clickFunction, waitFunction);
 
-    // Check if the mock click function was called twice
-    expect(mockClick).toHaveBeenCalledTimes(2);
+    // Assertions based on the mock functions
+    expect(clickFunction).toHaveBeenCalledTimes(2);
+    expect(waitFunction).toHaveBeenCalledTimes(2);
+    expect(waitFunction).toHaveBeenCalledWith(800);
 
     // Close the browser
     await browser.close();

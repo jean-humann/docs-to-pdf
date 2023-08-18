@@ -264,12 +264,21 @@ export function getHtmlFromSelector(selector: string): string {
   }
 }
 
+type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
+type WaitFunction = (milliseconds: number) => Promise<void>;
+
 /**
  * Recursively opens all <details> elements on a page.
  *
  * @param page - The Puppeteer page instance.
+ * @param clickFunction - A function to click the summary element of a <details> element.
+ * @param waitFunction - A function to wait for a specified number of milliseconds.
  */
-export async function openDetails(page: puppeteer.Page) {
+export async function openDetails(
+  page: puppeteer.Page,
+  clickFunction?: ClickFunction,
+  waitFunction?: WaitFunction
+  ) {
   const detailsHandles = await page.$$('details');
 
   console.debug(`Found ${detailsHandles.length} elements`);
@@ -277,8 +286,9 @@ export async function openDetails(page: puppeteer.Page) {
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
     if (summaryHandle){
-      await summaryHandle.click()
-      await new Promise((r) => setTimeout(r, 800));
+      console.debug(`Clicking summary: ${await summaryHandle.evaluate((node) => node.textContent)}`);
+      await (clickFunction ? clickFunction(summaryHandle) : summaryHandle.click());
+      await (waitFunction ? waitFunction(800) : new Promise((r) => setTimeout(r, 800)));
     }
       
   }
