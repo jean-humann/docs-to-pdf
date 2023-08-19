@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.0...v0.6.1) (2023-08-19)
+
+
+### Bug Fixes
+
+* properly locate chrome for puppeteer ([#210](https://github.com/jean-humann/docs-to-pdf/issues/210)) ([c32bf33](https://github.com/jean-humann/docs-to-pdf/commit/c32bf33ea2c053bd97a6d27fda858994a74b723f))
+
 ## [0.6.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.5.1...v0.6.0) (2023-08-18)
 
 
