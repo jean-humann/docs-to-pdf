@@ -3,6 +3,7 @@ import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
 import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import * as fs from 'fs-extra';
+import { chromeExecPath } from './browser';
 
 console_stamp(console);
 
@@ -61,8 +62,7 @@ export async function generatePDF({
   restrictPaths,
   openDetail = true,
 }: GeneratePDFOptions): Promise<void> {
-  const execPath =
-    process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -277,20 +277,27 @@ type WaitFunction = (milliseconds: number) => Promise<void>;
 export async function openDetails(
   page: puppeteer.Page,
   clickFunction?: ClickFunction,
-  waitFunction?: WaitFunction
-  ) {
+  waitFunction?: WaitFunction,
+) {
   const detailsHandles = await page.$$('details');
 
   console.debug(`Found ${detailsHandles.length} elements`);
 
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
-    if (summaryHandle){
-      console.debug(`Clicking summary: ${await summaryHandle.evaluate((node) => node.textContent)}`);
-      await (clickFunction ? clickFunction(summaryHandle) : summaryHandle.click());
-      await (waitFunction ? waitFunction(800) : new Promise((r) => setTimeout(r, 800)));
+    if (summaryHandle) {
+      console.debug(
+        `Clicking summary: ${await summaryHandle.evaluate(
+          (node) => node.textContent,
+        )}`,
+      );
+      await (clickFunction
+        ? clickFunction(summaryHandle)
+        : summaryHandle.click());
+      await (waitFunction
+        ? waitFunction(800)
+        : new Promise((r) => setTimeout(r, 800)));
     }
-      
   }
 }
 
