@@ -20,7 +20,6 @@ export async function generateDocusaurusPDF(
       console.debug('Docusaurus version 2');
       core.paginationSelector =
         'a.pagination-nav__link.pagination-nav__link--next';
-      core.excludeSelectors.push
       core.excludeSelectors = [
         '.margin-vert--xl a',
         "[class^='tocCollapsible']",
