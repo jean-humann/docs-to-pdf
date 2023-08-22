@@ -7,7 +7,6 @@ import {
   generateFromBuild,
 } from '../src/provider/docusaurus'; // Update with the actual module path
 import * as generatePDFModule from '../src/core'; // Import the actual generatePDF function
-import * as docusaurusModule from '../src/provider/docusaurus'; 
 import express from 'express';
 import supertest from 'supertest';
 import fs from 'fs-extra';
@@ -121,7 +120,7 @@ describe('startDocusaurusServer', () => {
   let server: express.Express;
 
   beforeAll(async () => {
-    server = await startDocusaurusServer('examples/website/build', 3001);
+    server = await startDocusaurusServer('tests/website/build', 3001);
   });
 
   afterAll(async () => {
@@ -249,7 +248,7 @@ describe('generateFromBuild', () => {
     mockGeneratePDF.mockResolvedValue();
 
 
-    await generateFromBuild('examples/website/build', core);
+    await generateFromBuild('tests/website/build', core);
 
     expect(mockGeneratePDF).toHaveBeenCalledWith(
       expect.objectContaining({
