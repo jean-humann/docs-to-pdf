@@ -877,9 +877,9 @@
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
 
 "@tsconfig/node18@^18.2.0":
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/@tsconfig/node18/-/node18-18.2.0.tgz#d6b5358b3fa85fe89b13b46cb1e996e4d79d6a07"
-  integrity sha512-yhxwIlFVSVcMym3O31HoMnRXpoenmpIxcj4Yoes2DUpe+xCJnA7ECQP1Vw889V0jTt/2nzvpLQ/UuMYCd3JPIg==
+  version "18.2.1"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node18/-/node18-18.2.1.tgz#ebf5e6b8d94e9de072e712bc197d6441a325ed61"
+  integrity sha512-RDDZFuofwkcKpl8Vpj5wFbY+H53xOtqK7ckEL1sXsbPwvKwDdjQf3LkHbtt9sxIHn9nWIEwkmCwBRZ6z5TKU2A==
 
 "@types/babel__core@^7.1.14":
   version "7.20.0"
