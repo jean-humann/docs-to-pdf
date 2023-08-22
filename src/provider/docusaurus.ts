@@ -86,7 +86,7 @@ export async function stopDocusaurusServer(
     throw new Error('No server to stop');
   }
   try {
-    var httpServer = app.listen();
+    const httpServer = app.listen();
     await httpServer.close(
       () => console.log('Docusaurus server stopped')
     );
