@@ -52,8 +52,7 @@ export async function generateDocusaurusPDF(
   }
 }
 
-
-/** 
+/**
  * Start Docusaurus Server from build directory
  * @param {string} buildDir - Docusaurus build directory
  * @param {number} port - port to start server on (default: 3000)
@@ -61,7 +60,7 @@ export async function generateDocusaurusPDF(
  */
 export async function startDocusaurusServer(
   buildDirPath: string,
-  port: number = 3000,
+  port = 3000,
 ): Promise<express.Express> {
   const app = express();
   const dirPath = path.resolve(buildDirPath);
@@ -87,14 +86,10 @@ export async function stopDocusaurusServer(
   }
   try {
     const httpServer = app.listen();
-    await httpServer.close(
-      () => console.log('Docusaurus server stopped')
-    );
-  }
-  catch{
+    await httpServer.close(() => console.log('Docusaurus server stopped'));
+  } catch {
     throw new Error('Server is not a docusaurus server');
   }
-  
 }
 
 /**
@@ -102,17 +97,15 @@ export async function stopDocusaurusServer(
  * @param {string} buildDirPath - Docusaurus build directory
  * @returns {Promise<void>}
  * @throws {Error} - if build directory does not exist
-*/
-export async function checkBuildDir(
-  buildDirPath: string,
-): Promise<void> {
-let buildDirStat;
+ */
+export async function checkBuildDir(buildDirPath: string): Promise<void> {
+  let buildDirStat;
   try {
     buildDirStat = await fs.promises.stat(buildDirPath);
   } catch (error) {
     throw new Error(
       `Could not find docusaurus build directory at "${buildDirPath}". ` +
-        'Have you run "docusaurus build"?'
+        'Have you run "docusaurus build"?',
     );
   }
   if (!buildDirStat.isDirectory()) {
@@ -125,14 +118,14 @@ let buildDirStat;
  * @param {string} buildDirPath - Docusaurus build directory
  * @param {GeneratePDFOptions} options - PDF generation options
  * @returns {Promise<void>}
-*/
+ */
 export async function generateFromBuild(
   buildDirPath: string,
   options: GeneratePDFOptions,
 ): Promise<void> {
   await checkBuildDir(buildDirPath);
   const app = await startDocusaurusServer(buildDirPath);
-  const urlPath = new URL(options.initialDocURLs[0]).pathname 
+  const urlPath = new URL(options.initialDocURLs[0]).pathname;
   options.initialDocURLs = [`http://127.0.0.1:3000${urlPath}`];
   await generatePDF(options);
   console.log('Stopping server');

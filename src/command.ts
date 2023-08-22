@@ -34,7 +34,12 @@ export function makeProgram() {
       'version of Docusaurus site to generate PDF from',
       '2',
     )
-    .addOption(new Option('--docsDir <dir>', 'directory of docs in Docusaurus site to generate PDF from').conflicts('--initialDocURLs'))
+    .addOption(
+      new Option(
+        '--docsDir <dir>',
+        'directory of docs in Docusaurus site to generate PDF from',
+      ).conflicts('--initialDocURLs'),
+    )
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
       console.debug(options);

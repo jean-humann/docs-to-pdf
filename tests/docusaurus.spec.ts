@@ -116,7 +116,7 @@ describe('generateDocusaurusPDF', () => {
 });
 
 describe('startDocusaurusServer', () => {
-  console.debug('startDocusaurusServer')
+  console.debug('startDocusaurusServer');
   let server: express.Express;
 
   beforeAll(async () => {
@@ -139,7 +139,7 @@ describe('startDocusaurusServer', () => {
 });
 
 describe('stopDocusaurusServer', () => {
-  console.debug('stopDocusaurusServer')
+  console.debug('stopDocusaurusServer');
   it('should stop the server successfully', async () => {
     const mockClose = jest.fn().mockImplementation((callback) => {
       callback();
@@ -160,28 +160,28 @@ describe('stopDocusaurusServer', () => {
 
   it('should throw an error if no server is provided', async () => {
     await expect(stopDocusaurusServer(null as any)).rejects.toThrow(
-      'No server to stop'
+      'No server to stop',
     );
   });
 
   it('should throw an error if provided server is not a Docusaurus server', async () => {
     const mockApp = {} as unknown as express.Express;
     await expect(stopDocusaurusServer(mockApp)).rejects.toThrow(
-      'Server is not a docusaurus server'
+      'Server is not a docusaurus server',
     );
   });
 });
 
-
-
 describe('checkBuildDir', () => {
-  console.debug('checkBuildDir')
+  console.debug('checkBuildDir');
   it('should not throw an error if the build directory exists', async () => {
     const mockStat = jest.spyOn(fs.promises, 'stat');
     mockStat.mockResolvedValue({ isDirectory: () => true } as fs.Stats);
 
-    await expect(checkBuildDir('/path/to/valid/buildDir')).resolves.not.toThrow();
-    
+    await expect(
+      checkBuildDir('/path/to/valid/buildDir'),
+    ).resolves.not.toThrow();
+
     mockStat.mockRestore();
   });
 
@@ -189,8 +189,10 @@ describe('checkBuildDir', () => {
     const mockStat = jest.spyOn(fs.promises, 'stat');
     mockStat.mockRejectedValue(new Error('Directory not found'));
 
-    await expect(checkBuildDir('/path/to/nonexistent/buildDir')).rejects.toThrow(
-      'Could not find docusaurus build directory at "/path/to/nonexistent/buildDir". Have you run "docusaurus build"?'
+    await expect(
+      checkBuildDir('/path/to/nonexistent/buildDir'),
+    ).rejects.toThrow(
+      'Could not find docusaurus build directory at "/path/to/nonexistent/buildDir". Have you run "docusaurus build"?',
     );
 
     mockStat.mockRestore();
@@ -201,16 +203,15 @@ describe('checkBuildDir', () => {
     mockStat.mockResolvedValue({ isDirectory: () => false } as fs.Stats);
 
     await expect(checkBuildDir('/path/to/file/notDirectory')).rejects.toThrow(
-      '/path/to/file/notDirectory is not a docusaurus build directory.'
+      '/path/to/file/notDirectory is not a docusaurus build directory.',
     );
 
     mockStat.mockRestore();
   });
 });
 
-
 describe('generateFromBuild', () => {
-  console.debug('generateFromBuild')
+  console.debug('generateFromBuild');
 
   // Kill all listening servers before each test
   beforeEach(() => {
@@ -218,7 +219,10 @@ describe('generateFromBuild', () => {
   });
 
   const core: generatePDFModule.GeneratePDFOptions = {
-    initialDocURLs: ['https://example.com/docs/intro', 'https://example.com/docs/next'],
+    initialDocURLs: [
+      'https://example.com/docs/intro',
+      'https://example.com/docs/next',
+    ],
     excludeURLs: [],
     outputPDFFilename: 'docs-to-pdf.pdf',
     pdfMargin: { top: 32, right: 32, bottom: 32, left: 32 },
@@ -247,7 +251,6 @@ describe('generateFromBuild', () => {
     const mockGeneratePDF = jest.spyOn(generatePDFModule, 'generatePDF');
     mockGeneratePDF.mockResolvedValue();
 
-
     await generateFromBuild('tests/website/build', core);
 
     expect(mockGeneratePDF).toHaveBeenCalledWith(
@@ -257,9 +260,5 @@ describe('generateFromBuild', () => {
     );
 
     mockGeneratePDF.mockRestore();
-  }
-  );
-
-
-
+  });
 });
