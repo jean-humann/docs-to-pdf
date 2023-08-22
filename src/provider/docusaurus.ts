@@ -1,6 +1,7 @@
 import { GeneratePDFOptions, generatePDF } from '../core';
 import express from 'express';
 import * as fs from 'fs';
+import path from 'path';
 
 export interface DocusaurusOptions extends GeneratePDFOptions {
   version: number;
@@ -44,7 +45,6 @@ export async function generateDocusaurusPDF(
     console.error(`Unsupported Docusaurus version: ${version}`);
     throw new Error(`Unsupported Docusaurus version: ${version}`);
   }
-  console.debug(core);
   if (docsDir) {
     await generateFromBuild(docsDir, core);
   } else {
@@ -64,7 +64,8 @@ export async function startDocusaurusServer(
   port: number = 3000,
 ): Promise<express.Express> {
   const app = express();
-  app.use(express.static(buildDirPath));
+  const dirPath = path.resolve(buildDirPath);
+  app.use(express.static(dirPath));
   app.listen(port, () => {
     console.log(`Docusaurus server listening at http://localhost:${port}`);
   });
@@ -84,13 +85,16 @@ export async function stopDocusaurusServer(
   if (!app) {
     throw new Error('No server to stop');
   }
-  const httpServer = app.listen();
-  if (!httpServer) {
+  try {
+    var httpServer = app.listen();
+    await httpServer.close(
+      () => console.log('Docusaurus server stopped')
+    );
+  }
+  catch{
     throw new Error('Server is not a docusaurus server');
   }
-  await httpServer.close(
-    () => console.log('Docusaurus server stopped'),
-  );
+  
 }
 
 /**
@@ -128,11 +132,6 @@ export async function generateFromBuild(
 ): Promise<void> {
   await checkBuildDir(buildDirPath);
   const app = await startDocusaurusServer(buildDirPath);
-  const adress = app.listen().address();
-  if (!adress) {
-    stopDocusaurusServer(app);
-    throw new Error('Could not get server address');
-  }
   const urlPath = new URL(options.initialDocURLs[0]).pathname 
   options.initialDocURLs = [`http://127.0.0.1:3000${urlPath}`];
   await generatePDF(options);
