@@ -304,6 +304,18 @@ describe('matchKeyword', () => {
   it('should be false with a nonexisting filterKeyword', async () => {
     expect(await matchKeyword(page, 'no-match')).toBe(false);
   });
+  it('should be false when no meta keywords are present', async () => {
+    await page.setContent(`
+      <html>
+        <head>
+        </head>
+        <body>
+          <div id="content">Hello, world!</div>
+        </body>
+      </html>
+    `);
+    expect(await matchKeyword(page, 'match')).toBe(false);
+  });
 });
 
 describe('isPageKept function', () => {
