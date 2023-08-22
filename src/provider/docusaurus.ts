@@ -1,4 +1,6 @@
 import { GeneratePDFOptions, generatePDF } from '../core';
+import express from 'express';
+import * as fs from 'fs';
 
 export interface DocusaurusOptions extends GeneratePDFOptions {
   version: number;
@@ -9,8 +11,8 @@ export async function generateDocusaurusPDF(
   options: DocusaurusOptions,
 ): Promise<void> {
   const { version, docsDir, ...core } = options;
-  console.log(`Docusaurus version: ${version}`);
-  console.log(`Docs directory: ${docsDir}`);
+  console.debug(`Docusaurus version: ${version}`);
+  console.debug(`Docs directory: ${docsDir}`);
   core.contentSelector = 'article';
 
   // Pagination and exclude selectors are different depending on Docusaurus version
@@ -43,5 +45,97 @@ export async function generateDocusaurusPDF(
     throw new Error(`Unsupported Docusaurus version: ${version}`);
   }
   console.debug(core);
-  await generatePDF(core);
+  if (docsDir) {
+    await generateFromBuild(docsDir, core);
+  } else {
+    await generatePDF(core);
+  }
+}
+
+
+/** 
+ * Start Docusaurus Server from build directory
+ * @param {string} buildDir - Docusaurus build directory
+ * @param {number} port - port to start server on (default: 3000)
+ * @returns {Promise<express.Express>} - express server
+ */
+export async function startDocusaurusServer(
+  buildDirPath: string,
+  port: number = 3000,
+): Promise<express.Express> {
+  const app = express();
+  app.use(express.static(buildDirPath));
+  app.listen(port, () => {
+    console.log(`Docusaurus server listening at http://localhost:${port}`);
+  });
+  return app;
+}
+
+/**
+ * Stop Docusaurus Server
+ * @param {express.Express} app - express server
+ * @returns {Promise<void>}
+ * @throws {Error} - if server is not running
+ * @throws {Error} - if server is not an express server
+ */
+export async function stopDocusaurusServer(
+  app: express.Express,
+): Promise<void> {
+  if (!app) {
+    throw new Error('No server to stop');
+  }
+  const httpServer = app.listen();
+  if (!httpServer) {
+    throw new Error('Server is not a docusaurus server');
+  }
+  await httpServer.close(
+    () => console.log('Docusaurus server stopped'),
+  );
+}
+
+/**
+ * Check build directory
+ * @param {string} buildDirPath - Docusaurus build directory
+ * @returns {Promise<void>}
+ * @throws {Error} - if build directory does not exist
+*/
+export async function checkBuildDir(
+  buildDirPath: string,
+): Promise<void> {
+let buildDirStat;
+  try {
+    buildDirStat = await fs.promises.stat(buildDirPath);
+  } catch (error) {
+    throw new Error(
+      `Could not find docusaurus build directory at "${buildDirPath}". ` +
+        'Have you run "docusaurus build"?'
+    );
+  }
+  if (!buildDirStat.isDirectory()) {
+    throw new Error(`${buildDirPath} is not a docusaurus build directory.`);
+  }
+}
+
+/**
+ * Generate PDF from Docusaurus build directory
+ * @param {string} buildDirPath - Docusaurus build directory
+ * @param {GeneratePDFOptions} options - PDF generation options
+ * @returns {Promise<void>}
+*/
+export async function generateFromBuild(
+  buildDirPath: string,
+  options: GeneratePDFOptions,
+): Promise<void> {
+  await checkBuildDir(buildDirPath);
+  const app = await startDocusaurusServer(buildDirPath);
+  const adress = app.listen().address();
+  if (!adress) {
+    stopDocusaurusServer(app);
+    throw new Error('Could not get server address');
+  }
+  const urlPath = new URL(options.initialDocURLs[0]).pathname 
+  options.initialDocURLs = [`http://127.0.0.1:3000${urlPath}`];
+  await generatePDF(options);
+  console.log('Stopping server');
+  await stopDocusaurusServer(app);
 }

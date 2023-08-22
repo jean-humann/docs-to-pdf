@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import {
   commaSeparatedList,
   generatePuppeteerPDFMargin,
@@ -34,10 +34,7 @@ export function makeProgram() {
       'version of Docusaurus site to generate PDF from',
       '2',
     )
-    .option(
-      '--docsDir <dir>',
-      'directory of docs in Docusaurus site to generate PDF from',
-    )
+    .addOption(new Option('--docsDir <dir>', 'directory of docs in Docusaurus site to generate PDF from').conflicts('--initialDocURLs'))
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
       console.debug(options);
@@ -74,7 +71,7 @@ export function makeProgram() {
 
   docstopdf.commands.forEach((cmd) => {
     cmd
-      .requiredOption(
+      .option(
         '--initialDocURLs <urls>',
         'set urls to start generating PDF from',
         commaSeparatedList,
