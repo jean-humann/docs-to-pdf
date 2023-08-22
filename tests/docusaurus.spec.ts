@@ -3,10 +3,14 @@ import {
   DocusaurusOptions,
   startDocusaurusServer,
   stopDocusaurusServer,
+  checkBuildDir,
+  generateFromBuild,
 } from '../src/provider/docusaurus'; // Update with the actual module path
 import * as generatePDFModule from '../src/core'; // Import the actual generatePDF function
+import * as docusaurusModule from '../src/provider/docusaurus'; 
 import express from 'express';
 import supertest from 'supertest';
+import fs from 'fs-extra';
 
 jest.mock('../src/core'); // Mock the generatePDF module
 
@@ -113,14 +117,15 @@ describe('generateDocusaurusPDF', () => {
 });
 
 describe('startDocusaurusServer', () => {
+  console.debug('startDocusaurusServer')
   let server: express.Express;
 
   beforeAll(async () => {
-    server = await startDocusaurusServer('../examples/website/build');
+    server = await startDocusaurusServer('examples/website/build', 3001);
   });
 
-  afterAll(() => {
-    server.listen().close();
+  afterAll(async () => {
+    await stopDocusaurusServer(server);
   });
 
   it('should respond with status 200 for root URL', async () => {
@@ -135,6 +140,7 @@ describe('startDocusaurusServer', () => {
 });
 
 describe('stopDocusaurusServer', () => {
+  console.debug('stopDocusaurusServer')
   it('should stop the server successfully', async () => {
     const mockClose = jest.fn().mockImplementation((callback) => {
       callback();
@@ -148,6 +154,9 @@ describe('stopDocusaurusServer', () => {
 
     expect(mockListen).toHaveBeenCalled();
     expect(mockClose).toHaveBeenCalled();
+
+    mockListen.mockRestore();
+    mockClose.mockRestore();
   });
 
   it('should throw an error if no server is provided', async () => {
@@ -162,4 +171,96 @@ describe('stopDocusaurusServer', () => {
       'Server is not a docusaurus server'
     );
   });
+});
+
+
+
+describe('checkBuildDir', () => {
+  console.debug('checkBuildDir')
+  it('should not throw an error if the build directory exists', async () => {
+    const mockStat = jest.spyOn(fs.promises, 'stat');
+    mockStat.mockResolvedValue({ isDirectory: () => true } as fs.Stats);
+
+    await expect(checkBuildDir('/path/to/valid/buildDir')).resolves.not.toThrow();
+    
+    mockStat.mockRestore();
+  });
+
+  it('should throw an error if the build directory does not exist', async () => {
+    const mockStat = jest.spyOn(fs.promises, 'stat');
+    mockStat.mockRejectedValue(new Error('Directory not found'));
+
+    await expect(checkBuildDir('/path/to/nonexistent/buildDir')).rejects.toThrow(
+      'Could not find docusaurus build directory at "/path/to/nonexistent/buildDir". Have you run "docusaurus build"?'
+    );
+
+    mockStat.mockRestore();
+  });
+
+  it('should throw an error if the build directory is not a directory', async () => {
+    const mockStat = jest.spyOn(fs.promises, 'stat');
+    mockStat.mockResolvedValue({ isDirectory: () => false } as fs.Stats);
+
+    await expect(checkBuildDir('/path/to/file/notDirectory')).rejects.toThrow(
+      '/path/to/file/notDirectory is not a docusaurus build directory.'
+    );
+
+    mockStat.mockRestore();
+  });
+});
+
+
+describe('generateFromBuild', () => {
+  console.debug('generateFromBuild')
+
+  // Kill all listening servers before each test
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const core: generatePDFModule.GeneratePDFOptions = {
+    initialDocURLs: ['https://example.com/docs/intro', 'https://example.com/docs/next'],
+    excludeURLs: [],
+    outputPDFFilename: 'docs-to-pdf.pdf',
+    pdfMargin: { top: 32, right: 32, bottom: 32, left: 32 },
+    contentSelector: '',
+    paginationSelector: '',
+    paperFormat: 'A4',
+    excludeSelectors: [],
+    cssStyle: '',
+    puppeteerArgs: [],
+    coverTitle: '',
+    coverImage: '',
+    disableTOC: false,
+    coverSub: '',
+    waitForRender: 0,
+    headerTemplate: '',
+    footerTemplate: '',
+    protocolTimeout: 30000,
+    filterKeyword: '',
+    baseUrl: '',
+    excludePaths: [],
+    restrictPaths: false,
+    openDetail: false,
+  };
+
+  it('should generate a PDF from a Docusaurus build directory', async () => {
+    const mockGeneratePDF = jest.spyOn(generatePDFModule, 'generatePDF');
+    mockGeneratePDF.mockResolvedValue();
+
+
+    await generateFromBuild('examples/website/build', core);
+
+    expect(mockGeneratePDF).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialDocURLs: ['http://127.0.0.1:3000/docs/intro'],
+      }),
+    );
+
+    mockGeneratePDF.mockRestore();
+  }
+  );
+
+
+
 });
