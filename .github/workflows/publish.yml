@@ -62,9 +62,9 @@ jobs:
       - name: Publish Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./docker/{{ matrix.os }}
+          context: ./docker/${{ matrix.os }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}-{{ matrix.os }}
+          tags: ${{ steps.meta.outputs.tags }}-${{ matrix.os }}
           labels: ${{ steps.meta.outputs.labels }}
     strategy:
       matrix:
