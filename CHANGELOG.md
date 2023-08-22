@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.1...v0.6.2) (2023-08-22)
+
+
+### Bug Fixes
+
+* **docker:** publish workflow ([#217](https://github.com/jean-humann/docs-to-pdf/issues/217)) ([67eb3c7](https://github.com/jean-humann/docs-to-pdf/commit/67eb3c7e7763d81eaca15f87f66ccac02cda35db))
+
 ## [0.6.1](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.0...v0.6.1) (2023-08-19)
 
 
