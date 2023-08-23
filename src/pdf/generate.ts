@@ -2,6 +2,7 @@ import * as puppeteer from 'puppeteer-core';
 import chalk from 'chalk';
 import { getOutline, setOutline } from './outline';
 import { PDFDocument } from 'pdf-lib';
+import { writeFileSync } from 'fs';
 
 export interface PDFOptions {
   outputPDFFilename: string;
@@ -61,7 +62,8 @@ export class PDF {
     });
     const pdfDoc = await PDFDocument.load(pdf);
     setOutline(pdfDoc, outline, true);
-    pdfDoc.save();
+    const buffer = await pdfDoc.save();
+    writeFileSync(this.options.outputPDFFilename ?? 'output.pdf', buffer);
     console.log(
       chalk.green(`PDF generated at ${this.options.outputPDFFilename ?? 'output.pdf'}`),
     );
