@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import * as command from './command';
+import * as command from './command/command';
 
 const program = command.makeProgram();
 

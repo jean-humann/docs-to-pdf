@@ -3,14 +3,14 @@ import {
   commaSeparatedList,
   generatePuppeteerPDFMargin,
 } from './commander-options';
-import { generatePDF, GeneratePDFOptions } from './core';
+import { generatePDF, GeneratePDFOptions } from '../core';
 import {
   generateDocusaurusPDF,
   DocusaurusOptions,
-} from './provider/docusaurus';
+} from '../provider/docusaurus';
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-const version = require('../package.json').version;
+const version = require('../../package.json').version;
 
 console_stamp(console);
 

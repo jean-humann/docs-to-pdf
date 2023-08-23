@@ -5,20 +5,17 @@ import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
+import { PDF, PDFOptions } from './pdf/generate';
 
 console_stamp(console);
 
 let contentHTML = '';
-export interface GeneratePDFOptions {
+
+export interface GeneratePDFOptions extends PDFOptions {
   initialDocURLs: Array<string>;
   excludeURLs: Array<string>;
-  outputPDFFilename: string;
-  pdfMargin: puppeteer.PDFOptions['margin'];
   contentSelector: string;
   paginationSelector: string;
-  // deprecated - user paperFormat
-  pdfFormat?: puppeteer.PaperFormat;
-  paperFormat: puppeteer.PaperFormat;
   excludeSelectors: Array<string>;
   cssStyle: string;
   puppeteerArgs: Array<string>;
@@ -27,8 +24,6 @@ export interface GeneratePDFOptions {
   disableTOC: boolean;
   coverSub: string;
   waitForRender: number;
-  headerTemplate: string;
-  footerTemplate: string;
   protocolTimeout: number;
   filterKeyword: string;
   baseUrl: string;
@@ -38,38 +33,14 @@ export interface GeneratePDFOptions {
 }
 
 /* c8 ignore start */
-export async function generatePDF({
-  initialDocURLs,
-  excludeURLs,
-  outputPDFFilename = 'docs-to-pdf.pdf',
-  pdfMargin = { top: 32, right: 32, bottom: 32, left: 32 },
-  contentSelector,
-  paginationSelector,
-  paperFormat,
-  excludeSelectors,
-  cssStyle,
-  puppeteerArgs,
-  coverTitle,
-  coverImage,
-  disableTOC,
-  coverSub,
-  waitForRender,
-  headerTemplate,
-  footerTemplate,
-  protocolTimeout,
-  filterKeyword,
-  baseUrl,
-  excludePaths,
-  restrictPaths,
-  openDetail = true,
-}: GeneratePDFOptions): Promise<void> {
+export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
     headless: 'new',
     executablePath: execPath,
-    args: puppeteerArgs,
-    protocolTimeout: protocolTimeout,
+    args: options.puppeteerArgs,
+    protocolTimeout: options.protocolTimeout,
   });
 
   const chromeTmpDataDir = browser
@@ -89,8 +60,8 @@ export async function generatePDF({
     } else request.continue();
   });
 
-  console.debug(`InitialDocURLs: ${initialDocURLs}`);
-  for (const url of initialDocURLs) {
+  console.debug(`InitialDocURLs: ${options.initialDocURLs}`);
+  for (const url of options.initialDocURLs) {
     let nextPageURL = url;
     const urlPath = new URL(url).pathname;
 
@@ -103,9 +74,9 @@ export async function generatePDF({
         waitUntil: 'networkidle0',
         timeout: 0,
       });
-      if (waitForRender) {
+      if (options.waitForRender) {
         console.log(chalk.green('Waiting for render...'));
-        await new Promise((r) => setTimeout(r, waitForRender));
+        await new Promise((r) => setTimeout(r, options.waitForRender));
       }
 
       if (
@@ -113,23 +84,26 @@ export async function generatePDF({
           page,
           nextPageURL,
           urlPath,
-          excludeURLs,
-          filterKeyword,
-          excludePaths,
-          restrictPaths,
+          options.excludeURLs,
+          options.filterKeyword,
+          options.excludePaths,
+          options.restrictPaths,
         )
       ) {
         // Open all <details> elements on the page
-        if (openDetail) {
+        if (options.openDetail) {
           await utils.openDetails(page);
         }
         // Get the HTML string of the content section.
-        contentHTML += await utils.getHtmlContent(page, contentSelector);
+        contentHTML += await utils.getHtmlContent(
+          page,
+          options.contentSelector,
+        );
         console.log(chalk.green('Success'));
       }
 
       // Find next page url before DOM operations
-      nextPageURL = await utils.findNextUrl(page, paginationSelector);
+      nextPageURL = await utils.findNextUrl(page, options.paginationSelector);
     }
   }
 
@@ -137,18 +111,18 @@ export async function generatePDF({
 
   // Generate cover Image if declared
   let coverImageHtml = '';
-  if (coverImage) {
+  if (options.coverImage) {
     console.log(chalk.cyan('Get coverImage...'));
-    const image = await utils.getCoverImage(page, coverImage);
+    const image = await utils.getCoverImage(page, options.coverImage);
     coverImageHtml = utils.generateImageHtml(image.base64, image.type);
   }
 
   // Generate Cover
   console.log(chalk.cyan('Generate cover...'));
   const coverHTML = utils.generateCoverHtml(
-    coverTitle,
+    options.coverTitle,
     coverImageHtml,
-    coverSub,
+    options.coverSub,
   );
 
   // Generate Toc
@@ -158,27 +132,29 @@ export async function generatePDF({
   console.log(chalk.cyan('Restructuring the html of a document...'));
 
   // Go to initial page
-  await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
+  await page.goto(`${options.initialDocURLs[0]}`, {
+    waitUntil: 'networkidle0',
+  });
 
   await page.evaluate(
     utils.concatHtml,
     coverHTML,
     tocHTML,
     modifiedContentHTML,
-    disableTOC,
-    baseUrl,
+    options.disableTOC,
+    options.baseUrl,
   );
 
   // Remove unnecessary HTML by using excludeSelectors
-  if (excludeSelectors) {
+  if (options.excludeSelectors) {
     console.log(chalk.cyan('Remove unnecessary HTML...'));
-    await utils.removeExcludeSelector(page, excludeSelectors);
+    await utils.removeExcludeSelector(page, options.excludeSelectors);
   }
 
   // Add CSS to HTML
-  if (cssStyle) {
+  if (options.cssStyle) {
     console.log(chalk.cyan('Add CSS to HTML...'));
-    await page.addStyleTag({ content: cssStyle });
+    await page.addStyleTag({ content: options.cssStyle });
   }
 
   // Scroll to the bottom of the page with puppeteer-autoscroll-down
@@ -187,19 +163,9 @@ export async function generatePDF({
   await scrollPageToBottom(page, {}); //cast to puppeteer-core type
 
   // Generate PDF
-  console.log(chalk.cyan('Generate PDF...'));
-  await page.pdf({
-    path: outputPDFFilename,
-    format: paperFormat,
-    printBackground: true,
-    margin: pdfMargin,
-    displayHeaderFooter: !!(headerTemplate || footerTemplate),
-    headerTemplate,
-    footerTemplate,
-    timeout: 0,
-  });
+  const pdf = new PDF(options);
+  await pdf.generate(page);
 
-  console.log(chalk.green(`PDF generated at ${outputPDFFilename}`));
   await browser.close();
   console.log(chalk.green('Browser closed'));
 
