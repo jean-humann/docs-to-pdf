@@ -1661,6 +1661,13 @@ chromium-bidi@0.4.20:
   dependencies:
     mitt "3.0.1"
 
+chromium-bidi@0.4.22:
+  version "0.4.22"
+  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.4.22.tgz#625dab72946e177f538da2d2b8a681652ef916da"
+  integrity sha512-wR7Y9Ioez+cNXT4ZP7VNM1HRTljpNnMSLw4/RnwhhZUP4yCU7kIQND00YiktuHekch68jklGPK1q9Jkb29+fQg==
+  dependencies:
+    mitt "3.0.1"
+
 ci-info@^3.2.0:
   version "3.8.0"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.8.0.tgz"
@@ -4302,13 +4309,25 @@ puppeteer-autoscroll-down@^1.1.2:
   resolved "https://registry.npmjs.org/puppeteer-autoscroll-down/-/puppeteer-autoscroll-down-1.1.2.tgz"
   integrity sha512-SSzxBf6Iu2zn6NNqZO1XlU8cqbjVOzhlTh38xLU42srNZjrDXkIAhKandScM0ZwueVOtOs4xSY0FN2S6whlFSA==
 
-puppeteer-core@21.1.0, puppeteer-core@^21.0.2:
+puppeteer-core@21.1.0:
   version "21.1.0"
   resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.1.0.tgz#f7680ed17076fba6a721f9b81fc045a8351bb8b3"
   integrity sha512-ggfTj09jo81Y6M4DyNj80GrY6Pip+AtDUgGljqoSzP6FG5nz5Aju6Cs/X147fLgkJ4UKTb736U6cDp0ssLzN5Q==
   dependencies:
     "@puppeteer/browsers" "1.7.0"
     chromium-bidi "0.4.20"
+    cross-fetch "4.0.0"
+    debug "4.3.4"
+    devtools-protocol "0.0.1159816"
+    ws "8.13.0"
+
+puppeteer-core@^21.0.2:
+  version "21.1.1"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.1.1.tgz#59be20b6f69acc2139ba2d9e02a33793b59254ff"
+  integrity sha512-Tlcajcf44zwfa9Sbwv3T8BtaNMJ69wtpHIxwl2NOBTyTK3D1wppQovXTjfw0TDOm3a16eCfQ+5BMi3vRQ4kuAQ==
+  dependencies:
+    "@puppeteer/browsers" "1.7.0"
+    chromium-bidi "0.4.22"
     cross-fetch "4.0.0"
     debug "4.3.4"
     devtools-protocol "0.0.1159816"
