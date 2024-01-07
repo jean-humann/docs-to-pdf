@@ -33,7 +33,7 @@
     "console-stamp": "^3.1.1",
     "express": "^4.18.2",
     "puppeteer": "^21.0.2",
-    "puppeteer-autoscroll-down": "^1.1.2",
+    "puppeteer-autoscroll-down": "^2.0.0",
     "puppeteer-core": "^21.0.2"
   },
   "devDependencies": {
