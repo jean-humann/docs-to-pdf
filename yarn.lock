@@ -376,7 +376,7 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@commitlint/cli@18.4.4", "@commitlint/cli@^18.4.3":
+"@commitlint/cli@18.4.4", "@commitlint/cli@^18.4.4":
   version "18.4.4"
   resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-18.4.4.tgz#24bdb295f0e9e87dfe5371e9a16aacac92017c5d"
   integrity sha512-Ro3wIo//fV3XiV1EkdpHog6huaEyNcUAVrSmtgKqYM5g982wOWmP4FXvEDFwRMVgz878CNBvvCc33dMZ5AQJ/g==
@@ -526,7 +526,7 @@
   dependencies:
     find-up "^5.0.0"
 
-"@commitlint/types@^18.4.3", "@commitlint/types@^18.4.4":
+"@commitlint/types@^18.4.4":
   version "18.4.4"
   resolved "https://registry.yarnpkg.com/@commitlint/types/-/types-18.4.4.tgz#dae9e0ce6a6728a36b8982ff301af0170bbe0d38"
   integrity sha512-/FykLtodD8gKs3+VNkAUwofu4LBHankclj+I8fB2jTRvG6PV7k/OUt4P+VbM7ip853qS4F0g7Z6hLNa6JeMcAQ==
@@ -1819,13 +1819,13 @@ commander@11.1.0, commander@^11.0.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
-commitlint@18.4.3:
-  version "18.4.3"
-  resolved "https://registry.yarnpkg.com/commitlint/-/commitlint-18.4.3.tgz#7c5936ee41eddb1ae031b1fa828f97f7c053bd57"
-  integrity sha512-xNAq3MpW4xZ3VyFH+WU0ykU8LmYcCT+0K4e1IOG5346XSGCb1xJyhFu0JFpq4LfJ7E0/bVxzPY98IsjUH2SQbQ==
+commitlint@18.4.4:
+  version "18.4.4"
+  resolved "https://registry.yarnpkg.com/commitlint/-/commitlint-18.4.4.tgz#fdf1aae5bb6ba69f3a26967e37ad875687376c14"
+  integrity sha512-O9ubyj1HKvaah/NGG76S6BPNb2J4I+17qYfGcnK7wtqXWEQ6dv/nZqydpA14PHxlpEmItEhjhqvQrnw9Q4bYpA==
   dependencies:
-    "@commitlint/cli" "^18.4.3"
-    "@commitlint/types" "^18.4.3"
+    "@commitlint/cli" "^18.4.4"
+    "@commitlint/types" "^18.4.4"
 
 compare-func@^2.0.0:
   version "2.0.0"
