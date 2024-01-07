@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.2...v0.7.0) (2024-01-07)
+
+
+### Features
+
+* add docusaurus command ([#212](https://github.com/jean-humann/docs-to-pdf/issues/212)) ([7b015c5](https://github.com/jean-humann/docs-to-pdf/commit/7b015c54be25705cabf5cb1d1b665bd66c151d94))
+
 ## [0.6.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.1...v0.6.2) (2023-08-22)
 
 
