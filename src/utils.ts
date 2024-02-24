@@ -93,7 +93,7 @@ export async function openDetails(
       );
       await (clickFunction
         ? clickFunction(summaryHandle)
-        : summaryHandle.click());
+        : summaryHandle.evaluate((sh) => sh.click()));
       await (waitFunction
         ? waitFunction(800)
         : new Promise((r) => setTimeout(r, 800)));
