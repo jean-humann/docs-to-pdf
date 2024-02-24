@@ -67,10 +67,10 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 
 ## Docusaurus Options
 
-| Option       | Required | Description                                                                                                                                                                        |
-|--------------| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--version`  | No       | Docusaurus version. Default is 2.                                                                                                                                                  |
-| `--buildDir` | No       | Path to Docusaurus build dir. Either absolute or relative from path of the shell                                                                                                   |
+| Option      | Required | Description                                                                      |
+|-------------|----------|----------------------------------------------------------------------------------|
+| `--version` | No       | Docusaurus version. Default is 2.                                                |
+| `--docsDir` | No       | Path to Docusaurus build dir. Either absolute or relative from path of the shell |
 
 ## 🎨 Examples and Demo PDF
 
