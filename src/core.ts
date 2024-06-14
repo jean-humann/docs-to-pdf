@@ -22,9 +22,11 @@ export interface GeneratePDFOptions {
   excludeSelectors: Array<string>;
   cssStyle: string;
   puppeteerArgs: Array<string>;
+  disableTOC: boolean;
+  tocTitle: string;
+  disableCover: boolean;
   coverTitle: string;
   coverImage: string;
-  disableTOC: boolean;
   coverSub: string;
   waitForRender: number;
   headerTemplate: string;
@@ -49,9 +51,11 @@ export async function generatePDF({
   excludeSelectors,
   cssStyle,
   puppeteerArgs,
+  disableTOC,
+  tocTitle,
+  disableCover,
   coverTitle,
   coverImage,
-  disableTOC,
   coverSub,
   waitForRender,
   headerTemplate,
@@ -152,7 +156,9 @@ export async function generatePDF({
   );
 
   // Generate Toc
-  const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML);
+  const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML, {
+    tocTitle,
+  });
 
   // Restructuring the HTML of a document
   console.log(chalk.cyan('Restructuring the html of a document...'));
@@ -166,6 +172,7 @@ export async function generatePDF({
     tocHTML,
     modifiedContentHTML,
     disableTOC,
+    disableCover,
     baseUrl,
   );
 
