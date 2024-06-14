@@ -108,12 +108,14 @@ export function makeProgram() {
       )
       .option('--pdfFormat <format>', '(DEPRECATED use paperFormat)') //TODO: Remove at next major version, replaced by paperFormat
       .option('--paperFormat <format>', 'pdf format ex: A3, A4...')
+      .option('--disableTOC', 'disable table of contents')
+      .option('--tocTitle <title>', 'title for table of contents')
+      .option('--disableCover', 'disable PDF cover')
       .option('--coverTitle <title>', 'title for PDF cover')
       .option(
         '--coverImage <src>',
         'image for PDF cover. *.svg file not working!',
       )
-      .option('--disableTOC', 'disable table of contents')
       .option('--coverSub <subtitle>', 'subtitle for PDF cover')
       .option(
         '--waitForRender <timeout>',
