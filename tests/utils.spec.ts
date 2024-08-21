@@ -141,7 +141,7 @@ describe('getCoverImage', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'true,
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
