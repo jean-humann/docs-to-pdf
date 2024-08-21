@@ -28,7 +28,7 @@ describe('getHtmlContent', () => {
       executablePath: execPath,
     });
     page = await browser.newPage();
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await browser.close();
