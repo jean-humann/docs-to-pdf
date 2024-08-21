@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
-import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
+const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
