@@ -24,7 +24,7 @@ describe('getHtmlContent', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -56,7 +56,7 @@ describe('findNextUrl', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -86,7 +86,7 @@ describe('removeExcludeSelector', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -141,7 +141,7 @@ describe('getCoverImage', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: 'true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -277,7 +277,7 @@ describe('matchKeyword', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -324,7 +324,7 @@ describe('isPageKept function', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
@@ -474,7 +474,7 @@ describe('openDetails function', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       executablePath: execPath,
     });
     page = await browser.newPage();
