@@ -18,25 +18,41 @@ npm install -g docs-to-pdf
 ```
 
 ## 🚀 Quick Start
+For Docusaurus v3+
 
-```shell
-npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+```bash
+npx docs-to-pdf --initialDocURLs="http://localhost:3000/docs/intro" --contentSelector="main" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="http://localhost:3000/img/docusaurus.png" --coverTitle="Docusaurus v3.8"
 ```
+
+- Make sure your Docusaurus site is running at the given URL (e.g., `http://localhost:3000`).
 
 
 ## ⚡ Usage
 
-For [Docusaurus v2](https://docusaurus.io/docs)
+- For Docusaurus v3+:
 
-```shell
-npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus.io/docs/"
-```
+  ```bash
+  npx docs-to-pdf
+  --initialDocURLs="http://localhost:3000/docs/intro"
+  --contentSelector="main"
+  --paginationSelector="a.pagination-nav__link.pagination-nav__link--next"
+  --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page"
+  ```
+  
+  - We need to further refine the selector (e.g., using a parent class, or a more specific selector based on your actual HTML) ```contentSelector="main" ``` to include Heading and Category description.
 
-OR
 
-```shell
-npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
-```
+- For [Docusaurus v2](https://docusaurus.io/docs)
+
+    ```shell
+    npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus.io/docs/"
+    ```
+    
+    OR
+    
+    ```shell
+    npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+    ```
 
 ## 🍗 CLI Global Options
 
@@ -123,8 +139,11 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --
 
 ## 📄 How `docs-to-pdf` works
 
-1. [puppeteer](https://pptr.dev/) can make html to PDF like you can print HTML page in chrome browser
-2. so, the idea of docs-to-pdf is **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/main/docs/api/puppeteer.page.pdf.md)** from puppeteer to generate PDF.
+1. Uses [puppeteer](https://pptr.dev/) to make html to PDF like you can print HTML page in chrome browser
+2. Crawls documentation pages starting from your initial URL, following "next" links.
+3. Collects the main content (e.g., from `<main>` or `<article>`).
+4. Excludes unwanted elements via `--excludeSelectors`.
+5. **generating one big HTML through looping page link, then run [`page.pdf()`](https://github.com/puppeteer/puppeteer/blob/main/docs/api/puppeteer.page.pdf.md)** from puppeteer to generate PDF.
 
 ![docs-to-pdf-diagram](https://user-images.githubusercontent.com/29557494/90359040-c8fb9780-e092-11ea-89c7-1868bc32919f.png)
 
