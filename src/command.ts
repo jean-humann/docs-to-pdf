@@ -33,7 +33,8 @@ export function makeProgram() {
     .option(
       '--version <version>',
       'version of Docusaurus site to generate PDF from',
-      '2',
+      (value) => parseInt(value, 10),
+      2,
     )
     .addOption(
       new Option(
