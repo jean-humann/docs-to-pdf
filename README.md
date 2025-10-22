@@ -68,7 +68,8 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlif
 | `--baseUrl`            | No       | Base URL for all relative URLs. Allows to render the pdf on localhost (ci/Github Actions) while referencing the deployed page.                                                     |
 | `--excludePaths`       | No       | URL Paths to be excluded                                                                                                                                                           |
 | `--restrictPaths`      | No       | Keep Only URL Path with the same rootPath as `--initialDocURLs`                                                                                                                    |
-|                        |          |                                                                                                                                                                                    |
+| `--httpAuthUser`       | No       | HTTP Basic Auth username for protected documentation sites                                                                                                                         |
+| `--httpAuthPassword`   | No       | HTTP Basic Auth password for protected documentation sites                                                                                                                         |
 
 ## Docusaurus Options
 
@@ -145,6 +146,22 @@ npx docs-to-pdf --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --c
 ```
 
 **Note**: Docusaurus v3 changed the main content wrapper from `<article>` (v2) to `<main>` (v3). The `--version=3` flag automatically uses the correct `main` selector.
+
+### Using HTTP Basic Authentication
+
+If your documentation site is protected with HTTP Basic Authentication, you can provide credentials using the `--httpAuthUser` and `--httpAuthPassword` options:
+
+```shell
+npx docs-to-pdf --initialDocURLs="https://protected-docs.example.com/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --httpAuthUser="myusername" --httpAuthPassword="mypassword"
+```
+
+This works with both the `core` and `docusaurus` commands:
+
+```shell
+npx docs-to-pdf docusaurus --initialDocURLs="https://protected-docs.example.com/docs" --httpAuthUser="myusername" --httpAuthPassword="mypassword"
+```
+
+**Security Note**: Be cautious when using credentials in command-line arguments, as they may be visible in shell history. Consider using environment variables or other secure methods for sensitive credentials in production environments.
 
 ### Docusaurus v1 - Legacy
 
