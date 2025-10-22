@@ -15,7 +15,7 @@ This directory contains Docker configurations and E2E tests for docs-to-pdf acro
 
 ### Docusaurus Versions Tested
 - **Docusaurus v1**: https://v1.docusaurus.io/docs/en/installation
-- **Docusaurus v2**: https://docusaurus.io/fr/docs/2.x
+- **Docusaurus v2**: https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1
 - **Docusaurus v3**: https://docusaurus.io/fr/docs
 
 ## Quick Testing

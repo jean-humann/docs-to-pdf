@@ -24,22 +24,22 @@ npm install -g docs-to-pdf
 ## 🚀 Quick Start
 
 ```shell
-npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
 
 
 ## ⚡ Usage
 
-For [Docusaurus v2](https://docusaurus.io/docs)
+For [Docusaurus v2](https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1)
 
 ```shell
-npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus.io/docs/"
+npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1"
 ```
 
 OR
 
 ```shell
-npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
 
 ## 🍗 CLI Global Options
@@ -113,22 +113,22 @@ If you omit the `--version` flag, it defaults to version 2.
 
 ![20210603060438](https://user-images.githubusercontent.com/29557494/120552058-b4299e00-c431-11eb-833e-1ac1338b0a70.gif)
 
-<https://docusaurus.io/>
+<https://docusaurus-archive-october-2023.netlify.app/>
 
-`initialDocURLs`: <https://docusaurus.io/docs>
+`initialDocURLs`: <https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1>
 
 `demoPDF`: <https://github.com/jean-humann/docs-to-pdf/blob/master/pdf/v2-docusaurus.pdf>
 
 `command`:
 
 ```shell
-npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus.io/docs/"
+npx docs-to-pdf docusaurus --initialDocURLs="https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1"
 ```
 
 OR
 
 ```shell
-npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
+npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
 
 ### Docusaurus v3
@@ -185,7 +185,7 @@ docker pull ghcr.io/jean-humann/docs-to-pdf:latest-node24-alpine
 # Generate a PDF
 docker run --rm -v $(pwd)/output:/docs-to-pdf/output \
   ghcr.io/jean-humann/docs-to-pdf:latest-node24-alpine \
-  bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/docs/' --outputPDFFilename='output/docs.pdf'"
+  bash -c "docs-to-pdf --initialDocURLs='https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1' --outputPDFFilename='output/docs.pdf'"
 ```
 
 ### Available Image Tags

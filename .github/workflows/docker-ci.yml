@@ -60,7 +60,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/docker/output:/docs-to-pdf/output \
             docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
-            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/fr/docs/2.x' --contentSelector='article' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v2.pdf'"
+            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1' --contentSelector='article' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v2.pdf'"
 
       - name: Test Docusaurus v3
         if: matrix.docusaurus-version == 'v3'
