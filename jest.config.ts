@@ -16,6 +16,9 @@ export default {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
 
+  // Limit worker memory for Node 24 compatibility
+  workerIdleMemoryLimit: '512MB',
+
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
 
@@ -140,10 +143,12 @@ export default {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  // testEnvironment: 'node',
+  testEnvironment: 'node',
 
   // Options that will be passed to the testEnvironment
-  // testEnvironmentOptions: {},
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons'],
+  },
 
   // Adds a location field to test results
   // testLocationInResults: false,
@@ -170,7 +175,14 @@ export default {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        diagnostics: {
+          ignoreCodes: ['TS151002'],
+        },
+      },
+    ],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
