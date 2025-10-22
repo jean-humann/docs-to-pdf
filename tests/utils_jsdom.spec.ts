@@ -75,11 +75,19 @@ describe('concatHtml', () => {
   const cover = '<div class="cover">Cover</div>';
   const toc = '<ul><li>TOC</li></ul>';
   const content = '<div class="content">Content</div>';
-  const disable = false;
+  const disableTOC = false;
+  const disableCover = false;
 
   it('should concatenate the HTML elements correctly', () => {
     const baseUrl = 'http://example.com/';
-    const result = concatHtml(cover, toc, content, disable, baseUrl);
+    const result = concatHtml(
+      cover,
+      toc,
+      content,
+      disableTOC,
+      disableCover,
+      baseUrl,
+    );
 
     expect(result).toBe(
       `<base href="http://example.com/"><div class="cover">Cover</div><ul><li>TOC</li></ul><div class="content">Content</div>`,
@@ -88,10 +96,35 @@ describe('concatHtml', () => {
 
   it('should not add base when no baseUrl given', () => {
     const baseUrl = '';
-    const result = concatHtml(cover, toc, content, disable, baseUrl);
+    const result = concatHtml(
+      cover,
+      toc,
+      content,
+      disableTOC,
+      disableCover,
+      baseUrl,
+    );
 
     expect(result).toBe(
       `<div class="cover">Cover</div><ul><li>TOC</li></ul><div class="content">Content</div>`,
+    );
+  });
+
+  it('should not add toc when disableTOC given', () => {
+    const baseUrl = '';
+    const result = concatHtml(cover, toc, content, true, disableCover, baseUrl);
+
+    expect(result).toBe(
+      `<div class="cover">Cover</div><div class="content">Content</div>`,
+    );
+  });
+
+  it('should not add cover when disableCover given', () => {
+    const baseUrl = '';
+    const result = concatHtml(cover, toc, content, disableTOC, true, baseUrl);
+
+    expect(result).toBe(
+      `<ul><li>TOC</li></ul><div class="content">Content</div>`,
     );
   });
 });

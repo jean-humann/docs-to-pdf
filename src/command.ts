@@ -129,8 +129,10 @@ export function makeProgram() {
         '--coverImage <src>',
         'image for PDF cover. *.svg file not working!',
       )
-      .option('--disableTOC', 'disable table of contents')
       .option('--coverSub <subtitle>', 'subtitle for PDF cover')
+      .option('--tocTitle <title>', 'title for table of contents')
+      .option('--disableCover', 'disable PDF cover')
+      .option('--disableTOC', 'disable table of contents')
       .option(
         '--waitForRender <timeout>',
         'wait for document render in milliseconds',

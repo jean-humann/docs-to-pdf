@@ -151,14 +151,16 @@ export function getUrlFromSelector(selector: string): string {
  * @param cover - The HTML content of the cover.
  * @param toc - The HTML content of the table of contents.
  * @param content - The HTML content of the main content.
- * @param disable - A boolean indicating whether to disable the table of contents.
+ * @param disableTOC - A boolean indicating whether to disable the table of contents.
+ * @param disableCover - A boolean indicating whether to disable the cover.
  * @returns The concatenated HTML content.
  */
 export function concatHtml(
   cover: string,
   toc: string,
   content: string,
-  disable: boolean,
+  disableTOC: boolean,
+  disableCover: boolean,
   baseUrl: string,
 ) {
   // Clear the body content
@@ -171,11 +173,13 @@ export function concatHtml(
     body.innerHTML += `<base href="${baseUrl}" />`;
   }
 
-  // Add the cover HTML to the body
-  body.innerHTML += cover;
+  // Add the cover HTML to the body if not disabled
+  if (!disableCover) {
+    body.innerHTML += cover;
+  }
 
   // Add the table of contents HTML to the body if not disabled
-  if (!disable) {
+  if (!disableTOC) {
     body.innerHTML += toc;
   }
 
@@ -261,10 +265,16 @@ export function generateCoverHtml(
 /**
  * Generates a table of contents (TOC) HTML and modifies the content HTML by replacing header tags with updated header IDs.
  * @param contentHtml - The content HTML string.
- * @param maxLevel - The maximum header level to include in the TOC. Defaults to 3.
+ * @param options - Optional configuration object with maxLevel and tocTitle properties.
  * @returns An object containing the modified content HTML and the TOC HTML.
  */
-export function generateToc(contentHtml: string, maxLevel = 4) {
+export function generateToc(
+  contentHtml: string,
+  options?: { maxLevel?: number; tocTitle?: string },
+) {
+  const maxLevel = options?.maxLevel ?? 4;
+  const tocTitle = options?.tocTitle;
+
   const headers: Array<{
     header: string;
     level: number;
@@ -289,7 +299,7 @@ export function generateToc(contentHtml: string, maxLevel = 4) {
     return replaceHeader(matchedStr, headerId, maxLevel);
   }
 
-  const tocHTML = generateTocHtml(headers);
+  const tocHTML = generateTocHtml(headers, tocTitle);
 
   return { modifiedContentHTML, tocHTML };
 }
@@ -303,9 +313,11 @@ interface HeaderItem {
 /**
  * Generates the HTML code for a table of contents based on the provided headers.
  * @param headers - An array of header objects containing level, id, and header properties.
+ * @param tocTitle - Optional title for the table of contents. If not provided, defaults to 'Table of contents:'.
  * @returns The HTML code for the table of contents.
  */
-export function generateTocHtml(headers: HeaderItem[]) {
+export function generateTocHtml(headers: HeaderItem[], tocTitle?: string) {
+  const title = tocTitle ?? 'Table of contents:';
   // Map the headers array to create a list item for each header with the appropriate indentation
   const toc = headers
     .map(
@@ -318,7 +330,7 @@ export function generateTocHtml(headers: HeaderItem[]) {
   // Return the HTML code for the table of contents
   return `
   <div class="toc-page" style="page-break-after: always;">
-    <h1 class="toc-header">Table of contents:</h1>
+    ${title ? `<h1 class="toc-header">${title}</h1>` : ''}
     ${toc}
   </div>
   `;

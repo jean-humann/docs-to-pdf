@@ -32,6 +32,8 @@ export interface GeneratePDFOptions {
   coverTitle: string;
   coverImage: string;
   disableTOC: boolean;
+  tocTitle: string;
+  disableCover: boolean;
   coverSub: string;
   waitForRender: number;
   headerTemplate: string;
@@ -59,6 +61,8 @@ export async function generatePDF({
   coverTitle,
   coverImage,
   disableTOC,
+  tocTitle,
+  disableCover,
   coverSub,
   waitForRender,
   headerTemplate,
@@ -169,7 +173,9 @@ export async function generatePDF({
   );
 
   // Generate Toc
-  const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML);
+  const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML, {
+    tocTitle,
+  });
 
   // Restructuring the HTML of a document
   console.log(chalk.cyan('Restructuring the html of a document...'));
@@ -183,6 +189,7 @@ export async function generatePDF({
     tocHTML,
     modifiedContentHTML,
     disableTOC,
+    disableCover,
     baseUrl,
   );
 
