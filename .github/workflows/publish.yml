@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+        uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
@@ -37,7 +37,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install dependencies
         run: yarn
       - name: Build packages
@@ -60,7 +60,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},suffix=-node${{ matrix.node-version }}-${{ matrix.os }}
             type=raw,value=latest-node${{ matrix.node-version }}-${{ matrix.os }}
       - name: Publish Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./docker/${{ matrix.os }}
           push: true
