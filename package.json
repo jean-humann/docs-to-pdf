@@ -1,6 +1,6 @@
 {
   "name": "docs-to-pdf",
-  "version": "0.6.2",
+  "version": "1.0.0",
   "description": "Generate PDF from Docusaurus",
   "main": "lib/cli.js",
   "scripts": {

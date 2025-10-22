@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.2...v1.0.0) (2025-10-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* Minimum Node.js version is now 20.0.0 (previously 18.0.0). Projects using Node.js 18 or 19 must upgrade to continue using this package.
+
+### Features
+
+* add docusaurus command ([#212](https://github.com/jean-humann/docs-to-pdf/issues/212)) ([7b015c5](https://github.com/jean-humann/docs-to-pdf/commit/7b015c54be25705cabf5cb1d1b665bd66c151d94))
+* **auth:** add HTTP Basic Authentication support ([3d689fd](https://github.com/jean-humann/docs-to-pdf/commit/3d689fdd7e0bf99793b32164196d6a299877bee8))
+* modernize tooling and add comprehensive Docker testing ([#487](https://github.com/jean-humann/docs-to-pdf/issues/487)) ([64929a3](https://github.com/jean-humann/docs-to-pdf/commit/64929a38b50ac4e684b95aec7f9bbf1b9958ef71))
+
 ## [0.6.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.1...v0.6.2) (2023-08-22)
 
 ### Bug Fixes
