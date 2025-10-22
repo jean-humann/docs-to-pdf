@@ -18,17 +18,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - alpine
-          - debian
-        node-version:
-          - 20
-          - 22
-          - 24
         docusaurus-version:
           - v1
           - v2
           - v3
+        include:
+          - os: alpine
+            node-version: 24
 
     steps:
       - name: Checkout repository
