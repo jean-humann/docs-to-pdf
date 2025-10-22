@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/jean-humann/docs-to-pdf/compare/v2.1.0...v2.1.1) (2025-10-22)
+
+
+### Bug Fixes
+
+* **ci:** configure release-please to use PAT for triggering publish workflow ([ef88fbe](https://github.com/jean-humann/docs-to-pdf/commit/ef88fbe93f8187399ab22d21b5297b07185baae4))
+
 ## [2.1.0](https://github.com/jean-humann/docs-to-pdf/compare/v2.0.0...v2.1.0) (2025-10-22)
 
 
