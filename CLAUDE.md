@@ -155,7 +155,9 @@ BREAKING CHANGE: Dropped support for Node.js 18. Users must upgrade to Node.js 2
 
 ### Automated via release-please
 
-1. Commits merged to `master` → release-please analyzes them
+This project uses [release-please-action](https://github.com/googleapis/release-please-action) (GitHub Action) to automate releases.
+
+1. Commits merged to `master` → release-please GitHub Action analyzes them
 2. release-please creates/updates a Release PR
 3. When Release PR is merged → automated release happens:
    - CHANGELOG.md updated

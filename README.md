@@ -221,6 +221,6 @@ Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.m
 - Running tests and linting
 - Docker development and E2E testing
 - Commit message conventions (Conventional Commits)
-- Release process (automated via release-please)
+- Release process (automated via release-please-action)
 
 For AI assistants working on this project, see [CLAUDE.md](./CLAUDE.md) for specific guidelines.

@@ -102,7 +102,7 @@ Before submitting a PR, ensure:
 
 ## Commit Messages
 
-This project uses [release-please](https://github.com/googleapis/release-please) to automate releases and changelog generation.
+This project uses [release-please-action](https://github.com/googleapis/release-please-action) to automate releases and changelog generation.
 
 ### Commit Message Format
 
@@ -153,9 +153,9 @@ BREAKING CHANGE: Dropped support for Node.js 18
 
 **Do NOT manually update the CHANGELOG.md file.**
 
-The release process is automated using release-please:
+The release process is automated using release-please-action (GitHub Action):
 
-1. When commits are merged to `master`, release-please analyzes commit messages
+1. When commits are merged to `master`, release-please-action analyzes commit messages
 2. It automatically creates or updates a release PR
 3. When the release PR is merged, it:
    - Updates the CHANGELOG.md

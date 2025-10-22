@@ -1,0 +1,20 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # This should be a manifest file or a single package
+          # Since this is a single package repo, we'll use manifest: false
+          release-type: node
