@@ -197,7 +197,6 @@ function buildPdfObjectsForOutline(
   for (const [i, item] of outlinesWithRef.entries()) {
     const prev = outlinesWithRef[i - 1];
     const next = outlinesWithRef[i + 1];
-    console.debug(item)
     const pdfObject: DictMap = new Map([]);
     pdfObject.set(
       PDFName.of('Title'),
