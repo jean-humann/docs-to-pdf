@@ -9,6 +9,8 @@ updates:
       prefix-development: chore
       include: scope
     open-pull-requests-limit: 15
+    exclude-paths:
+      - 'tests/website/**'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
@@ -17,12 +19,8 @@ updates:
       prefix: ci
       include: scope
     open-pull-requests-limit: 10
-    ignore:
-      # Ignore updates for actions/checkout in Claude workflow files
-      # Note: Dependabot doesn't support per-file ignores, so this ignores all
-      # actions/checkout updates. Claude workflows should be updated manually.
-      - dependency-name: 'actions/checkout'
-        update-types: ['version-update:semver-major']
+    exclude-paths:
+      - '.github/workflows/claude*.yml'
   - package-ecosystem: docker
     directory: '/docker/'
     schedule:
