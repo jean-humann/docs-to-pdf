@@ -1,44 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
-### Features
-
-* **docusaurus:** add support for Docusaurus v3
-* **docusaurus:** add dynamic port selection with automatic retry when port 3000 is occupied
-* **docusaurus:** improve server lifecycle management with proper cleanup
-* **node:** upgrade to Node.js 20, 22, and 24 support (drop Node 18/19)
-* **deps:** update all dependencies to latest compatible versions
-
-### Bug Fixes
-
-* **docusaurus:** fix critical server lifecycle bug in stopDocusaurusServer that was creating new servers instead of stopping existing ones
-* **docusaurus:** add try-finally block to ensure server cleanup even when PDF generation fails
-* **docusaurus:** improve error messages for unsupported Docusaurus versions
-* **puppeteer:** update headless mode to use boolean instead of deprecated 'new' string value
-
-### BREAKING CHANGES
-
-* **node:** minimum Node.js version is now 20.0.0 (previously 18.0.0)
-* **eslint:** migrated to ESLint 9 flat config format (eslint.config.mjs)
-
-### Dependencies Updated
-
-* puppeteer: 21.0.2 → 24.0.0
-* puppeteer-core: 21.0.2 → 24.0.0
-* express: 4.18.2 → 4.21.2
-* commander: 11.0.0 → 12.1.0
-* typescript: 5.0.0 → 5.7.2
-* eslint: 8.33.0 → 9.17.0
-* @typescript-eslint/eslint-plugin: 5.49.0 → 8.18.2
-* @typescript-eslint/parser: 5.49.0 → 8.18.2
-* @commitlint/cli: 18.4.4 → 19.6.1
-* @commitlint/config-conventional: 18.4.3 → 19.6.0
-* husky: 8.0.3 → 9.1.7
-* supertest: 6.3.3 → 7.0.0
-* @types/node: 20.4.4 → 22.10.2
-* And many more dev dependencies updated to latest versions
-
 ## [0.6.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.1...v0.6.2) (2023-08-22)
 
 

@@ -97,7 +97,6 @@ async function findAvailablePort(
       return port;
     } catch {
       // Port is in use, try next one
-      continue;
     }
   }
   throw new Error(
