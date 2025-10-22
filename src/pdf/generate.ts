@@ -61,7 +61,7 @@ export class PDF {
       throw new Error(err);
     });
     const pdfDoc = await PDFDocument.load(pdf);
-    setOutline(pdfDoc, outline, true);
+    await setOutline(pdfDoc, outline, true);
     const buffer = await pdfDoc.save();
     writeFileSync(this.options.outputPDFFilename ?? 'output.pdf', buffer);
     console.log(
