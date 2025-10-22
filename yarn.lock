@@ -2778,7 +2778,7 @@ __metadata:
     lint-staged: "npm:^15.2.11"
     prettier: "npm:^3.4.2"
     puppeteer: "npm:^24.0.0"
-    puppeteer-autoscroll-down: "npm:^1.1.2"
+    puppeteer-autoscroll-down: "npm:^2.0.0"
     puppeteer-core: "npm:^24.0.0"
     sanitize-html: "npm:^2.17.0"
     supertest: "npm:^7.0.0"
@@ -5986,10 +5986,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-autoscroll-down@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "puppeteer-autoscroll-down@npm:1.1.2"
-  checksum: 10c0/dd1142dbdcebea7a04f6aa5b33178a9bdfc6f5dc6484f40d94fdd9246ffabb3bf323be6d0b2cdd1254749e549d6fd56fa99aa00fa5a75071a4c1a2546899095b
+"puppeteer-autoscroll-down@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "puppeteer-autoscroll-down@npm:2.0.1"
+  checksum: 10c0/6b2499d8826cab7001c2ccc9d1fabf495d3d7a72551f5e96ac141fb8c24fa8216eada83251c9c46b704ef121fa5ad73ceae8ad42678259d440cdc7fc73c7727c
   languageName: node
   linkType: hard
 

@@ -31,7 +31,7 @@
     "express": "^4.21.2",
     "fs-extra": "^11.2.0",
     "puppeteer": "^24.0.0",
-    "puppeteer-autoscroll-down": "^1.1.2",
+    "puppeteer-autoscroll-down": "^2.0.0",
     "puppeteer-core": "^24.0.0",
     "sanitize-html": "^2.17.0"
   },
