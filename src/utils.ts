@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
+import sanitizeHtml from 'sanitize-html';
 
 console_stamp(console);
 
@@ -331,10 +332,11 @@ export function generateTocHtml(headers: HeaderItem[]) {
  */
 export function generateHeader(headers: HeaderItem[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
-  // Extract text content by removing all HTML tags
-  const headerText = matchedStr
-    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-    .trim();
+  // Extract text content by removing all HTML tags using sanitize-html to avoid ReDoS
+  const headerText = sanitizeHtml(matchedStr, {
+    allowedTags: [],
+    allowedAttributes: {},
+  }).trim();
 
   // Generate a random header ID using a combination of random characters and the headers array length
   const headerId = `${Math.random().toString(36).slice(2, 5)}-${
