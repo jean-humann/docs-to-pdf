@@ -9,6 +9,21 @@ if [ -z "$1" ]; then
 else
   OS=$1
 fi
-yarn pack 
+yarn pack
+
+# Find the created tarball
+# Yarn 1 (classic) creates: docs-to-pdf-v0.6.2.tgz
+# Yarn 4+ (modern) creates: package.tgz
+if [ -f "package.tgz" ]; then
+  TARBALL="package.tgz"
+else
+  TARBALL=$(ls docs-to-pdf-v*.tgz 2>/dev/null | head -n 1)
+fi
+
+if [ -z "$TARBALL" ]; then
+  echo "Error: Could not find tarball created by yarn pack"
+  exit 1
+fi
+
 rm -f "docker/${OS}/docs-to-pdf-latest.tgz"
-mv docs-to-pdf-v[0-9]*.tgz "docker/${OS}/docs-to-pdf-latest.tgz"
+mv "$TARBALL" "docker/${OS}/docs-to-pdf-latest.tgz"

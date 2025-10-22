@@ -1,14 +1,13 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
-import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
+import { delay } from './utils';
 
 console_stamp(console);
 
-let contentHTML = '';
 export interface GeneratePDFOptions {
   initialDocURLs: Array<string>;
   excludeURLs: Array<string>;
@@ -25,6 +24,8 @@ export interface GeneratePDFOptions {
   coverTitle: string;
   coverImage: string;
   disableTOC: boolean;
+  tocTitle: string;
+  disableCover: boolean;
   coverSub: string;
   waitForRender: number;
   headerTemplate: string;
@@ -52,6 +53,8 @@ export async function generatePDF({
   coverTitle,
   coverImage,
   disableTOC,
+  tocTitle,
+  disableCover,
   coverSub,
   waitForRender,
   headerTemplate,
@@ -66,7 +69,7 @@ export async function generatePDF({
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
-    headless: 'new',
+    headless: true,
     executablePath: execPath,
     args: puppeteerArgs,
     protocolTimeout: protocolTimeout,
@@ -78,134 +81,180 @@ export async function generatePDF({
     ?.split('=')[1] as string;
   console.debug(chalk.cyan(`Chrome user data dir: ${chromeTmpDataDir}`));
 
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  // Block PDFs as puppeteer can not access them
-  await page.setRequestInterception(true);
-  page.on('request', (request) => {
-    if (request.url().endsWith('.pdf')) {
-      console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
-      request.abort();
-    } else request.continue();
-  });
-
-  console.debug(`InitialDocURLs: ${initialDocURLs}`);
-  for (const url of initialDocURLs) {
-    let nextPageURL = url;
-    const urlPath = new URL(url).pathname;
-
-    // Create a list of HTML for the content section of all pages by looping
-    while (nextPageURL) {
-      console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
-
-      // Go to the page specified by nextPageURL
-      await page.goto(`${nextPageURL}`, {
-        waitUntil: 'networkidle0',
-        timeout: 0,
-      });
-      if (waitForRender) {
-        console.log(chalk.green('Waiting for render...'));
-        await new Promise((r) => setTimeout(r, waitForRender));
+    // Block PDFs as puppeteer can not access them
+    await page.setRequestInterception(true);
+    // Track handled requests to prevent race conditions
+    const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
+    page.on('request', (request) => {
+      // Skip if request already handled
+      if (handledRequests.has(request)) {
+        return;
       }
+      handledRequests.add(request);
 
-      if (
-        await utils.isPageKept(
-          page,
-          nextPageURL,
-          urlPath,
-          excludeURLs,
-          filterKeyword,
-          excludePaths,
-          restrictPaths,
-        )
-      ) {
-        // Open all <details> elements on the page
-        if (openDetail) {
-          await utils.openDetails(page);
+      if (request.url().endsWith('.pdf')) {
+        console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
+        request.abort().catch((err) => {
+          // Ignore abort errors - request may already be handled
+          console.debug(
+            `Request abort error (usually safe to ignore): ${err.message}`,
+          );
+        });
+      } else {
+        request.continue().catch((err) => {
+          // Ignore continue errors - request may already be handled
+          console.debug(
+            `Request continue error (usually safe to ignore): ${err.message}`,
+          );
+        });
+      }
+    });
+
+    console.debug(`InitialDocURLs: ${initialDocURLs}`);
+
+    // Local variable to accumulate HTML content from all pages
+    let contentHTML = '';
+    // Track visited URLs across all initial URLs to prevent infinite loops
+    // from circular pagination, including cross-references between different initial URLs
+    const visitedURLs = new Set<string>();
+
+    for (const url of initialDocURLs) {
+      let nextPageURL = url;
+      const urlPath = new URL(url).pathname;
+
+      // Create a list of HTML for the content section of all pages by looping
+      while (nextPageURL) {
+        // Check if we've already visited this URL to prevent infinite loops
+        if (visitedURLs.has(nextPageURL)) {
+          console.log(
+            chalk.yellow(
+              `Skipping already visited URL (circular pagination detected): ${nextPageURL}`,
+            ),
+          );
+          break;
         }
-        // Get the HTML string of the content section.
-        contentHTML += await utils.getHtmlContent(page, contentSelector);
-        console.log(chalk.green('Success'));
-      }
+        visitedURLs.add(nextPageURL);
 
-      // Find next page url before DOM operations
-      nextPageURL = await utils.findNextUrl(page, paginationSelector);
+        console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
+
+        // Go to the page specified by nextPageURL
+        await page.goto(`${nextPageURL}`, {
+          waitUntil: 'networkidle0',
+          timeout: 0,
+        });
+        if (waitForRender) {
+          console.log(chalk.green('Waiting for render...'));
+          await delay(waitForRender);
+        }
+
+        if (
+          await utils.isPageKept(
+            page,
+            nextPageURL,
+            urlPath,
+            excludeURLs,
+            filterKeyword,
+            excludePaths,
+            restrictPaths,
+          )
+        ) {
+          // Open all <details> elements on the page
+          if (openDetail) {
+            await utils.openDetails(page);
+          }
+          // Get the HTML string of the content section.
+          contentHTML += await utils.getHtmlContent(page, contentSelector);
+          console.log(chalk.green('Success'));
+        }
+
+        // Find next page url before DOM operations
+        nextPageURL = await utils.findNextUrl(page, paginationSelector);
+      }
+    }
+
+    console.log(chalk.cyan('Start generating PDF...'));
+
+    // Generate cover Image if declared
+    let coverImageHtml = '';
+    if (coverImage) {
+      console.log(chalk.cyan('Get coverImage...'));
+      const image = await utils.getCoverImage(page, coverImage);
+      coverImageHtml = utils.generateImageHtml(image.base64, image.type);
+    }
+
+    // Generate Cover
+    console.log(chalk.cyan('Generate cover...'));
+    const coverHTML = utils.generateCoverHtml(
+      coverTitle,
+      coverImageHtml,
+      coverSub,
+    );
+
+    // Generate Toc
+    const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML, {
+      tocTitle,
+    });
+
+    // Restructuring the HTML of a document
+    console.log(chalk.cyan('Restructuring the html of a document...'));
+
+    // Go to initial page
+    await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
+
+    await page.evaluate(
+      utils.concatHtml,
+      coverHTML,
+      tocHTML,
+      modifiedContentHTML,
+      disableTOC,
+      disableCover,
+      baseUrl,
+    );
+
+    // Remove unnecessary HTML by using excludeSelectors
+    if (excludeSelectors) {
+      console.log(chalk.cyan('Remove unnecessary HTML...'));
+      await utils.removeExcludeSelector(page, excludeSelectors);
+    }
+
+    // Add CSS to HTML
+    if (cssStyle) {
+      console.log(chalk.cyan('Add CSS to HTML...'));
+      await page.addStyleTag({ content: cssStyle });
+    }
+
+    // Scroll to the bottom of the page with puppeteer-autoscroll-down
+    // This forces lazy-loading images to load
+    console.log(chalk.cyan('Scroll to the bottom of the page...'));
+    const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
+    await scrollPageToBottom(page, {}); //cast to puppeteer-core type
+
+    // Generate PDF
+    console.log(chalk.cyan('Generate PDF...'));
+    await page.pdf({
+      path: outputPDFFilename,
+      format: paperFormat,
+      printBackground: true,
+      margin: pdfMargin,
+      displayHeaderFooter: !!(headerTemplate || footerTemplate),
+      headerTemplate,
+      footerTemplate,
+      timeout: 0,
+    });
+
+    console.log(chalk.green(`PDF generated at ${outputPDFFilename}`));
+  } finally {
+    // Always close browser and cleanup temp directory, even if PDF generation fails
+    await browser.close();
+    console.log(chalk.green('Browser closed'));
+
+    if (chromeTmpDataDir) {
+      fs.removeSync(chromeTmpDataDir);
+      console.debug(chalk.cyan('Chrome user data dir removed'));
     }
   }
-
-  console.log(chalk.cyan('Start generating PDF...'));
-
-  // Generate cover Image if declared
-  let coverImageHtml = '';
-  if (coverImage) {
-    console.log(chalk.cyan('Get coverImage...'));
-    const image = await utils.getCoverImage(page, coverImage);
-    coverImageHtml = utils.generateImageHtml(image.base64, image.type);
-  }
-
-  // Generate Cover
-  console.log(chalk.cyan('Generate cover...'));
-  const coverHTML = utils.generateCoverHtml(
-    coverTitle,
-    coverImageHtml,
-    coverSub,
-  );
-
-  // Generate Toc
-  const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML);
-
-  // Restructuring the HTML of a document
-  console.log(chalk.cyan('Restructuring the html of a document...'));
-
-  // Go to initial page
-  await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
-
-  await page.evaluate(
-    utils.concatHtml,
-    coverHTML,
-    tocHTML,
-    modifiedContentHTML,
-    disableTOC,
-    baseUrl,
-  );
-
-  // Remove unnecessary HTML by using excludeSelectors
-  if (excludeSelectors) {
-    console.log(chalk.cyan('Remove unnecessary HTML...'));
-    await utils.removeExcludeSelector(page, excludeSelectors);
-  }
-
-  // Add CSS to HTML
-  if (cssStyle) {
-    console.log(chalk.cyan('Add CSS to HTML...'));
-    await page.addStyleTag({ content: cssStyle });
-  }
-
-  // Scroll to the bottom of the page with puppeteer-autoscroll-down
-  // This forces lazy-loading images to load
-  console.log(chalk.cyan('Scroll to the bottom of the page...'));
-  await scrollPageToBottom(page, {}); //cast to puppeteer-core type
-
-  // Generate PDF
-  console.log(chalk.cyan('Generate PDF...'));
-  await page.pdf({
-    path: outputPDFFilename,
-    format: paperFormat,
-    printBackground: true,
-    margin: pdfMargin,
-    displayHeaderFooter: !!(headerTemplate || footerTemplate),
-    headerTemplate,
-    footerTemplate,
-    timeout: 0,
-  });
-
-  console.log(chalk.green(`PDF generated at ${outputPDFFilename}`));
-  await browser.close();
-  console.log(chalk.green('Browser closed'));
-
-  if (chromeTmpDataDir !== null) {
-    fs.removeSync(chromeTmpDataDir);
-  }
-  console.debug(chalk.cyan('Chrome user data dir removed'));
 }
 /* c8 ignore stop */

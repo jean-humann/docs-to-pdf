@@ -9,8 +9,8 @@ updates:
       prefix-development: chore
       include: scope
     open-pull-requests-limit: 15
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
       interval: daily
     commit-message:
