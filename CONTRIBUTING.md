@@ -12,6 +12,7 @@ Thank you for your interest in contributing to docs-to-pdf! This document provid
 ### Initial Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jean-humann/docs-to-pdf.git
    cd docs-to-pdf
@@ -20,6 +21,7 @@ Thank you for your interest in contributing to docs-to-pdf! This document provid
 2. **Install dependencies using mise (recommended)**
 
    If you have mise installed, it will automatically install the correct Node.js version:
+
    ```bash
    mise install
    ```
@@ -27,6 +29,7 @@ Thank you for your interest in contributing to docs-to-pdf! This document provid
    The `.mise.toml` file in the project root configures the required Node.js version.
 
 3. **Install dependencies**
+
    ```bash
    yarn install
    ```

@@ -27,12 +27,14 @@ node --version  # Should match version in mise.toml
 ```
 
 The `mise.toml` file in the project root defines:
+
 - Required Node.js version
 - Any other development tool versions
 
 ### Manual Setup
 
 If not using mise:
+
 ```bash
 # Ensure Node.js >= 20.0.0 is installed
 yarn install
@@ -44,33 +46,42 @@ yarn build
 Before committing ANY changes, you MUST:
 
 ### 1. Run Tests
+
 ```bash
 yarn test
 ```
+
 **Result**: All tests must pass. If any test fails, fix the issue before committing.
 
 ### 2. Run Linter
+
 ```bash
 yarn lint
 ```
+
 **Result**: No linting errors. Fix any issues with:
+
 ```bash
 yarn lint:fix
 ```
 
 ### 3. Build TypeScript
+
 ```bash
 yarn build
 ```
+
 **Result**: TypeScript must compile without errors. The `lib/` directory will be generated.
 
 ### 4. Docker Tests (if modifying Docker files)
 
 If you modified any Docker-related files:
+
 ```bash
 cd docker
 ./test-quick.sh
 ```
+
 **Result**: At least the quick tests should pass.
 
 ## Commit Message Requirements
@@ -78,12 +89,14 @@ cd docker
 ### DO NOT Update CHANGELOG.md Manually
 
 This project uses [release-please](https://github.com/googleapis/release-please) to:
+
 - Automatically generate CHANGELOG.md
 - Bump version numbers
 - Create releases
 - Trigger npm/Docker publishing
 
 **NEVER** manually edit:
+
 - `CHANGELOG.md`
 - Version numbers in `package.json` (unless explicitly required for a specific reason)
 
@@ -155,11 +168,11 @@ BREAKING CHANGE: Dropped support for Node.js 18. Users must upgrade to Node.js 2
 
 release-please determines version based on commits since last release:
 
-| Commit Type | Version Bump | Example |
-|-------------|--------------|---------|
-| `fix:` | Patch | 1.0.0 → 1.0.1 |
-| `feat:` | Minor | 1.0.0 → 1.1.0 |
-| Breaking change | Major | 1.0.0 → 2.0.0 |
+| Commit Type     | Version Bump | Example       |
+| --------------- | ------------ | ------------- |
+| `fix:`          | Patch        | 1.0.0 → 1.0.1 |
+| `feat:`         | Minor        | 1.0.0 → 1.1.0 |
+| Breaking change | Major        | 1.0.0 → 2.0.0 |
 
 ## Code Quality Standards
 

@@ -5,15 +5,18 @@ This directory contains Docker configurations and E2E tests for docs-to-pdf acro
 ## Supported Configurations
 
 ### Operating Systems
+
 - **Alpine**: Lightweight Linux distribution
 - **Debian**: Full-featured Debian-based distribution (Ubuntu)
 
 ### Node.js Versions
+
 - Node 20
 - Node 22
 - Node 24
 
 ### Docusaurus Versions Tested
+
 - **Docusaurus v1**: https://v1.docusaurus.io/docs/en/installation
 - **Docusaurus v2**: https://docusaurus-archive-october-2023.netlify.app/docs/2.3.1
 - **Docusaurus v3**: https://docusaurus.io/fr/docs
@@ -39,6 +42,7 @@ cd docker
 ```
 
 This will:
+
 1. Build the docs-to-pdf package
 2. Pack it for both Alpine and Debian
 3. Build Docker images for all combinations
@@ -119,6 +123,7 @@ docker build --build-arg NODE_VERSION=22 -t docs-to-pdf:node22-debian ./debian
 ## Output
 
 Generated PDFs are saved to `docker/output/` with naming convention:
+
 - `v1-alpine-node20.pdf`
 - `v2-debian-node22.pdf`
 - `v3-alpine-node24.pdf`
@@ -149,6 +154,7 @@ docker run --memory=2g --rm -v $(pwd)/output:/docs-to-pdf/output ...
 ### Large Documentation Sites
 
 When generating PDFs from large documentation sites (like Docusaurus v2/v3 full docs), the process may take considerable time (10-30+ minutes) as it:
+
 1. Crawls and processes hundreds of pages
 2. Clicks to expand all `<details>` elements
 3. Scrolls through very long composite pages
