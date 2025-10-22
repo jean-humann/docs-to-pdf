@@ -76,6 +76,32 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 | `--version`            | No       | Docusaurus version. Default is 2. Supported versions: 1, 2, and 3.                                                                                                                |
 | `--builDir`            | No       | Path to Docusaurus build dir. Either absolute or relative from path of the shell. The local server will automatically find an available port if 3000 is occupied.                |
 
+## 📚 Docusaurus Version Support
+
+docs-to-pdf supports **Docusaurus v1 (legacy), v2, and v3**. The tool automatically applies the correct selectors based on the version you specify.
+
+### Version Differences
+
+- **Docusaurus v1 (Legacy)**: Older documentation format with different HTML structure and navigation
+- **Docusaurus v2 & v3**: Both versions use the same HTML structure and selectors, so they work identically with docs-to-pdf
+
+### Usage
+
+When using the `docusaurus` command, specify the version with the `--version` flag:
+
+```shell
+# Docusaurus v1
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --version=1
+
+# Docusaurus v2 (default)
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --version=2
+
+# Docusaurus v3
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --version=3
+```
+
+If you omit the `--version` flag, it defaults to version 2.
+
 ## 🎨 Examples and Demo PDF
 
 
@@ -101,6 +127,24 @@ OR
 ```shell
 npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://docusaurus.io/img/docusaurus.png" --coverTitle="Docusaurus v2"
 ```
+
+### Docusaurus v3
+
+Docusaurus v3 uses the same HTML structure as v2, so the selectors are identical. Here's an example:
+
+`command`:
+
+```shell
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --version=3
+```
+
+OR with explicit selectors:
+
+```shell
+npx docs-to-pdf --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://your-docusaurus-v3-site.com/img/logo.png" --coverTitle="Your Docs"
+```
+
+**Note**: Since Docusaurus v3 shares the same structure as v2, you can use the same selectors and configuration. The `--version=3` flag tells docs-to-pdf which preset to use, but the underlying behavior is the same as v2.
 
 ### Docusaurus v1 - Legacy
 
