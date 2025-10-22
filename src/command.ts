@@ -32,7 +32,11 @@ function handleCommandCompletion(promise: Promise<void>): void {
           console.error(chalk.red(err.stack));
         }
       } else {
-        console.error(chalk.red(`Error: ${String(err)}`));
+        console.error(
+          chalk.red(
+            `Error: ${typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err)}`,
+          ),
+        );
       }
       process.exit(1);
     });
@@ -55,7 +59,7 @@ export function makeProgram() {
     .option(
       '--version <version>',
       'version of Docusaurus site to generate PDF from',
-      (value) => parseInt(value, 10),
+      (value) => Number.parseInt(value, 10),
       2,
     )
     .addOption(

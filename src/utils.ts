@@ -76,6 +76,40 @@ type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
 type WaitFunction = (milliseconds: number) => Promise<void>;
 
 /**
+ * Helper function to click a summary element and wait
+ * @param summaryHandle - The summary element handle
+ * @param summaryText - The text content of the summary for logging
+ * @param clickFunction - Optional custom click function
+ * @param waitFunction - Optional custom wait function
+ */
+async function clickSummary(
+  summaryHandle: puppeteer.ElementHandle,
+  summaryText: string | null,
+  clickFunction?: ClickFunction,
+  waitFunction?: WaitFunction,
+): Promise<void> {
+  console.debug(`Clicking summary: ${summaryText}`);
+
+  try {
+    // Scroll element into view before clicking
+    await summaryHandle.evaluate((element) => {
+      element.scrollIntoView({ behavior: 'auto', block: 'center' });
+    });
+    await delay(200); // Small delay after scrolling
+
+    await (clickFunction
+      ? clickFunction(summaryHandle)
+      : summaryHandle.evaluate((sh) => (sh as HTMLElement).click()));
+    await (waitFunction ? waitFunction(800) : delay(800));
+  } catch (error) {
+    console.debug(
+      `Failed to click summary "${summaryText}": ${error instanceof Error ? error.message : String(error)}`,
+    );
+    // Continue with the next element instead of failing
+  }
+}
+
+/**
  * Recursively opens all <details> elements on a page.
  *
  * @param page - The Puppeteer page instance.
@@ -97,25 +131,12 @@ export async function openDetails(
       const summaryText = await summaryHandle.evaluate(
         (node) => node.textContent,
       );
-      console.debug(`Clicking summary: ${summaryText}`);
-
-      try {
-        // Scroll element into view before clicking
-        await summaryHandle.evaluate((element) => {
-          element.scrollIntoView({ behavior: 'auto', block: 'center' });
-        });
-        await delay(200); // Small delay after scrolling
-
-        await (clickFunction
-          ? clickFunction(summaryHandle)
-          : summaryHandle.evaluate((sh) => sh.click()));
-        await (waitFunction ? waitFunction(800) : delay(800));
-      } catch (error) {
-        console.debug(
-          `Failed to click summary "${summaryText}": ${error instanceof Error ? error.message : String(error)}`,
-        );
-        // Continue with the next element instead of failing
-      }
+      await clickSummary(
+        summaryHandle,
+        summaryText,
+        clickFunction,
+        waitFunction,
+      );
     }
   }
 }
@@ -316,8 +337,11 @@ interface HeaderItem {
  * @param tocTitle - Optional title for the table of contents. If not provided, defaults to 'Table of contents:'.
  * @returns The HTML code for the table of contents.
  */
-export function generateTocHtml(headers: HeaderItem[], tocTitle?: string) {
-  const title = tocTitle ?? 'Table of contents:';
+export function generateTocHtml(
+  headers: HeaderItem[],
+  tocTitle: string = 'Table of contents:',
+) {
+  const title = tocTitle;
   // Map the headers array to create a list item for each header with the appropriate indentation
   const toc = headers
     .map(
