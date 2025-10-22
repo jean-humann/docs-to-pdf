@@ -2,10 +2,17 @@ import { GeneratePDFOptions, generatePDF } from '../core';
 import express from 'express';
 import * as fs from 'fs';
 import path from 'path';
+import * as http from 'http';
 
 export interface DocusaurusOptions extends GeneratePDFOptions {
   version: number;
   docsDir: string;
+}
+
+export interface ServerInstance {
+  app: express.Express;
+  server: http.Server;
+  port: number;
 }
 
 export async function generateDocusaurusPDF(
@@ -17,17 +24,7 @@ export async function generateDocusaurusPDF(
   core.contentSelector = 'article';
 
   // Pagination and exclude selectors are different depending on Docusaurus version
-  if (version == 2) {
-    console.debug('Docusaurus version 2');
-    core.paginationSelector =
-      'a.pagination-nav__link.pagination-nav__link--next';
-    core.excludeSelectors = [
-      '.margin-vert--xl a',
-      "[class^='tocCollapsible']",
-      '.breadcrumbs',
-      '.theme-edit-this-page',
-    ];
-  } else if (version == 1) {
+  if (version == 1) {
     console.debug('Docusaurus version 1');
     core.paginationSelector = '.docs-prevnext > a.docs-next';
     core.excludeSelectors = [
@@ -41,9 +38,20 @@ export async function generateDocusaurusPDF(
     core.cssStyle = `
       .navPusher {padding-top: 0;}
       `;
+  } else if (version == 2 || version == 3) {
+    console.debug(`Docusaurus version ${version}`);
+    // Docusaurus v2 and v3 use the same selectors
+    core.paginationSelector =
+      'a.pagination-nav__link.pagination-nav__link--next';
+    core.excludeSelectors = [
+      '.margin-vert--xl a',
+      "[class^='tocCollapsible']",
+      '.breadcrumbs',
+      '.theme-edit-this-page',
+    ];
   } else {
     console.error(`Unsupported Docusaurus version: ${version}`);
-    throw new Error(`Unsupported Docusaurus version: ${version}`);
+    throw new Error(`Unsupported Docusaurus version: ${version}. Supported versions are 1, 2, and 3.`);
   }
   if (docsDir) {
     await generateFromBuild(docsDir, core);
@@ -53,43 +61,93 @@ export async function generateDocusaurusPDF(
 }
 
 /**
+ * Find an available port starting from the given port
+ * @param {number} startPort - port to start searching from
+ * @param {number} maxAttempts - maximum number of ports to try (default: 10)
+ * @returns {Promise<number>} - available port number
+ */
+async function findAvailablePort(
+  startPort = 3000,
+  maxAttempts = 10,
+): Promise<number> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const port = startPort + i;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const testServer = http.createServer();
+        testServer.once('error', reject);
+        testServer.once('listening', () => {
+          testServer.close(() => resolve());
+        });
+        testServer.listen(port, '127.0.0.1');
+      });
+      return port;
+    } catch (err) {
+      // Port is in use, try next one
+      continue;
+    }
+  }
+  throw new Error(
+    `Could not find available port after trying ${maxAttempts} ports starting from ${startPort}`,
+  );
+}
+
+/**
  * Start Docusaurus Server from build directory
  * @param {string} buildDir - Docusaurus build directory
- * @param {number} port - port to start server on (default: 3000)
- * @returns {Promise<express.Express>} - express server
+ * @param {number} port - port to start server on (default: 3000, will auto-increment if occupied)
+ * @returns {Promise<ServerInstance>} - server instance with app, server, and port
  */
 export async function startDocusaurusServer(
   buildDirPath: string,
   port = 3000,
-): Promise<express.Express> {
+): Promise<ServerInstance> {
   const app = express();
   const dirPath = path.resolve(buildDirPath);
   app.use(express.static(dirPath));
-  app.listen(port, () => {
-    console.log(`Docusaurus server listening at http://localhost:${port}`);
+
+  // Find available port
+  const availablePort = await findAvailablePort(port);
+
+  return new Promise((resolve, reject) => {
+    const server = app.listen(availablePort, '127.0.0.1', () => {
+      console.log(
+        `Docusaurus server listening at http://127.0.0.1:${availablePort}`,
+      );
+      resolve({ app, server, port: availablePort });
+    });
+
+    server.once('error', (err) => {
+      reject(
+        new Error(`Failed to start Docusaurus server: ${err.message}`),
+      );
+    });
   });
-  return app;
 }
 
 /**
  * Stop Docusaurus Server
- * @param {express.Express} app - express server
+ * @param {ServerInstance} serverInstance - server instance returned from startDocusaurusServer
  * @returns {Promise<void>}
- * @throws {Error} - if server is not running
- * @throws {Error} - if server is not an express server
+ * @throws {Error} - if server instance is invalid
  */
 export async function stopDocusaurusServer(
-  app: express.Express,
+  serverInstance: ServerInstance,
 ): Promise<void> {
-  if (!app) {
+  if (!serverInstance || !serverInstance.server) {
     throw new Error('No server to stop');
   }
-  try {
-    const httpServer = app.listen();
-    await httpServer.close(() => console.log('Docusaurus server stopped'));
-  } catch {
-    throw new Error('Server is not a docusaurus server');
-  }
+
+  return new Promise<void>((resolve, reject) => {
+    serverInstance.server.close((err) => {
+      if (err) {
+        reject(new Error(`Failed to stop server: ${err.message}`));
+      } else {
+        console.log('Docusaurus server stopped');
+        resolve();
+      }
+    });
+  });
 }
 
 /**
@@ -124,10 +182,21 @@ export async function generateFromBuild(
   options: GeneratePDFOptions,
 ): Promise<void> {
   await checkBuildDir(buildDirPath);
-  const app = await startDocusaurusServer(buildDirPath);
-  const urlPath = new URL(options.initialDocURLs[0]).pathname;
-  options.initialDocURLs = [`http://127.0.0.1:3000${urlPath}`];
-  await generatePDF(options);
-  console.log('Stopping server');
-  await stopDocusaurusServer(app);
+
+  const serverInstance = await startDocusaurusServer(buildDirPath);
+
+  try {
+    const urlPath = new URL(options.initialDocURLs[0]).pathname;
+    options.initialDocURLs = [`http://127.0.0.1:${serverInstance.port}${urlPath}`];
+    await generatePDF(options);
+  } finally {
+    // Always stop the server, even if PDF generation fails
+    console.log('Stopping server');
+    try {
+      await stopDocusaurusServer(serverInstance);
+    } catch (err) {
+      console.error('Failed to stop server:', err);
+      // Don't throw here, as we want to preserve the original error if PDF generation failed
+    }
+  }
 }

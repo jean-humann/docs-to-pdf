@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+* **docusaurus:** add support for Docusaurus v3
+* **docusaurus:** add dynamic port selection with automatic retry when port 3000 is occupied
+* **docusaurus:** improve server lifecycle management with proper cleanup
+
+### Bug Fixes
+
+* **docusaurus:** fix critical server lifecycle bug in stopDocusaurusServer that was creating new servers instead of stopping existing ones
+* **docusaurus:** add try-finally block to ensure server cleanup even when PDF generation fails
+* **docusaurus:** improve error messages for unsupported Docusaurus versions
+
 ## [0.6.2](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.1...v0.6.2) (2023-08-22)
 
 

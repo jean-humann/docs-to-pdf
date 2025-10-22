@@ -69,8 +69,8 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 
 | Option                 | Required | Description                                                                                                                                                                        |
 | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--version`            | No       | Docusaurus version. Default is 2.                                                                                                                                                  |
-| `--builDir`            | No       | Path to Docusaurus build dir. Either absolute or relative from path of the shell                                                                                                   |
+| `--version`            | No       | Docusaurus version. Default is 2. Supported versions: 1, 2, and 3.                                                                                                                |
+| `--builDir`            | No       | Path to Docusaurus build dir. Either absolute or relative from path of the shell. The local server will automatically find an available port if 3000 is occupied.                |
 
 ## 🎨 Examples and Demo PDF
 
