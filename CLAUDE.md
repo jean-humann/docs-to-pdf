@@ -171,7 +171,34 @@ Workflow:
    - npm package published (if configured)
    - Docker images published
 
-**Note:** The workflow uses the default `GITHUB_TOKEN`. If you need CI checks to run on Release Please PRs, configure a Personal Access Token secret and update `.github/workflows/release-please.yml` to use it.
+**Important:** The workflow is configured to use a Personal Access Token (`RELEASE_PLEASE_TOKEN`) to trigger downstream workflows like the Publish workflow. If this secret is not configured, it falls back to `GITHUB_TOKEN`, which **will not trigger** the `publish.yml` workflow due to GitHub's security restrictions.
+
+#### Setting up the Personal Access Token
+
+To enable automatic publishing when releases are created:
+
+1. **Create a Personal Access Token (Classic)**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Click "Generate new token (classic)"
+   - Give it a descriptive name (e.g., "release-please-workflow")
+   - Select scopes:
+     - `repo` (Full control of private repositories)
+     - `workflow` (Update GitHub Action workflows)
+   - Set an expiration date (recommended: 90 days or 1 year)
+   - Click "Generate token" and copy it immediately
+
+2. **Add the token as a repository secret**:
+   - Go to your repository → Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `RELEASE_PLEASE_TOKEN`
+   - Value: Paste your PAT
+   - Click "Add secret"
+
+3. **How it works**:
+   - When configured, release-please uses this PAT to create releases
+   - GitHub recognizes this as a user action (not a bot action)
+   - This triggers the `publish.yml` workflow which publishes to npm and Docker
+   - Without the PAT, releases are created but publishing doesn't happen automatically
 
 ### Version Bumping Logic
 

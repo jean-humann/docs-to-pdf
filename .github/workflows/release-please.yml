@@ -20,7 +20,11 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use PAT to trigger downstream workflows (like publish.yml)
+          # The PAT should have 'repo' and 'workflow' scopes
+          # If RELEASE_PLEASE_TOKEN is not set, falls back to GITHUB_TOKEN
+          # Note: Using GITHUB_TOKEN will NOT trigger the publish workflow
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           # Use manifest-based configuration for better control
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
