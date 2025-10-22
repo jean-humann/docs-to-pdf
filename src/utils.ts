@@ -108,7 +108,7 @@ export async function openDetails(
 
         await (clickFunction
           ? clickFunction(summaryHandle)
-          : summaryHandle.click());
+          : summaryHandle.evaluate((sh) => sh.click()));
         await (waitFunction ? waitFunction(800) : delay(800));
       } catch (error) {
         console.debug(
