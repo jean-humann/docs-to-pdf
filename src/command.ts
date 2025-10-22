@@ -17,6 +17,30 @@ const version = packageJson.version;
 console_stamp(console);
 
 /**
+ * Safely stringify an unknown error value for display
+ * @param err - The error value to stringify
+ * @returns A string representation of the error
+ */
+function stringifyError(err: unknown): string {
+  if (typeof err === 'string') {
+    return err;
+  }
+  if (typeof err === 'number' || typeof err === 'boolean') {
+    return String(err);
+  }
+  if (err === null || err === undefined) {
+    return String(err);
+  }
+  // For objects, use JSON.stringify
+  try {
+    return JSON.stringify(err);
+  } catch {
+    // Fallback if JSON.stringify fails (circular references, etc.)
+    return Object.prototype.toString.call(err);
+  }
+}
+
+/**
  * Handle promise completion with consistent success and error handling
  */
 function handleCommandCompletion(promise: Promise<void>): void {
@@ -32,11 +56,7 @@ function handleCommandCompletion(promise: Promise<void>): void {
           console.error(chalk.red(err.stack));
         }
       } else {
-        console.error(
-          chalk.red(
-            `Error: ${typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err)}`,
-          ),
-        );
+        console.error(chalk.red(`Error: ${stringifyError(err)}`));
       }
       process.exit(1);
     });
