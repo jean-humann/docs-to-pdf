@@ -206,10 +206,12 @@ describe('setOutline', () => {
       {
         title: 'Chapter 1',
         destination: 'chapter1',
+        yPosition: 100,
         children: [
           {
             title: 'Section 1.1',
             destination: 'section1-1',
+            yPosition: 200,
             children: [],
             depth: 1,
           },
@@ -218,7 +220,8 @@ describe('setOutline', () => {
       },
     ];
 
-    const result = await setOutline(pdfDoc, outlines, false);
+    // Use typical page dimensions: 792 points high (US Letter), 1000 pixels total document height
+    const result = await setOutline(pdfDoc, outlines, 1000, 792, false);
 
     expect(result).toBe(pdfDoc);
     // Check that outlines were added to catalog
@@ -231,7 +234,7 @@ describe('setOutline', () => {
     const pdfDoc = await PDFDocument.create();
     pdfDoc.addPage();
 
-    const result = await setOutline(pdfDoc, [], false);
+    const result = await setOutline(pdfDoc, [], 1000, 792, false);
 
     expect(result).toBe(pdfDoc);
     // Check that no outlines were added
@@ -248,14 +251,17 @@ describe('setOutline', () => {
       {
         title: 'Part 1',
         destination: 'part1',
+        yPosition: 50,
         children: [
           {
             title: 'Chapter 1',
             destination: 'chapter1',
+            yPosition: 150,
             children: [
               {
                 title: 'Section 1.1',
                 destination: 'section1-1',
+                yPosition: 250,
                 children: [],
                 depth: 2,
               },
@@ -267,7 +273,7 @@ describe('setOutline', () => {
       },
     ];
 
-    const result = await setOutline(pdfDoc, outlines, false);
+    const result = await setOutline(pdfDoc, outlines, 1000, 792, false);
 
     expect(result).toBe(pdfDoc);
     const catalog = pdfDoc.catalog;

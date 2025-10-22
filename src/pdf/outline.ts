@@ -21,6 +21,7 @@ export interface RootOutlineNode {
 export interface OutlineNode {
   title: string;
   destination: string;
+  yPosition: number; // Y position in pixels from top of document
   children: (OutlineNode | never)[];
   depth: number;
   parent?: OutlineNode | RootOutlineNode;
@@ -34,6 +35,7 @@ export type PDFOutlineItem = OutlineNode;
 export interface OutlineRef {
   title: string;
   destination: string;
+  yPosition: number;
   children: (OutlineRef | never)[];
   depth: number;
   ref: PDFRef;
@@ -102,6 +104,10 @@ export async function getOutline(
         const orderDepth = tags.indexOf(tag.tagName.toLowerCase());
         const dest = encodeURIComponent(tag.id);
 
+        // Get the Y position of the element from the top of the document
+        const rect = tag.getBoundingClientRect();
+        const yPosition = window.scrollY + rect.top;
+
         // Add to link holder to register a destination
         const hiddenLink = document.createElement('a');
         hiddenLink.href = `#${dest}`;
@@ -115,6 +121,7 @@ export async function getOutline(
             // https://stackoverflow.com/questions/57551589/property-innertext-does-not-exist-on-type-element
             title: (<HTMLElement>tag).innerText.trim(),
             destination: dest,
+            yPosition: yPosition,
             children: [],
             depth: orderDepth,
             parent: undefined,
@@ -189,10 +196,16 @@ function countChildrenOfOutline(outlines: OutlineNode[]): number {
  * Builds the PDF objects for a nested outline tree with references.
  * @param {OutlineRef[]} outlinesWithRef - The nested outline tree with references.
  * @param {PDFContext} context - The PDF context to use.
+ * @param {PDFDocument} pdfDoc - The PDF document to get page information from.
+ * @param {number} pageHeightInPixels - The height of the rendered page in pixels.
+ * @param {number} pdfPageHeightInPoints - The height of each PDF page in points.
  */
 function buildPdfObjectsForOutline(
   outlinesWithRef: OutlineRef[],
   context: PDFContext,
+  pdfDoc: PDFDocument,
+  pageHeightInPixels: number,
+  pdfPageHeightInPoints: number,
 ) {
   for (const [i, item] of outlinesWithRef.entries()) {
     const prev = outlinesWithRef[i - 1];
@@ -202,7 +215,35 @@ function buildPdfObjectsForOutline(
       PDFName.of('Title'),
       PDFHexString.fromText(decode(item.title)),
     );
-    pdfObject.set(PDFName.of('Dest'), PDFName.of(item.destination));
+
+    // Create explicit destination instead of named destination
+    // Calculate which page this item is on based on Y position
+    const pageIndex = Math.floor(
+      (item.yPosition / pageHeightInPixels) * pdfDoc.getPageCount(),
+    );
+    const clampedPageIndex = Math.max(
+      0,
+      Math.min(pageIndex, pdfDoc.getPageCount() - 1),
+    );
+    const page = pdfDoc.getPage(clampedPageIndex);
+    const pageRef = page.ref;
+
+    // Calculate Y position on the page (PDF coordinates are from bottom-left)
+    const pageLocalYPixels = item.yPosition % pageHeightInPixels;
+    const yPositionInPoints =
+      pdfPageHeightInPoints -
+      pageLocalYPixels * (pdfPageHeightInPoints / pageHeightInPixels);
+
+    // Create explicit destination array: [pageRef, /XYZ, left, top, zoom]
+    // left=0, top=calculated Y position, zoom=null (keep current zoom)
+    const destArray = PDFArray.withContext(context);
+    destArray.push(pageRef);
+    destArray.push(PDFName.of('XYZ'));
+    destArray.push(PDFNumber.of(0)); // left
+    destArray.push(PDFNumber.of(yPositionInPoints)); // top
+    destArray.push(PDFNumber.of(0)); // zoom (0 means keep current zoom)
+
+    pdfObject.set(PDFName.of('Dest'), destArray);
     pdfObject.set(PDFName.of('Parent'), item.parentRef);
 
     pdfObject.set(
@@ -237,7 +278,13 @@ function buildPdfObjectsForOutline(
 
     context.assign(item.ref, PDFDict.fromMapWithContext(pdfObject, context));
 
-    buildPdfObjectsForOutline(item.children, context);
+    buildPdfObjectsForOutline(
+      item.children,
+      context,
+      pdfDoc,
+      pageHeightInPixels,
+      pdfPageHeightInPoints,
+    );
   }
 }
 
@@ -277,12 +324,16 @@ function generateWarningsAboutMissingDestinations(
  * Sets the outlines of a PDF document from a nested outline tree.
  * @param {PDFDocument} pdfDoc - The PDF document to set outlines on.
  * @param {OutlineNode[]} outlines - The nested outline tree to use as outlines.
+ * @param {number} pageHeightInPixels - The total height of the rendered document in pixels.
+ * @param {number} pdfPageHeightInPoints - The height of each PDF page in points.
  * @param {boolean} [enableWarnings=false] - Whether to generate warnings for missing destinations.
  * @returns {PDFDocument} The PDF document with outlines set.
  */
 export async function setOutline(
   pdfDoc: PDFDocument,
   outlines: OutlineNode[],
+  pageHeightInPixels: number,
+  pdfPageHeightInPoints: number,
   enableWarnings: boolean = false,
 ): Promise<PDFDocument> {
   const rootOutlineRef = pdfDoc.context.nextRef();
@@ -297,7 +348,13 @@ export async function setOutline(
     pdfDoc.context,
     rootOutlineRef,
   );
-  buildPdfObjectsForOutline(outlinesWithRef, pdfDoc.context);
+  buildPdfObjectsForOutline(
+    outlinesWithRef,
+    pdfDoc.context,
+    pdfDoc,
+    pageHeightInPixels,
+    pdfPageHeightInPoints,
+  );
 
   const outlineObject: DictMap = new Map([]);
   outlineObject.set(PDFName.of('Type'), PDFName.of('Outlines'));

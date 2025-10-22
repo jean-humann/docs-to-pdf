@@ -28,6 +28,15 @@ export class PDF {
    */
   public async generate(page: puppeteer.Page): Promise<void> {
     console.log(chalk.cyan('Generate PDF...'));
+
+    // Get page dimensions for coordinate mapping
+    const pageDimensions = await page.evaluate(() => {
+      return {
+        width: document.documentElement.scrollWidth,
+        height: document.documentElement.scrollHeight,
+      };
+    });
+
     const outline = await getOutline(page, [
       'h1',
       'h2',
@@ -61,7 +70,18 @@ export class PDF {
       throw new Error(err);
     });
     const pdfDoc = await PDFDocument.load(pdf);
-    await setOutline(pdfDoc, outline, true);
+
+    // Get PDF page dimensions (first page, assuming all pages same size)
+    const pdfPage = pdfDoc.getPage(0);
+    const pdfPageHeight = pdfPage.getHeight();
+
+    await setOutline(
+      pdfDoc,
+      outline,
+      pageDimensions.height,
+      pdfPageHeight,
+      true,
+    );
     const buffer = await pdfDoc.save();
     writeFileSync(this.options.outputPDFFilename ?? 'output.pdf', buffer);
     console.log(
