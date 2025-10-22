@@ -124,7 +124,7 @@ export async function startDocusaurusServer(
   // Disable X-Powered-By header for security
   app.disable('x-powered-by');
   const dirPath = path.resolve(buildDirPath);
-  app.use(express.static(dirPath));
+  app.use(express.static(dirPath, { index: ['index.html'] }));
 
   // Find available port
   const availablePort = await findAvailablePort(port);
