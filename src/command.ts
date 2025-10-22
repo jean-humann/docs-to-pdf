@@ -49,8 +49,15 @@ export function makeProgram() {
           console.log(chalk.green('Finish generating PDF!'));
           process.exit(0);
         })
-        .catch((err: { stack: unknown }) => {
-          console.error(chalk.red(err.stack));
+        .catch((err: unknown) => {
+          if (err instanceof Error) {
+            console.error(chalk.red(`Error: ${err.message}`));
+            if (err.stack) {
+              console.error(chalk.red(err.stack));
+            }
+          } else {
+            console.error(chalk.red(`Error: ${String(err)}`));
+          }
           process.exit(1);
         });
     });
@@ -69,8 +76,15 @@ export function makeProgram() {
           console.log(chalk.green('Finish generating PDF!'));
           process.exit(0);
         })
-        .catch((err: { stack: unknown }) => {
-          console.error(chalk.red(err.stack));
+        .catch((err: unknown) => {
+          if (err instanceof Error) {
+            console.error(chalk.red(`Error: ${err.message}`));
+            if (err.stack) {
+              console.error(chalk.red(err.stack));
+            }
+          } else {
+            console.error(chalk.red(`Error: ${String(err)}`));
+          }
           process.exit(1);
         });
     });
