@@ -114,9 +114,22 @@ export async function generatePDF({
   for (const url of initialDocURLs) {
     let nextPageURL = url;
     const urlPath = new URL(url).pathname;
+    // Track visited URLs to prevent infinite loops from circular pagination
+    const visitedURLs = new Set<string>();
 
     // Create a list of HTML for the content section of all pages by looping
     while (nextPageURL) {
+      // Check if we've already visited this URL to prevent infinite loops
+      if (visitedURLs.has(nextPageURL)) {
+        console.log(
+          chalk.yellow(
+            `Skipping already visited URL (circular pagination detected): ${nextPageURL}`,
+          ),
+        );
+        break;
+      }
+      visitedURLs.add(nextPageURL);
+
       console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
 
       // Go to the page specified by nextPageURL
