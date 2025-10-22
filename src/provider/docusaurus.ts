@@ -1,8 +1,8 @@
 import { GeneratePDFOptions, generatePDF } from '../core';
 import express from 'express';
-import * as fs from 'fs';
-import path from 'path';
-import * as http from 'http';
+import * as fs from 'node:fs';
+import path from 'node:path';
+import * as http from 'node:http';
 
 export interface DocusaurusOptions extends GeneratePDFOptions {
   version: number;
@@ -82,7 +82,7 @@ async function findAvailablePort(
         testServer.listen(port, '127.0.0.1');
       });
       return port;
-    } catch (err) {
+    } catch {
       // Port is in use, try next one
       continue;
     }
@@ -136,7 +136,7 @@ export async function startDocusaurusServer(
 export async function stopDocusaurusServer(
   serverInstance: ServerInstance,
 ): Promise<void> {
-  if (!serverInstance || !serverInstance.server) {
+  if (!serverInstance?.server) {
     throw new Error('No server to stop');
   }
 

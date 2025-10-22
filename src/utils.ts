@@ -66,8 +66,8 @@ export async function getHtmlContent(page: puppeteer.Page, selector: string) {
 export function getHtmlFromSelector(selector: string): string {
   const element: HTMLElement | null = document.querySelector(selector);
   if (element) {
-    // Add pageBreak for PDF
-    element.style.pageBreakAfter = 'always';
+    // Add page break for PDF
+    element.style.breakAfter = 'always';
     return element.outerHTML;
   }
   return '';
@@ -315,8 +315,8 @@ export function generateTocHtml(headers: any[]) {
 export function generateHeader(headers: any[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
   const headerText = matchedStr
-    .replace(/<a[^>]*>#<\/a( )*>/g, '')
-    .replace(/<[^>]*>/g, '')
+    .replaceAll(/<a[^>]*>#<\/a( )*>/g, '')
+    .replaceAll(/<[^>]*>/g, '')
     .trim();
 
   // Generate a random header ID using a combination of random characters and the headers array length
@@ -347,7 +347,7 @@ export function replaceHeader(
   const modifiedContentHTML = matchedStr.replace(re, (header) => {
     if (header.match(/id( )*=( )*"/g)) {
       // If the header already has an ID attribute, replace its value with the headerId parameter
-      return header.replace(/id\s*=\s*"([^"]*)"/g, `id="${headerId}"`);
+      return header.replaceAll(/id\s*=\s*"([^"]*)"/g, `id="${headerId}"`);
     } else {
       // If the header doesn't have an ID attribute, add the headerId parameter as a new ID attribute
       return header.substring(0, header.length - 1) + ` id="${headerId}">`;
@@ -366,9 +366,9 @@ export async function removeExcludeSelector(
   page: puppeteer.Page,
   excludeSelectors: string[],
 ) {
-  excludeSelectors.map(async (excludeSelector) => {
+  for (const excludeSelector of excludeSelectors) {
     await page.evaluate(removeElementFromSelector, excludeSelector);
-  });
+  }
 }
 
 /**
