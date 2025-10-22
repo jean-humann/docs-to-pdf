@@ -60,7 +60,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},suffix=-node${{ matrix.node-version }}-${{ matrix.os }}
             type=raw,value=latest-node${{ matrix.node-version }}-${{ matrix.os }}
       - name: Publish Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./docker/${{ matrix.os }}
           push: true
