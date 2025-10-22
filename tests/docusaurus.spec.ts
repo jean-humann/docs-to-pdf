@@ -137,7 +137,7 @@ describe('generateDocusaurusPDF', () => {
       // ... other required properties for testing
     };
 
-    await expect(generateDocusaurusPDF(options)).rejects.toThrowError(
+    await expect(generateDocusaurusPDF(options)).rejects.toThrow(
       'Unsupported Docusaurus version: 4. Supported versions are 1, 2, and 3.',
     );
   });
