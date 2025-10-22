@@ -122,7 +122,7 @@ describe('generateDocusaurusPDF', () => {
           '.breadcrumbs',
           '.theme-edit-this-page',
         ],
-        contentSelector: 'article',
+        contentSelector: 'main',
       }),
     );
   });

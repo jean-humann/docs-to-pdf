@@ -169,7 +169,7 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node20.pdf"
+        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node20.pdf"
 
   test-v3-alpine-node22:
     build:
@@ -182,7 +182,7 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node22.pdf"
+        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node22.pdf"
 
   test-v3-alpine-node24:
     build:
@@ -195,7 +195,7 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node24.pdf"
+        docs-to-pdf --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-alpine-node24.pdf"
 
   test-v3-debian-node20:
     build:
@@ -208,7 +208,7 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node20.pdf"
+        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node20.pdf"
 
   test-v3-debian-node22:
     build:
@@ -221,7 +221,7 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node22.pdf"
+        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node22.pdf"
 
   test-v3-debian-node24:
     build:
@@ -234,4 +234,4 @@ services:
       - bash
       - -c
       - |
-        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node24.pdf"
+        docs-to-pdf core --initialDocURLs="https://docusaurus.io/fr/docs" --contentSelector="main" --paginationSelector="a.pagination-nav__link--next" --excludeSelectors="nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/v3-debian-node24.pdf"

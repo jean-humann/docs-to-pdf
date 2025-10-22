@@ -68,7 +68,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/docker/output:/docs-to-pdf/output \
             docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
-            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/fr/docs' --contentSelector='article' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v3.pdf'"
+            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/fr/docs' --contentSelector='main' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v3.pdf'"
 
       - name: Check PDF was generated
         run: |

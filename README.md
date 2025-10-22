@@ -83,7 +83,8 @@ docs-to-pdf supports **Docusaurus v1 (legacy), v2, and v3**. The tool automatica
 ### Version Differences
 
 - **Docusaurus v1 (Legacy)**: Older documentation format with different HTML structure and navigation
-- **Docusaurus v2 & v3**: Both versions use the same HTML structure and selectors, so they work identically with docs-to-pdf
+- **Docusaurus v2**: Uses `<article>` tag as the main content selector
+- **Docusaurus v3**: Uses `<main>` tag as the main content selector (changed from v2)
 
 ### Usage
 
@@ -130,7 +131,7 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/" --contentSelector
 
 ### Docusaurus v3
 
-Docusaurus v3 uses the same HTML structure as v2, so the selectors are identical. Here's an example:
+Docusaurus v3 uses `<main>` as the content selector instead of `<article>`. Here's an example:
 
 `command`:
 
@@ -141,10 +142,10 @@ npx docs-to-pdf docusaurus --initialDocURLs="https://your-docusaurus-v3-site.com
 OR with explicit selectors:
 
 ```shell
-npx docs-to-pdf --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --contentSelector="article" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://your-docusaurus-v3-site.com/img/logo.png" --coverTitle="Your Docs"
+npx docs-to-pdf --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --contentSelector="main" --paginationSelector="a.pagination-nav__link.pagination-nav__link--next" --excludeSelectors=".margin-vert--xl a,[class^='tocCollapsible'],.breadcrumbs,.theme-edit-this-page" --coverImage="https://your-docusaurus-v3-site.com/img/logo.png" --coverTitle="Your Docs"
 ```
 
-**Note**: Since Docusaurus v3 shares the same structure as v2, you can use the same selectors and configuration. The `--version=3` flag tells docs-to-pdf which preset to use, but the underlying behavior is the same as v2.
+**Note**: Docusaurus v3 changed the main content wrapper from `<article>` (v2) to `<main>` (v3). The `--version=3` flag automatically uses the correct `main` selector.
 
 ### Docusaurus v1 - Legacy
 

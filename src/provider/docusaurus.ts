@@ -38,9 +38,20 @@ export async function generateDocusaurusPDF(
     core.cssStyle = `
       .navPusher {padding-top: 0;}
       `;
-  } else if (version === 2 || version === 3) {
-    console.debug(`Docusaurus version ${version}`);
-    // Docusaurus v2 and v3 use the same selectors
+  } else if (version === 2) {
+    console.debug('Docusaurus version 2');
+    core.paginationSelector =
+      'a.pagination-nav__link.pagination-nav__link--next';
+    core.excludeSelectors = [
+      '.margin-vert--xl a',
+      "[class^='tocCollapsible']",
+      '.breadcrumbs',
+      '.theme-edit-this-page',
+    ];
+  } else if (version === 3) {
+    console.debug('Docusaurus version 3');
+    // Docusaurus v3 uses 'main' as content selector
+    core.contentSelector = 'main';
     core.paginationSelector =
       'a.pagination-nav__link.pagination-nav__link--next';
     core.excludeSelectors = [
