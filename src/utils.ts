@@ -76,8 +76,9 @@ type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
 type WaitFunction = (milliseconds: number) => Promise<void>;
 
 // Constants for details element interaction timing
-const SCROLL_DELAY_MS = 200; // Delay after scrolling element into view
-const CLICK_WAIT_MS = 800; // Wait time after clicking to allow element to expand
+// Exported to allow customization in tests or advanced usage
+export const SCROLL_DELAY_MS = 200; // Delay after scrolling element into view
+export const CLICK_WAIT_MS = 800; // Wait time after clicking to allow element to expand
 
 /**
  * Helper function to click a summary element and wait
