@@ -96,12 +96,18 @@ export async function generatePDF({
   page.on('request', (request) => {
     if (request.url().endsWith('.pdf')) {
       console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
-      request.abort().catch(() => {
+      request.abort().catch((err) => {
         // Ignore abort errors - request may already be handled
+        console.debug(
+          `Request abort error (usually safe to ignore): ${err.message}`,
+        );
       });
     } else {
-      request.continue().catch(() => {
+      request.continue().catch((err) => {
         // Ignore continue errors - request may already be handled
+        console.debug(
+          `Request continue error (usually safe to ignore): ${err.message}`,
+        );
       });
     }
   });

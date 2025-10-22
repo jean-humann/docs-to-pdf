@@ -131,6 +131,13 @@ export async function startDocusaurusServer(
       resolve({ app, server, port: availablePort });
     });
 
+    // Set server timeout to 5 minutes (300000ms)
+    // This prevents the server from staying up indefinitely during long PDF generation
+    server.setTimeout(300000);
+    server.on('timeout', () => {
+      console.warn('Server timeout reached during PDF generation');
+    });
+
     server.once('error', (err) => {
       reject(new Error(`Failed to start Docusaurus server: ${err.message}`));
     });

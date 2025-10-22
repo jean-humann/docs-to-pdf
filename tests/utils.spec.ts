@@ -509,8 +509,5 @@ describeIfChrome('openDetails function', () => {
     expect(clickFunction).toHaveBeenCalledTimes(2);
     expect(waitFunction).toHaveBeenCalledTimes(2);
     expect(waitFunction).toHaveBeenCalledWith(800);
-
-    // Close the browser
-    await browser.close();
   });
 });
