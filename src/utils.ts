@@ -75,6 +75,10 @@ export function getHtmlFromSelector(selector: string): string {
 type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
 type WaitFunction = (milliseconds: number) => Promise<void>;
 
+// Constants for details element interaction timing
+const SCROLL_DELAY_MS = 200; // Delay after scrolling element into view
+const CLICK_WAIT_MS = 800; // Wait time after clicking to allow element to expand
+
 /**
  * Helper function to click a summary element and wait
  * @param summaryHandle - The summary element handle
@@ -95,12 +99,12 @@ async function clickSummary(
     await summaryHandle.evaluate((element) => {
       element.scrollIntoView({ behavior: 'auto', block: 'center' });
     });
-    await delay(200); // Small delay after scrolling
+    await delay(SCROLL_DELAY_MS);
 
     await (clickFunction
       ? clickFunction(summaryHandle)
       : summaryHandle.evaluate((sh) => (sh as HTMLElement).click()));
-    await (waitFunction ? waitFunction(800) : delay(800));
+    await (waitFunction ? waitFunction(CLICK_WAIT_MS) : delay(CLICK_WAIT_MS));
   } catch (error) {
     console.debug(
       `Failed to click summary "${summaryText}": ${error instanceof Error ? error.message : String(error)}`,
@@ -479,7 +483,7 @@ export async function isPageKept(
   } else if (restrictPaths && nextPageURL.includes(urlPath) === false) {
     console.log(
       chalk.yellowBright(
-        `Page excluded by path restriction: ${urlPath} !== ${urlPath}`,
+        `Page excluded by path restriction: ${nextPageURL} !== ${urlPath}`,
       ),
     );
     return false;
