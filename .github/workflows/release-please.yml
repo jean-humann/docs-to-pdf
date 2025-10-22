@@ -11,10 +11,15 @@ permissions:
 
 jobs:
   release-please:
+    name: Release Management
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           # Use manifest-based configuration for better control
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
