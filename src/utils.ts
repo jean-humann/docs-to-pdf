@@ -128,7 +128,7 @@ export async function openDetails(
 ) {
   const detailsHandles = await page.$$('details');
 
-  console.debug(`Found ${detailsHandles.length} elements`);
+  console.debug(`Found ${detailsHandles.length} elements of type details`);
 
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
