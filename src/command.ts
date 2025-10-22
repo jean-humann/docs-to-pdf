@@ -16,6 +16,28 @@ const version = packageJson.version;
 
 console_stamp(console);
 
+/**
+ * Handle promise completion with consistent success and error handling
+ */
+function handleCommandCompletion(promise: Promise<void>): void {
+  promise
+    .then(() => {
+      console.log(chalk.green('Finish generating PDF!'));
+      process.exit(0);
+    })
+    .catch((err: unknown) => {
+      if (err instanceof Error) {
+        console.error(chalk.red(`Error: ${err.message}`));
+        if (err.stack) {
+          console.error(chalk.red(err.stack));
+        }
+      } else {
+        console.error(chalk.red(`Error: ${String(err)}`));
+      }
+      process.exit(1);
+    });
+}
+
 export function makeProgram() {
   const program = new Command('docs-to-pdf');
   const docstopdf = program
@@ -45,22 +67,7 @@ export function makeProgram() {
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
       console.debug(options);
-      generateDocusaurusPDF(options)
-        .then(() => {
-          console.log(chalk.green('Finish generating PDF!'));
-          process.exit(0);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof Error) {
-            console.error(chalk.red(`Error: ${err.message}`));
-            if (err.stack) {
-              console.error(chalk.red(err.stack));
-            }
-          } else {
-            console.error(chalk.red(`Error: ${String(err)}`));
-          }
-          process.exit(1);
-        });
+      handleCommandCompletion(generateDocusaurusPDF(options));
     });
 
   docstopdf
@@ -72,22 +79,7 @@ export function makeProgram() {
         process.exit(1);
       }
       console.debug('Generate from Core');
-      generatePDF(options)
-        .then(() => {
-          console.log(chalk.green('Finish generating PDF!'));
-          process.exit(0);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof Error) {
-            console.error(chalk.red(`Error: ${err.message}`));
-            if (err.stack) {
-              console.error(chalk.red(err.stack));
-            }
-          } else {
-            console.error(chalk.red(`Error: ${String(err)}`));
-          }
-          process.exit(1);
-        });
+      handleCommandCompletion(generatePDF(options));
     });
 
   docstopdf.commands.forEach((cmd) => {
