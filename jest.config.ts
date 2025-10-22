@@ -183,11 +183,20 @@ export default {
         },
       },
     ],
+    // Transform JS files from ES module packages in node_modules
+    '^.+\\.m?jsx?$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          allowJs: true,
+        },
+      },
+    ],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    'node_modules/(?!(@paralleldrive/cuid2)/)',
+    'node_modules/(?!(@paralleldrive/cuid2|formidable|superagent)/)',
   ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
