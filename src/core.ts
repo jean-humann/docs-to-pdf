@@ -1,23 +1,20 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
+import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
 import { delay } from './utils';
+import { PDF, PDFOptions } from './pdf/generate';
 
 console_stamp(console);
 
-export interface GeneratePDFOptions {
+export interface GeneratePDFOptions extends PDFOptions {
   initialDocURLs: Array<string>;
   excludeURLs: Array<string>;
-  outputPDFFilename: string;
-  pdfMargin: puppeteer.PDFOptions['margin'];
   contentSelector: string;
   paginationSelector: string;
-  // deprecated - user paperFormat
-  pdfFormat?: puppeteer.PaperFormat;
-  paperFormat: puppeteer.PaperFormat;
   excludeSelectors: Array<string>;
   cssStyle: string;
   puppeteerArgs: Array<string>;
@@ -28,8 +25,6 @@ export interface GeneratePDFOptions {
   disableCover: boolean;
   coverSub: string;
   waitForRender: number;
-  headerTemplate: string;
-  footerTemplate: string;
   protocolTimeout: number;
   filterKeyword: string;
   baseUrl: string;
@@ -39,33 +34,29 @@ export interface GeneratePDFOptions {
 }
 
 /* c8 ignore start */
-export async function generatePDF({
-  initialDocURLs,
-  excludeURLs,
-  outputPDFFilename = 'docs-to-pdf.pdf',
-  pdfMargin = { top: 32, right: 32, bottom: 32, left: 32 },
-  contentSelector,
-  paginationSelector,
-  paperFormat,
-  excludeSelectors,
-  cssStyle,
-  puppeteerArgs,
-  coverTitle,
-  coverImage,
-  disableTOC,
-  tocTitle,
-  disableCover,
-  coverSub,
-  waitForRender,
-  headerTemplate,
-  footerTemplate,
-  protocolTimeout,
-  filterKeyword,
-  baseUrl,
-  excludePaths,
-  restrictPaths,
-  openDetail = true,
-}: GeneratePDFOptions): Promise<void> {
+export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
+  const {
+    initialDocURLs,
+    excludeURLs,
+    contentSelector,
+    paginationSelector,
+    excludeSelectors,
+    cssStyle,
+    puppeteerArgs,
+    coverTitle,
+    coverImage,
+    disableTOC,
+    tocTitle,
+    disableCover,
+    coverSub,
+    waitForRender,
+    protocolTimeout,
+    filterKeyword,
+    baseUrl,
+    excludePaths,
+    restrictPaths,
+    openDetail = true,
+  } = options;
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
@@ -229,23 +220,11 @@ export async function generatePDF({
     // Scroll to the bottom of the page with puppeteer-autoscroll-down
     // This forces lazy-loading images to load
     console.log(chalk.cyan('Scroll to the bottom of the page...'));
-    const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
     await scrollPageToBottom(page, {}); //cast to puppeteer-core type
 
     // Generate PDF
-    console.log(chalk.cyan('Generate PDF...'));
-    await page.pdf({
-      path: outputPDFFilename,
-      format: paperFormat,
-      printBackground: true,
-      margin: pdfMargin,
-      displayHeaderFooter: !!(headerTemplate || footerTemplate),
-      headerTemplate,
-      footerTemplate,
-      timeout: 0,
-    });
-
-    console.log(chalk.green(`PDF generated at ${outputPDFFilename}`));
+    const pdf = new PDF(options);
+    await pdf.generate(page);
   } finally {
     // Always close browser and cleanup temp directory, even if PDF generation fails
     await browser.close();
