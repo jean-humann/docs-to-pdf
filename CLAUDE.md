@@ -157,6 +157,11 @@ BREAKING CHANGE: Dropped support for Node.js 18. Users must upgrade to Node.js 2
 
 This project uses [release-please-action](https://github.com/googleapis/release-please-action) (GitHub Action) to automate releases.
 
+Configuration files:
+- `release-please-config.json` - Release strategy and package configuration
+- `.release-please-manifest.json` - Tracks current version
+
+Workflow:
 1. Commits merged to `master` → release-please GitHub Action analyzes them
 2. release-please creates/updates a Release PR
 3. When Release PR is merged → automated release happens:
@@ -165,6 +170,8 @@ This project uses [release-please-action](https://github.com/googleapis/release-
    - GitHub release created
    - npm package published (if configured)
    - Docker images published
+
+**Note:** The workflow uses the default `GITHUB_TOKEN`. If you need CI checks to run on Release Please PRs, configure a Personal Access Token secret and update `.github/workflows/release-please.yml` to use it.
 
 ### Version Bumping Logic
 

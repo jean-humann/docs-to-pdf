@@ -15,6 +15,6 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # This should be a manifest file or a single package
-          # Since this is a single package repo, we'll use manifest: false
-          release-type: node
+          # Use manifest-based configuration for better control
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
