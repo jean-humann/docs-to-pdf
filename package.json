@@ -9,7 +9,7 @@
     "commitlint": "commitlint --from=HEAD~1",
     "prepare": "husky",
     "lint": "eslint \"*/**/*.{js,ts}\"",
-    "lintfix": "eslint \"*/**/*.{js,ts}\" --fix",
+    "lint:fix": "eslint \"*/**/*.{js,ts}\" --fix",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "engines": {

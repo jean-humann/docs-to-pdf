@@ -10,7 +10,7 @@ console_stamp(console);
  * @param ms - milliseconds to wait
  * @returns Promise that resolves after the specified delay
  */
-function delay(ms: number): Promise<void> {
+export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
