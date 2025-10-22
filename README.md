@@ -6,6 +6,10 @@
 [![Codecov](https://img.shields.io/codecov/c/github/jean-humann/docs-to-pdf/branch/master?style=for-the-badge&token=YMY82958X4)](https://codecov.io/gh/jean-humann/docs-to-pdf)
 ![GitHub](https://img.shields.io/github/license/jean-humann/docs-to-pdf?style=for-the-badge)
 
+## ⚡ Requirements
+
+- Node.js >= 20.0.0
+
 ## 📌 Introduction
 
 This is a PDF generator from document website such as `docusaurus`. This is a fork of [mr-pdf](https://github.com/KohheePeace/mr-pdf) which was not maintained anymore.
