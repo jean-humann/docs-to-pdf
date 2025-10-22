@@ -67,7 +67,7 @@ export function getHtmlFromSelector(selector: string): string {
   const element: HTMLElement | null = document.querySelector(selector);
   if (element) {
     // Add page break for PDF
-    element.style.breakAfter = 'always';
+    element.style.breakAfter = 'page';
     return element.outerHTML;
   }
   return '';

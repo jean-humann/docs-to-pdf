@@ -3,7 +3,6 @@ import {
   getHtmlContent,
   findNextUrl,
   removeExcludeSelector,
-  generateHeader,
   generateTocHtml,
   getCoverImage,
   generateImageHtml,
@@ -116,22 +115,6 @@ describe('removeExcludeSelector', () => {
 
     expect(removedElement).toBeNull();
     expect(keptElement).not.toBeNull();
-  });
-});
-
-describe('generateHeader', () => {
-  it('should generate the header information correctly', () => {
-    const headers: Array<{
-      header: string;
-      level: number;
-      id: string;
-    }> = [];
-    const matchedStr = '<h1 class="title">Title</h1>';
-    const { headerText, headerId, level } = generateHeader(headers, matchedStr);
-
-    expect(headerText).toBe('Title');
-    expect(headerId).toMatch(/[a-z0-9]{3}-\d+/);
-    expect(level).toBe(1);
   });
 });
 

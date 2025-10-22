@@ -54,7 +54,7 @@ describe('getHtmlFromSelector', () => {
 
     // Assert the expected result
     expect(result).toBe(
-      '<div style="break-after: always;"><p>This is the content</p></div>',
+      '<div style="break-after: page;"><p>This is the content</p></div>',
     );
   });
 
