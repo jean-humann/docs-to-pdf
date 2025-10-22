@@ -314,10 +314,10 @@ export function generateTocHtml(headers: any[]) {
  */
 export function generateHeader(headers: any[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
-  const headerText = matchedStr
-    .replaceAll(/<a[^>]*>#<\/a( )*>/g, '')
-    .replaceAll(/<[^>]*>/g, '')
-    .trim();
+  // Using text content extraction instead of regex to avoid ReDoS vulnerability
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = matchedStr;
+  const headerText = tempDiv.textContent?.trim() || '';
 
   // Generate a random header ID using a combination of random characters and the headers array length
   const headerId = `${Math.random().toString(36).slice(2, 5)}-${
