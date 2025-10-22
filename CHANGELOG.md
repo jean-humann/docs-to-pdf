@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/jean-humann/docs-to-pdf/compare/v2.0.0...v2.1.0) (2025-10-22)
+
+
+### Features
+
+* add HTTP Basic Auth support for protected documentation sites ([#519](https://github.com/jean-humann/docs-to-pdf/issues/519)) ([526c2fb](https://github.com/jean-humann/docs-to-pdf/commit/526c2fbcfaa71a57e75f9f673cfb8da2d726ad64))
+
 ## [2.0.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.0.0...v2.0.0) (2025-10-22)
 
 
