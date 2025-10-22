@@ -1,0 +1,85 @@
+name: Docker CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test-docker:
+    name: Test Docker images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - alpine
+          - debian
+        node-version:
+          - 20
+          - 22
+          - 24
+        docusaurus-version:
+          - v1
+          - v2
+          - v3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build packages
+        run: yarn build
+
+      - name: Pack packages for docker
+        run: docker/pack.sh ${{ matrix.os }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NODE_VERSION=${{ matrix.node-version }} \
+            -t docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
+            ./docker/${{ matrix.os }}
+
+      - name: Test Docusaurus v1
+        if: matrix.docusaurus-version == 'v1'
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/docker/output:/docs-to-pdf/output \
+            docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
+            bash -c "docs-to-pdf --initialDocURLs='https://v1.docusaurus.io/docs/en/installation' --paginationSelector='.docs-prevnext > a.docs-next' --excludeSelectors='.fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext' --cssStyle='.navPusher {padding-top: 0;}' --contentSelector='article' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v1.pdf'"
+
+      - name: Test Docusaurus v2
+        if: matrix.docusaurus-version == 'v2'
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/docker/output:/docs-to-pdf/output \
+            docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
+            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/fr/docs/2.x' --contentSelector='article' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v2.pdf'"
+
+      - name: Test Docusaurus v3
+        if: matrix.docusaurus-version == 'v3'
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/docker/output:/docs-to-pdf/output \
+            docs-to-pdf:test-node${{ matrix.node-version }}-${{ matrix.os }} \
+            bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/fr/docs' --contentSelector='article' --paginationSelector='a.pagination-nav__link--next' --excludeSelectors='nav.navbar,footer.footer,aside.theme-doc-sidebar-container,.theme-doc-toc-mobile,.pagination-nav' --puppeteerArgs='--no-sandbox, --disable-setuid-sandbox' --outputPDFFilename='output/docusaurus-v3.pdf'"
+
+      - name: Check PDF was generated
+        run: |
+          ls -lh docker/output/
+          if [ ! -f docker/output/docusaurus-${{ matrix.docusaurus-version }}.pdf ]; then
+            echo "PDF file not found!"
+            exit 1
+          fi
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docusaurus-${{ matrix.docusaurus-version }}-node${{ matrix.node-version }}-${{ matrix.os }}.pdf
+          path: docker/output/docusaurus-${{ matrix.docusaurus-version }}.pdf

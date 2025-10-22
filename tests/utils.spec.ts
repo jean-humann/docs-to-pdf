@@ -18,10 +18,11 @@ let execPath: string | undefined;
 let chromeAvailable = false;
 
 try {
-  execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
+  execPath =
+    process.env.PUPPETEER_EXECUTABLE_PATH ?? puppeteer.executablePath('chrome');
   chromeAvailable = true;
   console.log(`Using executable path: ${execPath}`);
-} catch (error) {
+} catch {
   console.warn('Chrome not found, skipping puppeteer tests');
   chromeAvailable = false;
 }
@@ -188,7 +189,7 @@ describe('generateCoverHtml', () => {
       justify-content: center;
       align-items: center;
       height: 100vh;
-      page-break-after: always;  
+      page-break-after: always;
       text-align: center;
     "
   >

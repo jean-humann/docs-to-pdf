@@ -9,6 +9,6 @@ if [ -z "$1" ]; then
 else
   OS=$1
 fi
-yarn pack 
+yarn pack
 rm -f "docker/${OS}/docs-to-pdf-latest.tgz"
-mv docs-to-pdf-v[0-9]*.tgz "docker/${OS}/docs-to-pdf-latest.tgz"
+mv package.tgz "docker/${OS}/docs-to-pdf-latest.tgz"

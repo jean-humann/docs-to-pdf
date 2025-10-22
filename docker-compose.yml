@@ -1,12 +1,13 @@
 version: '3.9'
 
 services:
-
   docs-to-pdf:
     build:
       context: docker/alpine
+    volumes:
+      - ./output:/docs-to-pdf/output
     command:
-    - bash
-    - -c
-    - |
-      docs-to-pdf --initialDocURLs="https://v1.docusaurus.io/docs/en/installation" --paginationSelector=".docs-prevnext > a.docs-next" --excludeSelectors=".fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext" --cssStyle=".navPusher {padding-top: 0;}" --contentSelector="article" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox"
+      - bash
+      - -c
+      - |
+        docs-to-pdf core --initialDocURLs="https://v1.docusaurus.io/docs/en/installation" --paginationSelector=".docs-prevnext > a.docs-next" --excludeSelectors=".fixedHeaderContainer,footer.nav-footer,#docsNav,nav.onPageNav,a.edit-page-link,div.docs-prevnext" --cssStyle=".navPusher {padding-top: 0;}" --contentSelector="article" --puppeteerArgs="--no-sandbox, --disable-setuid-sandbox" --outputPDFFilename="output/docs-to-pdf.pdf"

@@ -178,7 +178,7 @@ describe('stopDocusaurusServer', () => {
       callback();
     });
     const mockApp = {} as express.Express;
-    const mockServer = { close: mockClose } as any;
+    const mockServer = { close: mockClose } as unknown as import('http').Server;
     const serverInstance: ServerInstance = {
       app: mockApp,
       server: mockServer,
@@ -193,9 +193,9 @@ describe('stopDocusaurusServer', () => {
   });
 
   it('should throw an error if no server is provided', async () => {
-    await expect(stopDocusaurusServer(null as any)).rejects.toThrow(
-      'No server to stop',
-    );
+    await expect(
+      stopDocusaurusServer(null as unknown as ServerInstance),
+    ).rejects.toThrow('No server to stop');
   });
 
   it('should throw an error if server close fails', async () => {
@@ -203,7 +203,7 @@ describe('stopDocusaurusServer', () => {
       callback(new Error('Close failed'));
     });
     const mockApp = {} as express.Express;
-    const mockServer = { close: mockClose } as any;
+    const mockServer = { close: mockClose } as unknown as import('http').Server;
     const serverInstance: ServerInstance = {
       app: mockApp,
       server: mockServer,
@@ -309,7 +309,9 @@ describe('generateFromBuild', () => {
 
     // Verify the URL path is preserved
     const callArgs = mockGeneratePDF.mock.calls[0][0];
-    expect(callArgs.initialDocURLs[0]).toMatch(/http:\/\/127\.0\.0\.1:\d+\/docs\/intro/);
+    expect(callArgs.initialDocURLs[0]).toMatch(
+      /http:\/\/127\.0\.0\.1:\d+\/docs\/intro/,
+    );
 
     mockGeneratePDF.mockRestore();
   });

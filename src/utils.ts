@@ -29,9 +29,7 @@ export async function matchKeyword(
       (element) => element.content,
     );
     if (metaKeywords.split(',').includes(keyword)) {
-      console.log(
-        chalk.green(`Keyword found: ${keyword} in ${metaKeywords}`),
-      );
+      console.log(chalk.green(`Keyword found: ${keyword} in ${metaKeywords}`));
       return true;
     }
     console.log(
@@ -95,15 +93,28 @@ export async function openDetails(
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
     if (summaryHandle) {
-      console.debug(
-        `Clicking summary: ${await summaryHandle.evaluate(
-          (node) => node.textContent,
-        )}`,
+      const summaryText = await summaryHandle.evaluate(
+        (node) => node.textContent,
       );
-      await (clickFunction
-        ? clickFunction(summaryHandle)
-        : summaryHandle.click());
-      await (waitFunction ? waitFunction(800) : delay(800));
+      console.debug(`Clicking summary: ${summaryText}`);
+
+      try {
+        // Scroll element into view before clicking
+        await summaryHandle.evaluate((element) => {
+          element.scrollIntoView({ behavior: 'auto', block: 'center' });
+        });
+        await delay(200); // Small delay after scrolling
+
+        await (clickFunction
+          ? clickFunction(summaryHandle)
+          : summaryHandle.click());
+        await (waitFunction ? waitFunction(800) : delay(800));
+      } catch (error) {
+        console.debug(
+          `Failed to click summary "${summaryText}": ${error instanceof Error ? error.message : String(error)}`,
+        );
+        // Continue with the next element instead of failing
+      }
     }
   }
 }
@@ -236,7 +247,7 @@ export function generateCoverHtml(
       justify-content: center;
       align-items: center;
       height: 100vh;
-      page-break-after: always;  
+      page-break-after: always;
       text-align: center;
     "
   >
@@ -282,12 +293,18 @@ export function generateToc(contentHtml: string, maxLevel = 4) {
   return { modifiedContentHTML, tocHTML };
 }
 
+interface HeaderItem {
+  level: number;
+  id: string;
+  header: string;
+}
+
 /**
  * Generates the HTML code for a table of contents based on the provided headers.
  * @param headers - An array of header objects containing level, id, and header properties.
  * @returns The HTML code for the table of contents.
  */
-export function generateTocHtml(headers: any[]) {
+export function generateTocHtml(headers: HeaderItem[]) {
   // Map the headers array to create a list item for each header with the appropriate indentation
   const toc = headers
     .map(
@@ -312,12 +329,12 @@ export function generateTocHtml(headers: any[]) {
  * @param matchedStr - The matched string containing the header information.
  * @returns An object containing the header text, header ID, and level.
  */
-export function generateHeader(headers: any[], matchedStr: string) {
+export function generateHeader(headers: HeaderItem[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
-  // Using text content extraction instead of regex to avoid ReDoS vulnerability
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = matchedStr;
-  const headerText = tempDiv.textContent?.trim() || '';
+  // Extract text content by removing all HTML tags
+  const headerText = matchedStr
+    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .trim();
 
   // Generate a random header ID using a combination of random characters and the headers array length
   const headerId = `${Math.random().toString(36).slice(2, 5)}-${

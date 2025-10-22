@@ -10,14 +10,15 @@ import {
 } from './provider/docusaurus';
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-const version = require('../package.json').version;
+import packageJson from '../package.json';
+
+const version = packageJson.version;
 
 console_stamp(console);
 
 export function makeProgram() {
-  const program = new Command('');
+  const program = new Command('docs-to-pdf');
   const docstopdf = program
-    .command('docs-to-pdf')
     .version(version, '-v, --vers', 'output the current version')
     .showSuggestionAfterError()
     .configureHelp({

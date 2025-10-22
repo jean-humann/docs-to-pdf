@@ -15,9 +15,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "bin": {
-    "docs-to-pdf": "lib/cli.js"
-  },
+  "bin": "lib/cli.js",
   "keywords": [
     "pdf",
     "docusaurus",
@@ -28,11 +26,11 @@
   "license": "MIT",
   "dependencies": {
     "@types/fs-extra": "^11.0.1",
-    "fs-extra": "^11.2.0",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "console-stamp": "^3.1.2",
     "express": "^4.21.2",
+    "fs-extra": "^11.2.0",
     "puppeteer": "^24.0.0",
     "puppeteer-autoscroll-down": "^1.1.2",
     "puppeteer-core": "^24.0.0"

@@ -24,6 +24,11 @@ export default [
   },
   prettierConfig,
   {
-    ignores: ['lib/**/*', 'node_modules/**/*', 'tests/website/**/*'],
+    ignores: [
+      'lib/**/*',
+      'node_modules/**/*',
+      'tests/website/**/*',
+      'examples/**/*',
+    ],
   },
 ];

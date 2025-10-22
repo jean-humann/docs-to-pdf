@@ -51,7 +51,9 @@ export async function generateDocusaurusPDF(
     ];
   } else {
     console.error(`Unsupported Docusaurus version: ${version}`);
-    throw new Error(`Unsupported Docusaurus version: ${version}. Supported versions are 1, 2, and 3.`);
+    throw new Error(
+      `Unsupported Docusaurus version: ${version}. Supported versions are 1, 2, and 3.`,
+    );
   }
   if (docsDir) {
     await generateFromBuild(docsDir, core);
@@ -120,9 +122,7 @@ export async function startDocusaurusServer(
     });
 
     server.once('error', (err) => {
-      reject(
-        new Error(`Failed to start Docusaurus server: ${err.message}`),
-      );
+      reject(new Error(`Failed to start Docusaurus server: ${err.message}`));
     });
   });
 }
@@ -191,7 +191,9 @@ export async function generateFromBuild(
 
   try {
     const urlPath = new URL(options.initialDocURLs[0]).pathname;
-    options.initialDocURLs = [`http://127.0.0.1:${serverInstance.port}${urlPath}`];
+    options.initialDocURLs = [
+      `http://127.0.0.1:${serverInstance.port}${urlPath}`,
+    ];
     await generatePDF(options);
   } finally {
     // Always stop the server, even if PDF generation fails

@@ -125,6 +125,35 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus.io/docs/en/installation" --
 
 #### PR to add new docs is welcome here... 😸
 
+## 🐳 Docker Support
+
+Docker images are available for running docs-to-pdf in containerized environments. Images are published for multiple Node.js versions (20, 22, 24) and both Alpine and Debian-based distributions.
+
+### Quick Start with Docker
+
+```bash
+# Pull the latest image (Alpine with Node 24)
+docker pull ghcr.io/jean-humann/docs-to-pdf:latest-node24-alpine
+
+# Generate a PDF
+docker run --rm -v $(pwd)/output:/docs-to-pdf/output \
+  ghcr.io/jean-humann/docs-to-pdf:latest-node24-alpine \
+  bash -c "docs-to-pdf --initialDocURLs='https://docusaurus.io/docs/' --outputPDFFilename='output/docs.pdf'"
+```
+
+### Available Image Tags
+
+Images follow the pattern: `<version>-node<X>-<os>`
+
+Examples:
+- `latest-node24-alpine` - Latest version with Node 24 on Alpine
+- `latest-node22-debian` - Latest version with Node 22 on Debian
+- `v1.2.3-node20-alpine` - Specific version with Node 20 on Alpine
+
+### Development and Testing
+
+For local development, testing, and contributing to Docker support, see the [Docker README](./docker/README.md).
+
 ## 📄 How `docs-to-pdf` works
 
 1. [puppeteer](https://pptr.dev/) can make html to PDF like you can print HTML page in chrome browser
@@ -139,3 +168,15 @@ This repo's code is coming from <https://github.com/KohheePeace/mr-pdf>.
 Thanks for awesome code made by [@KohheePeace](https://github.com/KohheePeace/), [@maxarndt](https://github.com/maxarndt) and [@aloisklink](https://github.com/aloisklink).
 
 [@bojl](https://github.com/bojl) approach to make TOC was awesome and breakthrough.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on:
+
+- Setting up the development environment with [mise](https://mise.jit.su/)
+- Running tests and linting
+- Docker development and E2E testing
+- Commit message conventions (Conventional Commits)
+- Release process (automated via release-please)
+
+For AI assistants working on this project, see [CLAUDE.md](./CLAUDE.md) for specific guidelines.
