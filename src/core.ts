@@ -36,6 +36,8 @@ export interface GeneratePDFOptions {
   excludePaths: Array<string>;
   restrictPaths: boolean;
   openDetail: boolean;
+  httpAuthUser: string;
+  httpAuthPassword: string;
 }
 
 /* c8 ignore start */
@@ -65,6 +67,8 @@ export async function generatePDF({
   excludePaths,
   restrictPaths,
   openDetail = true,
+  httpAuthUser,
+  httpAuthPassword,
 }: GeneratePDFOptions): Promise<void> {
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
@@ -83,6 +87,19 @@ export async function generatePDF({
 
   try {
     const page = await browser.newPage();
+
+    // Set HTTP Basic Auth credentials if provided
+    if (httpAuthUser && httpAuthPassword) {
+      console.debug(
+        chalk.cyan(
+          `Setting HTTP Basic Auth credentials for user: ${httpAuthUser}`,
+        ),
+      );
+      await page.authenticate({
+        username: httpAuthUser,
+        password: httpAuthPassword,
+      });
+    }
 
     // Block PDFs as puppeteer can not access them
     await page.setRequestInterception(true);

@@ -182,6 +182,14 @@ export function makeProgram() {
       .option(
         '--openDetail',
         'open details elements in the PDF, default is open',
+      )
+      .option(
+        '--httpAuthUser <username>',
+        'HTTP Basic Auth username for protected documentation sites',
+      )
+      .option(
+        '--httpAuthPassword <password>',
+        'HTTP Basic Auth password for protected documentation sites',
       );
   });
 
