@@ -86,7 +86,15 @@ export async function generatePDF({
 
     // Block PDFs as puppeteer can not access them
     await page.setRequestInterception(true);
+    // Track handled requests to prevent race conditions
+    const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
     page.on('request', (request) => {
+      // Skip if request already handled
+      if (handledRequests.has(request)) {
+        return;
+      }
+      handledRequests.add(request);
+
       if (request.url().endsWith('.pdf')) {
         console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
         request.abort().catch((err) => {
@@ -109,12 +117,13 @@ export async function generatePDF({
 
     // Local variable to accumulate HTML content from all pages
     let contentHTML = '';
+    // Track visited URLs across all initial URLs to prevent infinite loops
+    // from circular pagination, including cross-references between different initial URLs
+    const visitedURLs = new Set<string>();
 
     for (const url of initialDocURLs) {
       let nextPageURL = url;
       const urlPath = new URL(url).pathname;
-      // Track visited URLs to prevent infinite loops from circular pagination
-      const visitedURLs = new Set<string>();
 
       // Create a list of HTML for the content section of all pages by looping
       while (nextPageURL) {

@@ -7,6 +7,7 @@ import * as http from 'node:http';
 export interface DocusaurusOptions extends GeneratePDFOptions {
   version: number;
   docsDir: string;
+  serverTimeout?: number; // Server timeout in milliseconds (default: 300000 = 5 minutes)
 }
 
 export interface ServerInstance {
@@ -18,7 +19,7 @@ export interface ServerInstance {
 export async function generateDocusaurusPDF(
   options: DocusaurusOptions,
 ): Promise<void> {
-  const { version, docsDir, ...core } = options;
+  const { version, docsDir, serverTimeout, ...core } = options;
   console.debug(`Docusaurus version: ${version}`);
   console.debug(`Docs directory: ${docsDir}`);
   core.contentSelector = 'article';
@@ -63,11 +64,12 @@ export async function generateDocusaurusPDF(
   } else {
     console.error(`Unsupported Docusaurus version: ${version}`);
     throw new Error(
-      `Unsupported Docusaurus version: ${version}. Supported versions are 1, 2, and 3.`,
+      `Unsupported Docusaurus version: ${version}. Supported versions are 1, 2, and 3. ` +
+        `Please specify --version=1, --version=2, or --version=3.`,
     );
   }
   if (docsDir) {
-    await generateFromBuild(docsDir, core);
+    await generateFromBuild(docsDir, core, serverTimeout);
   } else {
     await generatePDF(core);
   }
@@ -85,9 +87,9 @@ async function findAvailablePort(
 ): Promise<number> {
   for (let i = 0; i < maxAttempts; i++) {
     const port = startPort + i;
+    const testServer = http.createServer();
     try {
       await new Promise<void>((resolve, reject) => {
-        const testServer = http.createServer();
         testServer.once('error', reject);
         testServer.once('listening', () => {
           testServer.close(() => resolve());
@@ -96,6 +98,8 @@ async function findAvailablePort(
       });
       return port;
     } catch {
+      // Ensure server is closed even if promise rejects
+      testServer.close();
       // Port is in use, try next one
     }
   }
@@ -108,11 +112,13 @@ async function findAvailablePort(
  * Start Docusaurus Server from build directory
  * @param {string} buildDir - Docusaurus build directory
  * @param {number} port - port to start server on (default: 3000, will auto-increment if occupied)
+ * @param {number} timeout - server timeout in milliseconds (default: 300000 = 5 minutes)
  * @returns {Promise<ServerInstance>} - server instance with app, server, and port
  */
 export async function startDocusaurusServer(
   buildDirPath: string,
   port = 3000,
+  timeout = 300000,
 ): Promise<ServerInstance> {
   const app = express();
   // Disable X-Powered-By header for security
@@ -131,11 +137,13 @@ export async function startDocusaurusServer(
       resolve({ app, server, port: availablePort });
     });
 
-    // Set server timeout to 5 minutes (300000ms)
-    // This prevents the server from staying up indefinitely during long PDF generation
-    server.setTimeout(300000);
+    // Set server timeout to prevent indefinite operation
+    // Default is 5 minutes (300000ms), configurable for large documentation sites
+    server.setTimeout(timeout);
     server.on('timeout', () => {
-      console.warn('Server timeout reached during PDF generation');
+      console.warn(
+        `Server timeout reached during PDF generation (${timeout}ms)`,
+      );
     });
 
     server.once('error', (err) => {
@@ -196,15 +204,21 @@ export async function checkBuildDir(buildDirPath: string): Promise<void> {
  * Generate PDF from Docusaurus build directory
  * @param {string} buildDirPath - Docusaurus build directory
  * @param {GeneratePDFOptions} options - PDF generation options
+ * @param {number} serverTimeout - server timeout in milliseconds (default: 300000 = 5 minutes)
  * @returns {Promise<void>}
  */
 export async function generateFromBuild(
   buildDirPath: string,
   options: GeneratePDFOptions,
+  serverTimeout?: number,
 ): Promise<void> {
   await checkBuildDir(buildDirPath);
 
-  const serverInstance = await startDocusaurusServer(buildDirPath);
+  const serverInstance = await startDocusaurusServer(
+    buildDirPath,
+    3000,
+    serverTimeout,
+  );
 
   try {
     const urlPath = new URL(options.initialDocURLs[0]).pathname;
