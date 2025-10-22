@@ -8,7 +8,15 @@ import * as utils from './utils';
 
 console_stamp(console);
 
-let contentHTML = '';
+/**
+ * Helper function to create a delay promise
+ * @param ms - milliseconds to wait
+ * @returns Promise that resolves after the specified delay
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export interface GeneratePDFOptions {
   initialDocURLs: Array<string>;
   excludeURLs: Array<string>;
@@ -85,11 +93,21 @@ export async function generatePDF({
   page.on('request', (request) => {
     if (request.url().endsWith('.pdf')) {
       console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
-      request.abort();
-    } else request.continue();
+      request.abort().catch(() => {
+        // Ignore abort errors - request may already be handled
+      });
+    } else {
+      request.continue().catch(() => {
+        // Ignore continue errors - request may already be handled
+      });
+    }
   });
 
   console.debug(`InitialDocURLs: ${initialDocURLs}`);
+
+  // Local variable to accumulate HTML content from all pages
+  let contentHTML = '';
+
   for (const url of initialDocURLs) {
     let nextPageURL = url;
     const urlPath = new URL(url).pathname;
@@ -105,7 +123,7 @@ export async function generatePDF({
       });
       if (waitForRender) {
         console.log(chalk.green('Waiting for render...'));
-        await new Promise((r) => setTimeout(r, waitForRender));
+        await delay(waitForRender);
       }
 
       if (
@@ -203,9 +221,9 @@ export async function generatePDF({
   await browser.close();
   console.log(chalk.green('Browser closed'));
 
-  if (chromeTmpDataDir !== null) {
+  if (chromeTmpDataDir) {
     fs.removeSync(chromeTmpDataDir);
+    console.debug(chalk.cyan('Chrome user data dir removed'));
   }
-  console.debug(chalk.cyan('Chrome user data dir removed'));
 }
 /* c8 ignore stop */

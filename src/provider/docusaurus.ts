@@ -24,7 +24,7 @@ export async function generateDocusaurusPDF(
   core.contentSelector = 'article';
 
   // Pagination and exclude selectors are different depending on Docusaurus version
-  if (version == 1) {
+  if (version === 1) {
     console.debug('Docusaurus version 1');
     core.paginationSelector = '.docs-prevnext > a.docs-next';
     core.excludeSelectors = [
@@ -38,7 +38,7 @@ export async function generateDocusaurusPDF(
     core.cssStyle = `
       .navPusher {padding-top: 0;}
       `;
-  } else if (version == 2 || version == 3) {
+  } else if (version === 2 || version === 3) {
     console.debug(`Docusaurus version ${version}`);
     // Docusaurus v2 and v3 use the same selectors
     core.paginationSelector =
@@ -103,6 +103,8 @@ export async function startDocusaurusServer(
   port = 3000,
 ): Promise<ServerInstance> {
   const app = express();
+  // Disable X-Powered-By header for security
+  app.disable('x-powered-by');
   const dirPath = path.resolve(buildDirPath);
   app.use(express.static(dirPath));
 
@@ -157,17 +159,19 @@ export async function stopDocusaurusServer(
  * @throws {Error} - if build directory does not exist
  */
 export async function checkBuildDir(buildDirPath: string): Promise<void> {
-  let buildDirStat;
   try {
-    buildDirStat = await fs.promises.stat(buildDirPath);
+    const buildDirStat = await fs.promises.stat(buildDirPath);
+    if (!buildDirStat.isDirectory()) {
+      throw new Error(`${buildDirPath} is not a docusaurus build directory.`);
+    }
   } catch (error) {
-    throw new Error(
-      `Could not find docusaurus build directory at "${buildDirPath}". ` +
-        'Have you run "docusaurus build"?',
-    );
-  }
-  if (!buildDirStat.isDirectory()) {
-    throw new Error(`${buildDirPath} is not a docusaurus build directory.`);
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      throw new Error(
+        `Could not find docusaurus build directory at "${buildDirPath}". ` +
+          'Have you run "docusaurus build"?',
+      );
+    }
+    throw error;
   }
 }
 

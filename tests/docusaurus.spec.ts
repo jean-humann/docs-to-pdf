@@ -231,7 +231,9 @@ describe('checkBuildDir', () => {
 
   it('should throw an error if the build directory does not exist', async () => {
     const mockStat = jest.spyOn(fs.promises, 'stat');
-    mockStat.mockRejectedValue(new Error('Directory not found'));
+    const error: NodeJS.ErrnoException = new Error('Directory not found');
+    error.code = 'ENOENT';
+    mockStat.mockRejectedValue(error);
 
     await expect(
       checkBuildDir('/path/to/nonexistent/buildDir'),

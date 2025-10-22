@@ -5,12 +5,24 @@ import * as puppeteer from 'puppeteer-core';
 console_stamp(console);
 
 /**
+ * Helper function to create a delay promise
+ * @param ms - milliseconds to wait
+ * @returns Promise that resolves after the specified delay
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
  * Checks whether a page contains a given keyword
  * @param page - The Puppeteer page instance.
- * @param keyword - The mata keyword to search for
+ * @param keyword - The meta keyword to search for
  * @returns boolean if the keyword was found
  */
-export async function matchKeyword(page: puppeteer.Page, keyword: string) {
+export async function matchKeyword(
+  page: puppeteer.Page,
+  keyword: string,
+): Promise<boolean> {
   try {
     const metaKeywords = await page.$eval(
       "head > meta[name='keywords']",
@@ -18,18 +30,17 @@ export async function matchKeyword(page: puppeteer.Page, keyword: string) {
     );
     if (metaKeywords.split(',').includes(keyword)) {
       console.log(
-        chalk.green('Keyword found: ' + keyword + ' in ' + metaKeywords),
+        chalk.green(`Keyword found: ${keyword} in ${metaKeywords}`),
       );
       return true;
     }
     console.log(
-      chalk.yellowBright(
-        'Keyword not found: ' + keyword + ' in ' + metaKeywords,
-      ),
+      chalk.yellowBright(`Keyword not found: ${keyword} in ${metaKeywords}`),
     );
     return false;
-  } catch (e) {
-    console.error(chalk.red('No meta keywords found: ' + e));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`No meta keywords found: ${message}`));
     return false;
   }
 }
@@ -57,11 +68,9 @@ export function getHtmlFromSelector(selector: string): string {
   if (element) {
     // Add pageBreak for PDF
     element.style.pageBreakAfter = 'always';
-
     return element.outerHTML;
-  } else {
-    return '';
   }
+  return '';
 }
 
 type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
@@ -94,9 +103,7 @@ export async function openDetails(
       await (clickFunction
         ? clickFunction(summaryHandle)
         : summaryHandle.click());
-      await (waitFunction
-        ? waitFunction(800)
-        : new Promise((r) => setTimeout(r, 800)));
+      await (waitFunction ? waitFunction(800) : delay(800));
     }
   }
 }
@@ -122,10 +129,9 @@ export function getUrlFromSelector(selector: string): string {
   if (element) {
     // If the element is found, return its href property as the next page URL
     return (element as HTMLLinkElement).href;
-  } else {
-    // If the element is not found, return an empty string
-    return '';
   }
+  // If the element is not found, return an empty string
+  return '';
 }
 
 /**
