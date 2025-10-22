@@ -10,14 +10,61 @@ import {
 } from './provider/docusaurus';
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-const version = require('../package.json').version;
+import packageJson from '../package.json';
+
+const version = packageJson.version;
 
 console_stamp(console);
 
+/**
+ * Safely stringify an unknown error value for display
+ * @param err - The error value to stringify
+ * @returns A string representation of the error
+ */
+function stringifyError(err: unknown): string {
+  if (typeof err === 'string') {
+    return err;
+  }
+  if (typeof err === 'number' || typeof err === 'boolean') {
+    return String(err);
+  }
+  if (err === null || err === undefined) {
+    return String(err);
+  }
+  // For objects, use JSON.stringify
+  try {
+    return JSON.stringify(err);
+  } catch {
+    // Fallback if JSON.stringify fails (circular references, etc.)
+    return Object.prototype.toString.call(err);
+  }
+}
+
+/**
+ * Handle promise completion with consistent success and error handling
+ */
+function handleCommandCompletion(promise: Promise<void>): void {
+  promise
+    .then(() => {
+      console.log(chalk.green('Finish generating PDF!'));
+      process.exit(0);
+    })
+    .catch((err: unknown) => {
+      if (err instanceof Error) {
+        console.error(chalk.red(`Error: ${err.message}`));
+        if (err.stack) {
+          console.error(chalk.red(err.stack));
+        }
+      } else {
+        console.error(chalk.red(`Error: ${stringifyError(err)}`));
+      }
+      process.exit(1);
+    });
+}
+
 export function makeProgram() {
-  const program = new Command('');
+  const program = new Command('docs-to-pdf');
   const docstopdf = program
-    .command('docs-to-pdf')
     .version(version, '-v, --vers', 'output the current version')
     .showSuggestionAfterError()
     .configureHelp({
@@ -32,7 +79,8 @@ export function makeProgram() {
     .option(
       '--version <version>',
       'version of Docusaurus site to generate PDF from',
-      '2',
+      (value) => Number.parseInt(value, 10),
+      2,
     )
     .addOption(
       new Option(
@@ -43,15 +91,7 @@ export function makeProgram() {
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
       console.debug(options);
-      generateDocusaurusPDF(options)
-        .then(() => {
-          console.log(chalk.green('Finish generating PDF!'));
-          process.exit(0);
-        })
-        .catch((err: { stack: unknown }) => {
-          console.error(chalk.red(err.stack));
-          process.exit(1);
-        });
+      handleCommandCompletion(generateDocusaurusPDF(options));
     });
 
   docstopdf
@@ -63,15 +103,7 @@ export function makeProgram() {
         process.exit(1);
       }
       console.debug('Generate from Core');
-      generatePDF(options)
-        .then(() => {
-          console.log(chalk.green('Finish generating PDF!'));
-          process.exit(0);
-        })
-        .catch((err: { stack: unknown }) => {
-          console.error(chalk.red(err.stack));
-          process.exit(1);
-        });
+      handleCommandCompletion(generatePDF(options));
     });
 
   docstopdf.commands.forEach((cmd) => {
@@ -113,8 +145,10 @@ export function makeProgram() {
         '--coverImage <src>',
         'image for PDF cover. *.svg file not working!',
       )
-      .option('--disableTOC', 'disable table of contents')
       .option('--coverSub <subtitle>', 'subtitle for PDF cover')
+      .option('--tocTitle <title>', 'title for table of contents')
+      .option('--disableCover', 'disable PDF cover')
+      .option('--disableTOC', 'disable table of contents')
       .option(
         '--waitForRender <timeout>',
         'wait for document render in milliseconds',

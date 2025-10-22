@@ -1,35 +1,45 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
+import sanitizeHtml from 'sanitize-html';
 
 console_stamp(console);
 
 /**
+ * Helper function to create a delay promise
+ * @param ms - milliseconds to wait
+ * @returns Promise that resolves after the specified delay
+ */
+export function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
  * Checks whether a page contains a given keyword
  * @param page - The Puppeteer page instance.
- * @param keyword - The mata keyword to search for
+ * @param keyword - The meta keyword to search for
  * @returns boolean if the keyword was found
  */
-export async function matchKeyword(page: puppeteer.Page, keyword: string) {
+export async function matchKeyword(
+  page: puppeteer.Page,
+  keyword: string,
+): Promise<boolean> {
   try {
     const metaKeywords = await page.$eval(
       "head > meta[name='keywords']",
       (element) => element.content,
     );
     if (metaKeywords.split(',').includes(keyword)) {
-      console.log(
-        chalk.green('Keyword found: ' + keyword + ' in ' + metaKeywords),
-      );
+      console.log(chalk.green(`Keyword found: ${keyword} in ${metaKeywords}`));
       return true;
     }
     console.log(
-      chalk.yellowBright(
-        'Keyword not found: ' + keyword + ' in ' + metaKeywords,
-      ),
+      chalk.yellowBright(`Keyword not found: ${keyword} in ${metaKeywords}`),
     );
     return false;
-  } catch (e) {
-    console.error(chalk.red('No meta keywords found: ' + e));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`No meta keywords found: ${message}`));
     return false;
   }
 }
@@ -55,17 +65,54 @@ export async function getHtmlContent(page: puppeteer.Page, selector: string) {
 export function getHtmlFromSelector(selector: string): string {
   const element: HTMLElement | null = document.querySelector(selector);
   if (element) {
-    // Add pageBreak for PDF
-    element.style.pageBreakAfter = 'always';
-
+    // Add page break for PDF
+    element.style.breakAfter = 'page';
     return element.outerHTML;
-  } else {
-    return '';
   }
+  return '';
 }
 
 type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
 type WaitFunction = (milliseconds: number) => Promise<void>;
+
+// Constants for details element interaction timing
+// Exported to allow customization in tests or advanced usage
+export const SCROLL_DELAY_MS = 200; // Delay after scrolling element into view
+export const CLICK_WAIT_MS = 800; // Wait time after clicking to allow element to expand
+
+/**
+ * Helper function to click a summary element and wait
+ * @param summaryHandle - The summary element handle
+ * @param summaryText - The text content of the summary for logging
+ * @param clickFunction - Optional custom click function
+ * @param waitFunction - Optional custom wait function
+ */
+async function clickSummary(
+  summaryHandle: puppeteer.ElementHandle,
+  summaryText: string | null,
+  clickFunction?: ClickFunction,
+  waitFunction?: WaitFunction,
+): Promise<void> {
+  console.debug(`Clicking summary: ${summaryText}`);
+
+  try {
+    // Scroll element into view before clicking
+    await summaryHandle.evaluate((element) => {
+      element.scrollIntoView({ behavior: 'auto', block: 'center' });
+    });
+    await delay(SCROLL_DELAY_MS);
+
+    await (clickFunction
+      ? clickFunction(summaryHandle)
+      : summaryHandle.evaluate((sh) => (sh as HTMLElement).click()));
+    await (waitFunction ? waitFunction(CLICK_WAIT_MS) : delay(CLICK_WAIT_MS));
+  } catch (error) {
+    console.debug(
+      `Failed to click summary "${summaryText}": ${error instanceof Error ? error.message : String(error)}`,
+    );
+    // Continue with the next element instead of failing
+  }
+}
 
 /**
  * Recursively opens all <details> elements on a page.
@@ -86,17 +133,15 @@ export async function openDetails(
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
     if (summaryHandle) {
-      console.debug(
-        `Clicking summary: ${await summaryHandle.evaluate(
-          (node) => node.textContent,
-        )}`,
+      const summaryText = await summaryHandle.evaluate(
+        (node) => node.textContent,
       );
-      await (clickFunction
-        ? clickFunction(summaryHandle)
-        : summaryHandle.click());
-      await (waitFunction
-        ? waitFunction(800)
-        : new Promise((r) => setTimeout(r, 800)));
+      await clickSummary(
+        summaryHandle,
+        summaryText,
+        clickFunction,
+        waitFunction,
+      );
     }
   }
 }
@@ -122,10 +167,9 @@ export function getUrlFromSelector(selector: string): string {
   if (element) {
     // If the element is found, return its href property as the next page URL
     return (element as HTMLLinkElement).href;
-  } else {
-    // If the element is not found, return an empty string
-    return '';
   }
+  // If the element is not found, return an empty string
+  return '';
 }
 
 /**
@@ -133,14 +177,16 @@ export function getUrlFromSelector(selector: string): string {
  * @param cover - The HTML content of the cover.
  * @param toc - The HTML content of the table of contents.
  * @param content - The HTML content of the main content.
- * @param disable - A boolean indicating whether to disable the table of contents.
+ * @param disableTOC - A boolean indicating whether to disable the table of contents.
+ * @param disableCover - A boolean indicating whether to disable the cover.
  * @returns The concatenated HTML content.
  */
 export function concatHtml(
   cover: string,
   toc: string,
   content: string,
-  disable: boolean,
+  disableTOC: boolean,
+  disableCover: boolean,
   baseUrl: string,
 ) {
   // Clear the body content
@@ -153,11 +199,13 @@ export function concatHtml(
     body.innerHTML += `<base href="${baseUrl}" />`;
   }
 
-  // Add the cover HTML to the body
-  body.innerHTML += cover;
+  // Add the cover HTML to the body if not disabled
+  if (!disableCover) {
+    body.innerHTML += cover;
+  }
 
   // Add the table of contents HTML to the body if not disabled
-  if (!disable) {
+  if (!disableTOC) {
     body.innerHTML += toc;
   }
 
@@ -230,7 +278,7 @@ export function generateCoverHtml(
       justify-content: center;
       align-items: center;
       height: 100vh;
-      page-break-after: always;  
+      page-break-after: always;
       text-align: center;
     "
   >
@@ -243,10 +291,16 @@ export function generateCoverHtml(
 /**
  * Generates a table of contents (TOC) HTML and modifies the content HTML by replacing header tags with updated header IDs.
  * @param contentHtml - The content HTML string.
- * @param maxLevel - The maximum header level to include in the TOC. Defaults to 3.
+ * @param options - Optional configuration object with maxLevel and tocTitle properties.
  * @returns An object containing the modified content HTML and the TOC HTML.
  */
-export function generateToc(contentHtml: string, maxLevel = 4) {
+export function generateToc(
+  contentHtml: string,
+  options?: { maxLevel?: number; tocTitle?: string },
+) {
+  const maxLevel = options?.maxLevel ?? 4;
+  const tocTitle = options?.tocTitle;
+
   const headers: Array<{
     header: string;
     level: number;
@@ -271,17 +325,28 @@ export function generateToc(contentHtml: string, maxLevel = 4) {
     return replaceHeader(matchedStr, headerId, maxLevel);
   }
 
-  const tocHTML = generateTocHtml(headers);
+  const tocHTML = generateTocHtml(headers, tocTitle);
 
   return { modifiedContentHTML, tocHTML };
+}
+
+interface HeaderItem {
+  level: number;
+  id: string;
+  header: string;
 }
 
 /**
  * Generates the HTML code for a table of contents based on the provided headers.
  * @param headers - An array of header objects containing level, id, and header properties.
+ * @param tocTitle - Optional title for the table of contents. If not provided, defaults to 'Table of contents:'.
  * @returns The HTML code for the table of contents.
  */
-export function generateTocHtml(headers: any[]) {
+export function generateTocHtml(
+  headers: HeaderItem[],
+  tocTitle: string = 'Table of contents:',
+) {
+  const title = tocTitle;
   // Map the headers array to create a list item for each header with the appropriate indentation
   const toc = headers
     .map(
@@ -294,7 +359,7 @@ export function generateTocHtml(headers: any[]) {
   // Return the HTML code for the table of contents
   return `
   <div class="toc-page" style="page-break-after: always;">
-    <h1 class="toc-header">Table of contents:</h1>
+    ${title ? `<h1 class="toc-header">${title}</h1>` : ''}
     ${toc}
   </div>
   `;
@@ -306,12 +371,13 @@ export function generateTocHtml(headers: any[]) {
  * @param matchedStr - The matched string containing the header information.
  * @returns An object containing the header text, header ID, and level.
  */
-export function generateHeader(headers: any[], matchedStr: string) {
+export function generateHeader(headers: HeaderItem[], matchedStr: string) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
-  const headerText = matchedStr
-    .replace(/<a[^>]*>#<\/a( )*>/g, '')
-    .replace(/<[^>]*>/g, '')
-    .trim();
+  // Extract text content by removing all HTML tags using sanitize-html to avoid ReDoS
+  const headerText = sanitizeHtml(matchedStr, {
+    allowedTags: [],
+    allowedAttributes: {},
+  }).trim();
 
   // Generate a random header ID using a combination of random characters and the headers array length
   const headerId = `${Math.random().toString(36).slice(2, 5)}-${
@@ -341,7 +407,7 @@ export function replaceHeader(
   const modifiedContentHTML = matchedStr.replace(re, (header) => {
     if (header.match(/id( )*=( )*"/g)) {
       // If the header already has an ID attribute, replace its value with the headerId parameter
-      return header.replace(/id\s*=\s*"([^"]*)"/g, `id="${headerId}"`);
+      return header.replaceAll(/id\s*=\s*"([^"]*)"/g, `id="${headerId}"`);
     } else {
       // If the header doesn't have an ID attribute, add the headerId parameter as a new ID attribute
       return header.substring(0, header.length - 1) + ` id="${headerId}">`;
@@ -360,9 +426,9 @@ export async function removeExcludeSelector(
   page: puppeteer.Page,
   excludeSelectors: string[],
 ) {
-  excludeSelectors.map(async (excludeSelector) => {
+  for (const excludeSelector of excludeSelectors) {
     await page.evaluate(removeElementFromSelector, excludeSelector);
-  });
+  }
 }
 
 /**
@@ -418,7 +484,7 @@ export async function isPageKept(
   } else if (restrictPaths && nextPageURL.includes(urlPath) === false) {
     console.log(
       chalk.yellowBright(
-        `Page excluded by path restriction: ${urlPath} !== ${urlPath}`,
+        `Page excluded by path restriction: ${nextPageURL} !== ${urlPath}`,
       ),
     );
     return false;

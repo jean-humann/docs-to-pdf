@@ -5,6 +5,7 @@ import {
   stopDocusaurusServer,
   checkBuildDir,
   generateFromBuild,
+  ServerInstance,
 } from '../src/provider/docusaurus'; // Update with the actual module path
 import * as generatePDFModule from '../src/core'; // Import the actual generatePDF function
 import express from 'express';
@@ -28,6 +29,8 @@ describe('generateDocusaurusPDF', () => {
     coverTitle: '',
     coverImage: '',
     disableTOC: false,
+    tocTitle: 'Table of contents:',
+    disableCover: false,
     coverSub: '',
     waitForRender: 0,
     headerTemplate: '',
@@ -101,39 +104,71 @@ describe('generateDocusaurusPDF', () => {
     );
   });
 
+  it('should generate a PDF for Docusaurus version 3', async () => {
+    const options: DocusaurusOptions = {
+      version: 3,
+      docsDir: '',
+      ...core,
+    };
+
+    const generatePDFMock = jest.spyOn(generatePDFModule, 'generatePDF');
+
+    await generateDocusaurusPDF(options);
+
+    expect(generatePDFMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paginationSelector: 'a.pagination-nav__link.pagination-nav__link--next',
+        excludeSelectors: [
+          '.margin-vert--xl a',
+          "[class^='tocCollapsible']",
+          '.breadcrumbs',
+          '.theme-edit-this-page',
+        ],
+        contentSelector: 'main',
+      }),
+    );
+  });
+
   it('should throw an error for unsupported Docusaurus version', async () => {
     const options: DocusaurusOptions = {
-      version: 3, // Unsupported version
+      version: 4, // Unsupported version
       docsDir: 'path/to/docs',
       ...core,
       // ... other required properties for testing
     };
 
     await expect(generateDocusaurusPDF(options)).rejects.toThrowError(
-      'Unsupported Docusaurus version: 3',
+      'Unsupported Docusaurus version: 4. Supported versions are 1, 2, and 3.',
     );
   });
 });
 
 describe('startDocusaurusServer', () => {
   console.debug('startDocusaurusServer');
-  let server: express.Express;
+  let serverInstance: ServerInstance;
 
   beforeAll(async () => {
-    server = await startDocusaurusServer('tests/website/build', 3001);
+    serverInstance = await startDocusaurusServer('tests/website/build', 3001);
   });
 
   afterAll(async () => {
-    await stopDocusaurusServer(server);
+    await stopDocusaurusServer(serverInstance);
+  });
+
+  it('should start server and return ServerInstance with valid port', async () => {
+    expect(serverInstance).toBeDefined();
+    expect(serverInstance.app).toBeDefined();
+    expect(serverInstance.server).toBeDefined();
+    expect(serverInstance.port).toBeGreaterThanOrEqual(3001);
   });
 
   it('should respond with status 200 for root URL', async () => {
-    const response = await supertest(server).get('/');
+    const response = await supertest(serverInstance.app).get('/');
     expect(response.status).toBe(200);
   });
 
   it('should respond with status 404 for non-existent URL', async () => {
-    const response = await supertest(server).get('/non-existent');
+    const response = await supertest(serverInstance.app).get('/non-existent');
     expect(response.status).toBe(404);
   });
 });
@@ -144,30 +179,41 @@ describe('stopDocusaurusServer', () => {
     const mockClose = jest.fn().mockImplementation((callback) => {
       callback();
     });
-    const mockListen = jest.fn().mockReturnValue({ close: mockClose });
-    const mockApp = {
-      listen: mockListen,
-    } as unknown as express.Express;
+    const mockApp = {} as express.Express;
+    const mockServer = { close: mockClose } as unknown as import('http').Server;
+    const serverInstance: ServerInstance = {
+      app: mockApp,
+      server: mockServer,
+      port: 3000,
+    };
 
-    await stopDocusaurusServer(mockApp);
+    await stopDocusaurusServer(serverInstance);
 
-    expect(mockListen).toHaveBeenCalled();
     expect(mockClose).toHaveBeenCalled();
 
-    mockListen.mockRestore();
     mockClose.mockRestore();
   });
 
   it('should throw an error if no server is provided', async () => {
-    await expect(stopDocusaurusServer(null as any)).rejects.toThrow(
-      'No server to stop',
-    );
+    await expect(
+      stopDocusaurusServer(null as unknown as ServerInstance),
+    ).rejects.toThrow('No server to stop');
   });
 
-  it('should throw an error if provided server is not a Docusaurus server', async () => {
-    const mockApp = {} as unknown as express.Express;
-    await expect(stopDocusaurusServer(mockApp)).rejects.toThrow(
-      'Server is not a docusaurus server',
+  it('should throw an error if server close fails', async () => {
+    const mockClose = jest.fn().mockImplementation((callback) => {
+      callback(new Error('Close failed'));
+    });
+    const mockApp = {} as express.Express;
+    const mockServer = { close: mockClose } as unknown as import('http').Server;
+    const serverInstance: ServerInstance = {
+      app: mockApp,
+      server: mockServer,
+      port: 3000,
+    };
+
+    await expect(stopDocusaurusServer(serverInstance)).rejects.toThrow(
+      'Failed to stop server: Close failed',
     );
   });
 });
@@ -187,7 +233,9 @@ describe('checkBuildDir', () => {
 
   it('should throw an error if the build directory does not exist', async () => {
     const mockStat = jest.spyOn(fs.promises, 'stat');
-    mockStat.mockRejectedValue(new Error('Directory not found'));
+    const error: NodeJS.ErrnoException = new Error('Directory not found');
+    error.code = 'ENOENT';
+    mockStat.mockRejectedValue(error);
 
     await expect(
       checkBuildDir('/path/to/nonexistent/buildDir'),
@@ -235,6 +283,8 @@ describe('generateFromBuild', () => {
     coverTitle: '',
     coverImage: '',
     disableTOC: false,
+    tocTitle: 'Table of contents:',
+    disableCover: false,
     coverSub: '',
     waitForRender: 0,
     headerTemplate: '',
@@ -255,8 +305,16 @@ describe('generateFromBuild', () => {
 
     expect(mockGeneratePDF).toHaveBeenCalledWith(
       expect.objectContaining({
-        initialDocURLs: ['http://127.0.0.1:3000/docs/intro'],
+        initialDocURLs: expect.arrayContaining([
+          expect.stringContaining('http://127.0.0.1:'),
+        ]),
       }),
+    );
+
+    // Verify the URL path is preserved
+    const callArgs = mockGeneratePDF.mock.calls[0][0];
+    expect(callArgs.initialDocURLs[0]).toMatch(
+      /http:\/\/127\.0\.0\.1:\d+\/docs\/intro/,
     );
 
     mockGeneratePDF.mockRestore();
