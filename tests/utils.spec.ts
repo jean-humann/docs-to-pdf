@@ -11,6 +11,7 @@ import {
   matchKeyword,
   isPageKept,
   openDetails,
+  extractIframeContent,
 } from '../src/utils';
 
 // Try to find Chrome executable, skip tests if not available
@@ -506,5 +507,164 @@ describeIfChrome('openDetails function', () => {
     expect(clickFunction).toHaveBeenCalledTimes(2);
     expect(waitFunction).toHaveBeenCalledTimes(2);
     expect(waitFunction).toHaveBeenCalledWith(800);
+  });
+});
+
+describeIfChrome('extractIframeContent function', () => {
+  let page: puppeteer.Page;
+  let browser: puppeteer.Browser;
+
+  beforeAll(async () => {
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath: execPath!,
+    });
+    page = await browser.newPage();
+  }, 30000);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('should return unchanged HTML when no iframes are present', async () => {
+    await page.setContent(`
+      <html>
+        <body>
+          <div>No iframes here</div>
+        </body>
+      </html>
+    `);
+
+    const html = '<div>Test content</div>';
+    const result = await extractIframeContent(page, html);
+    expect(result).toBe(html);
+  });
+
+  it('should extract content from same-origin iframe', async () => {
+    // Create a data URL iframe with content
+    await page.setContent(`
+      <html>
+        <body>
+          <div id="main">
+            <p>Main content</p>
+            <iframe id="test-iframe" srcdoc="<div>Iframe content here</div>"></iframe>
+          </div>
+        </body>
+      </html>
+    `);
+
+    // Wait for iframe to load
+    await page.waitForSelector('#test-iframe', { timeout: 5000 });
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+
+    const html = await page.evaluate(() => document.body.innerHTML);
+    const result = await extractIframeContent(page, html);
+
+    // Check that iframe content was extracted
+    expect(result).toContain('Iframe content here');
+    expect(result).toContain('class="iframe-content"');
+    expect(result).toContain('Embedded content:');
+  });
+
+  it('should handle multiple iframes', async () => {
+    await page.setContent(`
+      <html>
+        <body>
+          <iframe srcdoc="<div>First iframe</div>"></iframe>
+          <iframe srcdoc="<div>Second iframe</div>"></iframe>
+        </body>
+      </html>
+    `);
+
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+
+    const html = await page.evaluate(() => document.body.innerHTML);
+    const result = await extractIframeContent(page, html);
+
+    expect(result).toContain('First iframe');
+    expect(result).toContain('Second iframe');
+  });
+
+  it('should preserve iframe title in extracted content', async () => {
+    await page.setContent(`
+      <html>
+        <body>
+          <iframe title="My Special Content" srcdoc="<div>Content</div>"></iframe>
+        </body>
+      </html>
+    `);
+
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+
+    const html = await page.evaluate(() => document.body.innerHTML);
+    const result = await extractIframeContent(page, html);
+
+    expect(result).toContain('My Special Content');
+  });
+});
+
+describeIfChrome('getHtmlContent with iframe extraction', () => {
+  let page: puppeteer.Page;
+  let browser: puppeteer.Browser;
+
+  beforeAll(async () => {
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath: execPath!,
+    });
+    page = await browser.newPage();
+  }, 30000);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('should extract iframe content when extractIframes is true', async () => {
+    await page.setContent(`
+      <html>
+        <body>
+          <div id="content">
+            <p>Main content</p>
+            <iframe srcdoc="<div>Iframe content</div>"></iframe>
+          </div>
+        </body>
+      </html>
+    `);
+
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+
+    const html = await getHtmlContent(page, '#content', true);
+    expect(html).toContain('Iframe content');
+    expect(html).toContain('class="iframe-content"');
+  });
+
+  it('should not extract iframe content when extractIframes is false', async () => {
+    await page.setContent(`
+      <html>
+        <body>
+          <div id="content">
+            <p>Main content</p>
+            <iframe srcdoc="<div>Embedded iframe data</div>"></iframe>
+          </div>
+        </body>
+      </html>
+    `);
+
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+
+    const html = await getHtmlContent(page, '#content', false);
+    expect(html).toContain('<iframe');
+    expect(html).not.toContain('class="iframe-content"');
+    expect(html).not.toContain('Embedded content:');
   });
 });

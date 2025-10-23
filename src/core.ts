@@ -36,6 +36,7 @@ export interface GeneratePDFOptions {
   excludePaths: Array<string>;
   restrictPaths: boolean;
   openDetail: boolean;
+  extractIframes: boolean;
   httpAuthUser?: string;
   httpAuthPassword?: string;
 }
@@ -67,6 +68,7 @@ export async function generatePDF({
   excludePaths,
   restrictPaths,
   openDetail = true,
+  extractIframes = false,
   httpAuthUser,
   httpAuthPassword,
 }: GeneratePDFOptions): Promise<void> {
@@ -183,7 +185,11 @@ export async function generatePDF({
             await utils.openDetails(page);
           }
           // Get the HTML string of the content section.
-          contentHTML += await utils.getHtmlContent(page, contentSelector);
+          contentHTML += await utils.getHtmlContent(
+            page,
+            contentSelector,
+            extractIframes,
+          );
           console.log(chalk.green('Success'));
         }
 

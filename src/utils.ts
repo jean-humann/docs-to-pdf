@@ -48,10 +48,21 @@ export async function matchKeyword(
  * Retrieves the HTML content of a specific element on a page using Puppeteer.
  * @param page - The Puppeteer page instance.
  * @param selector - The CSS selector of the element.
+ * @param extractIframes - Whether to extract and inline iframe content (default: false)
  * @returns The HTML content of the element.
  */
-export async function getHtmlContent(page: puppeteer.Page, selector: string) {
-  const html = await page.evaluate(getHtmlFromSelector, selector);
+export async function getHtmlContent(
+  page: puppeteer.Page,
+  selector: string,
+  extractIframes = false,
+) {
+  let html = await page.evaluate(getHtmlFromSelector, selector);
+
+  // Extract iframe content if enabled
+  if (extractIframes) {
+    html = await extractIframeContent(page, html);
+  }
+
   return html;
 }
 
@@ -70,6 +81,176 @@ export function getHtmlFromSelector(selector: string): string {
     return element.outerHTML;
   }
   return '';
+}
+
+/**
+ * Extracts content from iframes in the HTML and replaces them with their actual content.
+ * Only processes same-origin iframes or iframes that are accessible.
+ *
+ * @param page - The Puppeteer page instance
+ * @param html - The HTML content containing iframes
+ * @returns The HTML with iframe content extracted and inlined
+ */
+export async function extractIframeContent(
+  page: puppeteer.Page,
+  html: string,
+): Promise<string> {
+  // Find all iframes in the page
+  const iframes = await page.$$('iframe');
+
+  if (iframes.length === 0) {
+    return html;
+  }
+
+  console.log(
+    chalk.cyan(`Found ${iframes.length} iframe(s), extracting content...`),
+  );
+
+  // Build a list of replacements to apply
+  // Using an array to handle duplicate iframes and apply replacements in order
+  const replacements: Array<{ search: string; replace: string }> = [];
+
+  // Process each iframe
+  for (let i = 0; i < iframes.length; i++) {
+    const iframe = iframes[i];
+
+    try {
+      // Get iframe src and basic info
+      const iframeInfo = await iframe.evaluate((el: Element) => {
+        const iframeEl = el as HTMLIFrameElement;
+        return {
+          src: iframeEl.src,
+          id: iframeEl.id,
+          className: iframeEl.className,
+          title: iframeEl.title,
+        };
+      });
+
+      console.log(
+        chalk.cyan(
+          `  Processing iframe ${i + 1}: ${iframeInfo.src || '(no src)'}`,
+        ),
+      );
+
+      // Try to access iframe content
+      const frame = await iframe.contentFrame();
+
+      if (!frame) {
+        console.log(
+          chalk.yellowBright(
+            `  ⚠ Skipping iframe ${i + 1}: Cannot access content (cross-origin or not loaded)`,
+          ),
+        );
+        continue;
+      }
+
+      // Wait for iframe to load
+      try {
+        await frame.waitForSelector('body', { timeout: 5000 });
+      } catch {
+        console.log(
+          chalk.yellowBright(
+            `  ⚠ Skipping iframe ${i + 1}: Body not loaded within timeout`,
+          ),
+        );
+        continue;
+      }
+
+      // Extract the body content from the iframe
+      const iframeContent = await frame.evaluate(() => {
+        const body = document.body;
+        return body ? body.innerHTML : '';
+      });
+
+      if (!iframeContent) {
+        console.log(
+          chalk.yellowBright(`  ⚠ Skipping iframe ${i + 1}: No content found`),
+        );
+        continue;
+      }
+
+      // Get the outer HTML of the iframe to use as a search pattern
+      const iframeOuterHtml = await iframe.evaluate(
+        (el: Element) => el.outerHTML,
+      );
+
+      // Sanitize iframe attributes to prevent XSS attacks
+      const sanitizedSrc = sanitizeHtml(iframeInfo.src || '', {
+        allowedTags: [],
+        allowedAttributes: {},
+      });
+      const sanitizedTitle = sanitizeHtml(iframeInfo.title || '', {
+        allowedTags: [],
+        allowedAttributes: {},
+      });
+
+      // CRITICAL: Sanitize iframe content to prevent XSS attacks
+      // Allow common formatting and media tags but remove scripts and event handlers
+      const sanitizedContent = sanitizeHtml(iframeContent, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+          'img',
+          'video',
+          'audio',
+          'iframe',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+        ]),
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          '*': ['class', 'id', 'style'],
+          img: [
+            'src',
+            'alt',
+            'title',
+            'width',
+            'height',
+            'class',
+            'id',
+            'style',
+          ],
+          video: ['src', 'controls', 'width', 'height', 'class', 'id', 'style'],
+          audio: ['src', 'controls', 'class', 'id', 'style'],
+        },
+        allowedSchemes: ['http', 'https', 'data', 'mailto'],
+      });
+
+      // Build replacement HTML with sanitized content
+      const replacement = `<div class="iframe-content" data-iframe-src="${sanitizedSrc}" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+  <div class="iframe-header" style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+    <strong>Embedded content:</strong> ${sanitizedTitle || sanitizedSrc || 'iframe'}
+  </div>
+  ${sanitizedContent}
+</div>`;
+
+      // Store replacement for later application
+      // This handles duplicate iframes correctly
+      replacements.push({
+        search: iframeOuterHtml,
+        replace: replacement,
+      });
+
+      console.log(chalk.green(`  ✓ Extracted content from iframe ${i + 1}`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.log(
+        chalk.yellowBright(`  ⚠ Skipping iframe ${i + 1}: ${message}`),
+      );
+      continue;
+    }
+  }
+
+  // Apply all replacements
+  // Process in order to handle duplicate iframes correctly
+  for (const { search, replace } of replacements) {
+    // Replace first occurrence to handle each iframe individually
+    html = html.replace(search, replace);
+  }
+
+  return html;
 }
 
 type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
