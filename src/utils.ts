@@ -48,10 +48,21 @@ export async function matchKeyword(
  * Retrieves the HTML content of a specific element on a page using Puppeteer.
  * @param page - The Puppeteer page instance.
  * @param selector - The CSS selector of the element.
+ * @param extractIframes - Whether to extract and inline iframe content (default: false)
  * @returns The HTML content of the element.
  */
-export async function getHtmlContent(page: puppeteer.Page, selector: string) {
-  const html = await page.evaluate(getHtmlFromSelector, selector);
+export async function getHtmlContent(
+  page: puppeteer.Page,
+  selector: string,
+  extractIframes = false,
+) {
+  let html = await page.evaluate(getHtmlFromSelector, selector);
+
+  // Extract iframe content if enabled
+  if (extractIframes) {
+    html = await extractIframeContent(page, html);
+  }
+
   return html;
 }
 
@@ -70,6 +81,105 @@ export function getHtmlFromSelector(selector: string): string {
     return element.outerHTML;
   }
   return '';
+}
+
+/**
+ * Extracts content from iframes in the HTML and replaces them with their actual content.
+ * Only processes same-origin iframes or iframes that are accessible.
+ *
+ * @param page - The Puppeteer page instance
+ * @param html - The HTML content containing iframes
+ * @returns The HTML with iframe content extracted and inlined
+ */
+export async function extractIframeContent(
+  page: puppeteer.Page,
+  html: string,
+): Promise<string> {
+  // Find all iframes in the content
+  const iframes = await page.$$('iframe');
+
+  if (iframes.length === 0) {
+    return html;
+  }
+
+  console.log(
+    chalk.cyan(`Found ${iframes.length} iframe(s), extracting content...`),
+  );
+
+  // Process each iframe
+  for (let i = 0; i < iframes.length; i++) {
+    const iframe = iframes[i];
+
+    try {
+      // Get iframe src and basic info
+      const iframeInfo = await iframe.evaluate((el: Element) => {
+        const iframeEl = el as HTMLIFrameElement;
+        return {
+          src: iframeEl.src,
+          id: iframeEl.id,
+          className: iframeEl.className,
+          title: iframeEl.title,
+        };
+      });
+
+      console.debug(
+        `Processing iframe ${i + 1}: ${iframeInfo.src || '(no src)'}`,
+      );
+
+      // Try to access iframe content
+      const frame = await iframe.contentFrame();
+
+      if (!frame) {
+        console.debug(
+          `  Skipping iframe ${i + 1}: Cannot access content (cross-origin or not loaded)`,
+        );
+        continue;
+      }
+
+      // Wait for iframe to load
+      try {
+        await frame.waitForSelector('body', { timeout: 5000 });
+      } catch {
+        console.debug(
+          `  Skipping iframe ${i + 1}: Body not loaded within timeout`,
+        );
+        continue;
+      }
+
+      // Extract the body content from the iframe
+      const iframeContent = await frame.evaluate(() => {
+        const body = document.body;
+        return body ? body.innerHTML : '';
+      });
+
+      if (!iframeContent) {
+        console.debug(`  Skipping iframe ${i + 1}: No content found`);
+        continue;
+      }
+
+      // Get the outer HTML of the iframe to use as a search pattern
+      const iframeOuterHtml = await iframe.evaluate(
+        (el: Element) => el.outerHTML,
+      );
+
+      // Replace the iframe tag with its content wrapped in a div
+      const replacement = `<div class="iframe-content" data-iframe-src="${iframeInfo.src || ''}" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+  <div class="iframe-header" style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+    <strong>Embedded content:</strong> ${iframeInfo.title || iframeInfo.src || 'iframe'}
+  </div>
+  ${iframeContent}
+</div>`;
+
+      html = html.replace(iframeOuterHtml, replacement);
+      console.log(chalk.green(`  ✓ Extracted content from iframe ${i + 1}`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.debug(`  Skipping iframe ${i + 1}: ${message}`);
+      continue;
+    }
+  }
+
+  return html;
 }
 
 type ClickFunction = (element: puppeteer.ElementHandle) => Promise<void>;
