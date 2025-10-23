@@ -68,6 +68,7 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlif
 | `--baseUrl`            | No       | Base URL for all relative URLs. Allows to render the pdf on localhost (ci/Github Actions) while referencing the deployed page.                                                     |
 | `--excludePaths`       | No       | URL Paths to be excluded                                                                                                                                                           |
 | `--restrictPaths`      | No       | Keep Only URL Path with the same rootPath as `--initialDocURLs`                                                                                                                    |
+| `--extractIframes`     | No       | Extract and inline content from iframes (only same-origin or accessible iframes). Default is `false`                                                                               |
 | `--httpAuthUser`       | No       | HTTP Basic Auth username for protected documentation sites                                                                                                                         |
 | `--httpAuthPassword`   | No       | HTTP Basic Auth password for protected documentation sites                                                                                                                         |
 
@@ -146,6 +147,38 @@ npx docs-to-pdf --initialDocURLs="https://your-docusaurus-v3-site.com/docs/" --c
 ```
 
 **Note**: Docusaurus v3 changed the main content wrapper from `<article>` (v2) to `<main>` (v3). The `--version=3` flag automatically uses the correct `main` selector.
+
+### Extracting Content from Iframes
+
+By default, docs-to-pdf only captures the `<iframe>` tag itself, but not the content loaded inside it. If your documentation pages contain iframes with important content (e.g., embedded demos, interactive examples), you can use the `--extractIframes` option to extract and inline their content into the PDF.
+
+```shell
+# Enable iframe extraction
+npx docs-to-pdf --initialDocURLs="https://your-site.com/docs" --contentSelector="article" --paginationSelector="a.pagination-nav__link--next" --extractIframes
+```
+
+With Docusaurus:
+
+```shell
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --extractIframes
+```
+
+**How it works:**
+- Detects all `<iframe>` elements on each page
+- Extracts content from accessible iframes (same-origin or accessible cross-origin)
+- Replaces the iframe tag with a styled `<div>` containing the extracted content
+- Preserves iframe metadata (title, src) in the extracted content
+- Gracefully skips cross-origin iframes that cannot be accessed due to CORS restrictions
+
+**Limitations:**
+- Only works with same-origin iframes or iframes that allow cross-origin access
+- Cross-origin iframes blocked by CORS policy will be skipped
+- The feature is opt-in and disabled by default for backward compatibility
+
+**When to use:**
+- Your documentation contains embedded examples in iframes
+- You want to include interactive demos in the PDF
+- Your site uses iframes for content that should appear in the PDF
 
 ### Using HTTP Basic Authentication
 
