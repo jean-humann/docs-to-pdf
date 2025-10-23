@@ -98,4 +98,4 @@ ignore:
 
 # GitHub checks configuration
 github_checks:
-  annotations: true
+  annotations: false
