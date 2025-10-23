@@ -11,6 +11,7 @@ import type { DictMap } from 'pdf-lib/cjs/core/objects/PDFDict.js';
 import type { PDFContext, PDFDocument, PDFRef } from 'pdf-lib';
 import { decode } from 'html-entities';
 import { PDFArray, PDFDict, PDFHexString, PDFName, PDFNumber } from 'pdf-lib';
+import chalk from 'chalk';
 
 export interface RootOutlineNode {
   children: (OutlineNode | never)[];
@@ -199,6 +200,7 @@ function countChildrenOfOutline(outlines: OutlineNode[]): number {
  * @param {PDFDocument} pdfDoc - The PDF document to get page information from.
  * @param {number} pageHeightInPixels - The height of the rendered page in pixels.
  * @param {number} pdfPageHeightInPoints - The height of each PDF page in points.
+ * @param {object} progress - Progress tracking object (optional)
  */
 function buildPdfObjectsForOutline(
   outlinesWithRef: OutlineRef[],
@@ -206,8 +208,30 @@ function buildPdfObjectsForOutline(
   pdfDoc: PDFDocument,
   pageHeightInPixels: number,
   pdfPageHeightInPoints: number,
+  progress?: { processed: number; total: number; lastReportedPercent: number },
 ) {
   for (const [i, item] of outlinesWithRef.entries()) {
+    // Update progress if tracking is enabled
+    if (progress) {
+      progress.processed++;
+      const percent = Math.floor((progress.processed / progress.total) * 100);
+
+      // Report every 10% or on last item
+      if (
+        percent >= progress.lastReportedPercent + 10 ||
+        progress.processed === progress.total
+      ) {
+        process.stdout.write(
+          `\r${chalk.cyan('Creating bookmarks...')} ${chalk.yellow(`${percent}%`)} (${progress.processed}/${progress.total})`,
+        );
+        progress.lastReportedPercent = percent;
+
+        // Add newline on completion
+        if (progress.processed === progress.total) {
+          process.stdout.write('\n');
+        }
+      }
+    }
     const prev = outlinesWithRef[i - 1];
     const next = outlinesWithRef[i + 1];
     const pdfObject: DictMap = new Map([]);
@@ -284,6 +308,7 @@ function buildPdfObjectsForOutline(
       pdfDoc,
       pageHeightInPixels,
       pdfPageHeightInPoints,
+      progress,
     );
   }
 }
@@ -348,12 +373,22 @@ export async function setOutline(
     pdfDoc.context,
     rootOutlineRef,
   );
+
+  // Initialize progress tracking
+  const totalOutlineItems = countChildrenOfOutline(outlinesWithRef);
+  const progress = {
+    processed: 0,
+    total: totalOutlineItems,
+    lastReportedPercent: 0,
+  };
+
   buildPdfObjectsForOutline(
     outlinesWithRef,
     pdfDoc.context,
     pdfDoc,
     pageHeightInPixels,
     pdfPageHeightInPoints,
+    progress,
   );
 
   const outlineObject: DictMap = new Map([]);

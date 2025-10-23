@@ -1,8 +1,20 @@
 import * as puppeteer from 'puppeteer-core';
 import chalk from 'chalk';
-import { getOutline, setOutline } from './outline';
+import { getOutline, setOutline, OutlineNode } from './outline';
 import { PDFDocument } from 'pdf-lib';
 import { writeFile } from 'fs/promises';
+
+/**
+ * Count total number of headings in the outline tree
+ */
+function countTotalHeadings(outlines: OutlineNode[]): number {
+  let count = 0;
+  for (const item of outlines) {
+    count++;
+    count += countTotalHeadings(item.children);
+  }
+  return count;
+}
 
 export interface PDFOptions {
   outputPDFFilename: string;
@@ -37,6 +49,7 @@ export class PDF {
       };
     });
 
+    console.log(chalk.cyan('Extracting headings from document...'));
     const outline = await getOutline(page, [
       'h1',
       'h2',
@@ -45,7 +58,17 @@ export class PDF {
       'h5',
       'h6',
     ]);
-    console.log(chalk.green('Outline generated'));
+
+    const totalHeadings = countTotalHeadings(outline);
+    if (totalHeadings > 0) {
+      console.log(chalk.green(`✓ Found ${totalHeadings} headings`));
+    } else {
+      console.log(
+        chalk.yellow(
+          'No headings found - PDF will be generated without bookmarks',
+        ),
+      );
+    }
 
     const pdfExportOptions = {
       path: this.options.outputPDFFilename ?? 'output.pdf',
@@ -75,13 +98,18 @@ export class PDF {
     const pdfPage = pdfDoc.getPage(0);
     const pdfPageHeight = pdfPage.getHeight();
 
-    await setOutline(
-      pdfDoc,
-      outline,
-      pageDimensions.height,
-      pdfPageHeight,
-      true,
-    );
+    if (totalHeadings > 0) {
+      await setOutline(
+        pdfDoc,
+        outline,
+        pageDimensions.height,
+        pdfPageHeight,
+        true,
+      );
+      console.log(chalk.green(`✓ Created ${totalHeadings} bookmarks`));
+    }
+
+    console.log(chalk.cyan('Saving PDF...'));
     const buffer = await pdfDoc.save();
     await writeFile(this.options.outputPDFFilename ?? 'output.pdf', buffer);
     console.log(
