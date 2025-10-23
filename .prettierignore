@@ -1,0 +1,3 @@
+# Claude workflow files
+.claude/
+.github/workflows/claude*.yml

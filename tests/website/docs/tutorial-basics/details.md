@@ -31,6 +31,7 @@ This page tests the handling of `<details>` elements in PDF generation.
 ## Why This Matters
 
 The `<details>` element is commonly used in documentation for:
+
 - Collapsible code examples
 - FAQ sections
 - Optional reading material

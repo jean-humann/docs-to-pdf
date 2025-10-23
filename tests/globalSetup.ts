@@ -15,8 +15,7 @@ export default async function globalSetup(): Promise<void> {
   // Check if build directory already exists and is recent
   if (fs.existsSync(buildPath)) {
     const buildStats = fs.statSync(buildPath);
-    const ageInMinutes =
-      (Date.now() - buildStats.mtimeMs) / 1000 / 60;
+    const ageInMinutes = (Date.now() - buildStats.mtimeMs) / 1000 / 60;
 
     // Skip rebuild if build is less than 5 minutes old
     if (ageInMinutes < 5) {

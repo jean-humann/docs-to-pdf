@@ -1,4 +1,7 @@
 name: Node CI
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   push:
@@ -26,3 +29,5 @@ jobs:
       - run: yarn test
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
