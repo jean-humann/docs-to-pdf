@@ -18,6 +18,12 @@ build/
 coverage/
 .nyc_output/
 *.lcov
+tests/website/build/
+tests/website/.docusaurus/
+tests/website/.cache/
+tests/website/.yarn/cache/
+tests/website/.yarn/unplugged/
+tests/website/.yarn/install-state.gz
 
 # Logs
 logs/
