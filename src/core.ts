@@ -36,8 +36,8 @@ export interface GeneratePDFOptions {
   excludePaths: Array<string>;
   restrictPaths: boolean;
   openDetail: boolean;
-  httpAuthUser: string;
-  httpAuthPassword: string;
+  httpAuthUser?: string;
+  httpAuthPassword?: string;
 }
 
 /* c8 ignore start */

@@ -1,4 +1,6 @@
 name: Node CI
+permissions:
+  contents: read
 
 on:
   push:
@@ -26,3 +28,11 @@ jobs:
       - run: yarn test
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
+        if: matrix.node-version == '24.x'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.node-version == '24.x' }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

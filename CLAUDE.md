@@ -158,10 +158,12 @@ BREAKING CHANGE: Dropped support for Node.js 18. Users must upgrade to Node.js 2
 This project uses [release-please-action](https://github.com/googleapis/release-please-action) (GitHub Action) to automate releases.
 
 Configuration files:
+
 - `release-please-config.json` - Release strategy and package configuration
 - `.release-please-manifest.json` - Tracks current version
 
 Workflow:
+
 1. Commits merged to `master` → release-please GitHub Action analyzes them
 2. release-please creates/updates a Release PR
 3. When Release PR is merged → automated release happens:
@@ -225,6 +227,37 @@ release-please determines version based on commits since last release:
 - Update tests when modifying existing code
 - Ensure test coverage for bug fixes
 - Use descriptive test names
+
+#### Test Website Auto-Build
+
+The test suite includes a `tests/website/` directory containing a Docusaurus test site. To optimize test performance, the project uses `tests/globalSetup.ts` to automatically build this website before running tests.
+
+**How it works:**
+1. Before tests run, Jest executes `globalSetup.ts`
+2. Checks if `tests/website/build/` exists and is recent
+3. Skips rebuild if build is less than 5 minutes old (configurable)
+4. Validates build completeness by checking for `index.html`
+5. Rebuilds if directory is missing, incomplete, or stale
+
+**Configuration:**
+
+Set the `REBUILD_THRESHOLD_MINUTES` environment variable to customize the cache duration:
+
+```bash
+# Skip rebuild for builds less than 10 minutes old
+REBUILD_THRESHOLD_MINUTES=10 yarn test
+
+# Force rebuild on every test run
+REBUILD_THRESHOLD_MINUTES=0 yarn test
+```
+
+**Default behavior:** 5-minute threshold balances CI performance with local development iteration speed.
+
+**Build validation:**
+- Checks `buildStats.isDirectory()` to ensure path is a directory
+- Verifies `index.html` exists as a marker of complete builds
+- Handles race conditions and permission errors gracefully
+- Logs detailed error messages to aid debugging
 
 ### Error Handling
 

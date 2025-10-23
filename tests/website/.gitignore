@@ -2,10 +2,12 @@
 /node_modules
 
 # Production
+/build
 
 # Generated files
 .docusaurus
 .cache-loader
+.yarn/install-state.gz
 
 # Misc
 .DS_Store
