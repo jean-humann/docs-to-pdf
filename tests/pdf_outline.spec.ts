@@ -7,6 +7,7 @@ import {
   OutlineNode,
 } from '../src/pdf/outline';
 import { PDFDocument, PDFName } from 'pdf-lib';
+import { chromeExecPath } from '../src/browser';
 
 describe('formatOutlineContainerSelector', () => {
   test('should return empty string for empty input', () => {
@@ -37,9 +38,7 @@ describe('getOutline', () => {
   beforeAll(async () => {
     browser = await puppeteer.launch({
       headless: true,
-      executablePath:
-        process.env.PUPPETEER_EXECUTABLE_PATH ||
-        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath(),
     });
   });
 

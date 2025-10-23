@@ -4,6 +4,7 @@ import { PDF, PDFOptions } from '../src/pdf/generate';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PDFDocument, PDFName } from 'pdf-lib';
+import { chromeExecPath } from '../src/browser';
 
 describe('PDF class', () => {
   let browser: puppeteer.Browser;
@@ -14,9 +15,7 @@ describe('PDF class', () => {
   beforeAll(async () => {
     browser = await puppeteer.launch({
       headless: true,
-      executablePath:
-        process.env.PUPPETEER_EXECUTABLE_PATH ||
-        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath(),
     });
 
     // Create test output directory
