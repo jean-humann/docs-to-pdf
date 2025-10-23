@@ -54,20 +54,20 @@ coverage:
 
 # Pull request comment configuration
 comment:
-  # Show coverage diff, files changed, and coverage by component
+  # Show coverage diff, files changed, and footer
   layout: 'diff, files, footer'
 
-  # Post comment on every commit
+  # Update existing comment if it exists, otherwise post new
   behavior: default
 
-  # Always post comments, even if coverage hasn't changed
+  # Post comment even if there's no change in coverage
   require_changes: false
 
-  # Require base report to exist before posting
-  require_base: no
+  # Do not require base report to exist before posting
+  require_base: false
 
   # Require head report to exist before posting
-  require_head: yes
+  require_head: true
 
 # Paths to ignore from coverage analysis
 ignore:
