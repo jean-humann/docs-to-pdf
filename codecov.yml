@@ -1,0 +1,101 @@
+# Codecov configuration for docs-to-pdf
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+# Coverage configuration
+coverage:
+  # Precision of coverage percentage (2 decimal places)
+  precision: 2
+
+  # Round coverage percentage
+  round: down
+
+  # Coverage range for color coding (red to green)
+  range: '50...100'
+
+  # Status checks configuration
+  status:
+    # Project status: Overall project coverage
+    project:
+      default:
+        # Target coverage - 'auto' compares to base commit
+        target: auto
+
+        # Allow coverage to drop by 1% without failing
+        threshold: 1%
+
+        # Only run on pull requests
+        only_pulls: false
+
+        # Post status even if CI fails
+        if_ci_failed: error
+
+        # Base commit to compare against
+        base: auto
+
+        # Apply to all branches
+        branches:
+          - master
+          - main
+
+    # Patch status: Coverage of changed lines in PR
+    patch:
+      default:
+        # Require that new code has at least some test coverage
+        target: 50%
+
+        # Allow some flexibility for patches
+        threshold: 10%
+
+        # Only evaluate on pull requests
+        only_pulls: true
+
+        # Post status even if CI fails
+        if_ci_failed: error
+
+# Pull request comment configuration
+comment:
+  # Show coverage diff, files changed, and coverage by component
+  layout: 'diff, files, footer'
+
+  # Post comment on every commit
+  behavior: default
+
+  # Always post comments, even if coverage hasn't changed
+  require_changes: false
+
+  # Require base report to exist before posting
+  require_base: no
+
+  # Require head report to exist before posting
+  require_head: yes
+
+# Paths to ignore from coverage analysis
+ignore:
+  # Ignore compiled JavaScript output
+  - 'lib/**/*'
+
+  # Ignore test files
+  - 'tests/**/*'
+
+  # Ignore configuration files
+  - '*.config.*'
+  - '*.setup.*'
+
+  # Ignore Docker files
+  - 'docker/**/*'
+
+  # Ignore documentation
+  - '**/*.md'
+  - 'docs/**/*'
+
+  # Ignore build and dependency directories
+  - 'node_modules/**/*'
+  - 'dist/**/*'
+  - 'build/**/*'
+
+  # Ignore GitHub workflows
+  - '.github/**/*'
+
+# GitHub checks configuration
+github_checks:
+  annotations: true
