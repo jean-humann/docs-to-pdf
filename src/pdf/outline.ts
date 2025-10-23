@@ -249,25 +249,22 @@ function buildPdfObjectsForOutline(
     const page = pdfDoc.getPage(clampedPageIndex);
     const pageRef = page.ref;
 
-    // Calculate Y position on the page (PDF coordinates are from bottom-left)
-    // First, calculate the HTML height per PDF page
-    const htmlHeightPerPdfPage = pageHeightInPixels / pdfDoc.getPageCount();
-    // Then calculate the Y position within this specific page
-    const pageLocalYPixels =
-      item.yPosition - clampedPageIndex * htmlHeightPerPdfPage;
-    // Convert from HTML pixels to PDF points (accounting for bottom-left origin)
-    const yPositionInPoints =
-      pdfPageHeightInPoints -
-      pageLocalYPixels * (pdfPageHeightInPoints / htmlHeightPerPdfPage);
+    // NOTE: Accurate Y-coordinate mapping is impossible because:
+    // 1. CSS page breaks are determined by Puppeteer during PDF generation
+    // 2. We cannot predict where content will reflow across pages
+    // 3. Headers, footers, margins affect pagination differently than HTML scroll
+    //
+    // Solution: Link to the top of the page containing the heading.
+    // This gives users the right page, and they can easily find the heading.
+    // This approach is used by many PDF generators (including Adobe Acrobat's bookmark feature).
 
-    // Create explicit destination array: [pageRef, /XYZ, left, top, zoom]
-    // left=0, top=calculated Y position, zoom=null (keep current zoom)
+    // Create explicit destination array: [pageRef, /FitBH, top]
+    // /FitBH = Fit page width, position at top of page
+    // This is more reliable than trying to calculate exact Y coordinates
     const destArray = PDFArray.withContext(context);
     destArray.push(pageRef);
-    destArray.push(PDFName.of('XYZ'));
-    destArray.push(PDFNumber.of(0)); // left
-    destArray.push(PDFNumber.of(yPositionInPoints)); // top
-    destArray.push(PDFNumber.of(0)); // zoom (0 means keep current zoom)
+    destArray.push(PDFName.of('FitBH'));
+    destArray.push(PDFNumber.of(pdfPageHeightInPoints)); // top of page
 
     pdfObject.set(PDFName.of('Dest'), destArray);
     pdfObject.set(PDFName.of('Parent'), item.parentRef);
