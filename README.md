@@ -164,6 +164,7 @@ npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --extra
 ```
 
 **How it works:**
+
 - Detects all `<iframe>` elements on each page
 - Extracts content from accessible iframes (same-origin or accessible cross-origin)
 - Replaces the iframe tag with a styled `<div>` containing the extracted content
@@ -171,11 +172,13 @@ npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs" --extra
 - Gracefully skips cross-origin iframes that cannot be accessed due to CORS restrictions
 
 **Limitations:**
+
 - Only works with same-origin iframes or iframes that allow cross-origin access
 - Cross-origin iframes blocked by CORS policy will be skipped
 - The feature is opt-in and disabled by default for backward compatibility
 
 **When to use:**
+
 - Your documentation contains embedded examples in iframes
 - You want to include interactive demos in the PDF
 - Your site uses iframes for content that should appear in the PDF
