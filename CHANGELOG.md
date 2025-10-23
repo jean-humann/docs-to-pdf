@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.0.0...v1.1.0) (2025-10-23)
+
+
+### Features
+
+* add iframe content extraction support ([#527](https://github.com/jean-humann/docs-to-pdf/issues/527)) ([694d63e](https://github.com/jean-humann/docs-to-pdf/commit/694d63e04f1d34894bc9da300e59e98ea75c7087))
+
+
+### Bug Fixes
+
+* preserve aspect ratio for non-square cover images ([#525](https://github.com/jean-humann/docs-to-pdf/issues/525)) ([369f047](https://github.com/jean-humann/docs-to-pdf/commit/369f047ed84ef6d212fbd34c949b4f1783a8182a)), closes [#274](https://github.com/jean-humann/docs-to-pdf/issues/274)
+
 ## [1.0.0](https://github.com/jean-humann/docs-to-pdf/compare/v0.6.2...v1.0.0) (2025-10-22)
 
 ### ⚠ BREAKING CHANGES
