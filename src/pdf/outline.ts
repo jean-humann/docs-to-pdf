@@ -216,20 +216,17 @@ function buildPdfObjectsForOutline(
       progress.processed++;
       const percent = Math.floor((progress.processed / progress.total) * 100);
 
-      // Report every 10% or on last item
-      if (
-        percent >= progress.lastReportedPercent + 10 ||
-        progress.processed === progress.total
-      ) {
-        process.stdout.write(
-          `\r${chalk.cyan('Creating bookmarks...')} ${chalk.yellow(`${percent}%`)} (${progress.processed}/${progress.total})`,
+      // Report every 10% increment
+      const isNewTenPercentMilestone =
+        Math.floor(percent / 10) >
+        Math.floor(progress.lastReportedPercent / 10);
+      const isComplete = progress.processed === progress.total;
+
+      if (isNewTenPercentMilestone || isComplete) {
+        console.log(
+          `${chalk.cyan('Creating bookmarks...')} ${chalk.yellow(`${percent}%`)} (${progress.processed}/${progress.total})`,
         );
         progress.lastReportedPercent = percent;
-
-        // Add newline on completion
-        if (progress.processed === progress.total) {
-          process.stdout.write('\n');
-        }
       }
     }
     const prev = outlinesWithRef[i - 1];
