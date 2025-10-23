@@ -95,7 +95,7 @@ export async function extractIframeContent(
   page: puppeteer.Page,
   html: string,
 ): Promise<string> {
-  // Find all iframes in the content
+  // Find all iframes in the page
   const iframes = await page.$$('iframe');
 
   if (iframes.length === 0) {
@@ -105,6 +105,10 @@ export async function extractIframeContent(
   console.log(
     chalk.cyan(`Found ${iframes.length} iframe(s), extracting content...`),
   );
+
+  // Build a list of replacements to apply
+  // Using an array to handle duplicate iframes and apply replacements in order
+  const replacements: Array<{ search: string; replace: string }> = [];
 
   // Process each iframe
   for (let i = 0; i < iframes.length; i++) {
@@ -180,15 +184,55 @@ export async function extractIframeContent(
         allowedAttributes: {},
       });
 
-      // Replace the iframe tag with its content wrapped in a div
+      // CRITICAL: Sanitize iframe content to prevent XSS attacks
+      // Allow common formatting and media tags but remove scripts and event handlers
+      const sanitizedContent = sanitizeHtml(iframeContent, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+          'img',
+          'video',
+          'audio',
+          'iframe',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+        ]),
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          '*': ['class', 'id', 'style'],
+          img: [
+            'src',
+            'alt',
+            'title',
+            'width',
+            'height',
+            'class',
+            'id',
+            'style',
+          ],
+          video: ['src', 'controls', 'width', 'height', 'class', 'id', 'style'],
+          audio: ['src', 'controls', 'class', 'id', 'style'],
+        },
+        allowedSchemes: ['http', 'https', 'data', 'mailto'],
+      });
+
+      // Build replacement HTML with sanitized content
       const replacement = `<div class="iframe-content" data-iframe-src="${sanitizedSrc}" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
   <div class="iframe-header" style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
     <strong>Embedded content:</strong> ${sanitizedTitle || sanitizedSrc || 'iframe'}
   </div>
-  ${iframeContent}
+  ${sanitizedContent}
 </div>`;
 
-      html = html.replace(iframeOuterHtml, replacement);
+      // Store replacement for later application
+      // This handles duplicate iframes correctly
+      replacements.push({
+        search: iframeOuterHtml,
+        replace: replacement,
+      });
+
       console.log(chalk.green(`  ✓ Extracted content from iframe ${i + 1}`));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -197,6 +241,13 @@ export async function extractIframeContent(
       );
       continue;
     }
+  }
+
+  // Apply all replacements
+  // Process in order to handle duplicate iframes correctly
+  for (const { search, replace } of replacements) {
+    // Replace first occurrence to handle each iframe individually
+    html = html.replace(search, replace);
   }
 
   return html;
