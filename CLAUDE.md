@@ -228,6 +228,37 @@ release-please determines version based on commits since last release:
 - Ensure test coverage for bug fixes
 - Use descriptive test names
 
+#### Test Website Auto-Build
+
+The test suite includes a `tests/website/` directory containing a Docusaurus test site. To optimize test performance, the project uses `tests/globalSetup.ts` to automatically build this website before running tests.
+
+**How it works:**
+1. Before tests run, Jest executes `globalSetup.ts`
+2. Checks if `tests/website/build/` exists and is recent
+3. Skips rebuild if build is less than 5 minutes old (configurable)
+4. Validates build completeness by checking for `index.html`
+5. Rebuilds if directory is missing, incomplete, or stale
+
+**Configuration:**
+
+Set the `REBUILD_THRESHOLD_MINUTES` environment variable to customize the cache duration:
+
+```bash
+# Skip rebuild for builds less than 10 minutes old
+REBUILD_THRESHOLD_MINUTES=10 yarn test
+
+# Force rebuild on every test run
+REBUILD_THRESHOLD_MINUTES=0 yarn test
+```
+
+**Default behavior:** 5-minute threshold balances CI performance with local development iteration speed.
+
+**Build validation:**
+- Checks `buildStats.isDirectory()` to ensure path is a directory
+- Verifies `index.html` exists as a marker of complete builds
+- Handles race conditions and permission errors gracefully
+- Logs detailed error messages to aid debugging
+
 ### Error Handling
 
 - Use try-catch for async operations

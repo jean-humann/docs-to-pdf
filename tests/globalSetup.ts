@@ -43,9 +43,13 @@ export default async function globalSetup(): Promise<void> {
           );
         }
       }
-    } catch {
+    } catch (error) {
       // Handle race conditions or permission issues when checking build directory
-      console.log('Build directory check failed, rebuilding...');
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.log(
+        `Build directory check failed (${errorMessage}), rebuilding...`,
+      );
     }
   }
 

@@ -437,7 +437,7 @@ describe('globalSetup', () => {
       await globalSetup();
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Build directory check failed, rebuilding...',
+        'Build directory check failed (ENOENT: no such file or directory), rebuilding...',
       );
       expect(mockExecSync).toHaveBeenCalledTimes(2);
     });
@@ -465,7 +465,7 @@ describe('globalSetup', () => {
       await globalSetup();
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Build directory check failed, rebuilding...',
+        'Build directory check failed (EACCES: permission denied), rebuilding...',
       );
       expect(mockExecSync).toHaveBeenCalledTimes(2);
     });
