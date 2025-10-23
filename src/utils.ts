@@ -122,16 +122,20 @@ export async function extractIframeContent(
         };
       });
 
-      console.debug(
-        `Processing iframe ${i + 1}: ${iframeInfo.src || '(no src)'}`,
+      console.log(
+        chalk.cyan(
+          `  Processing iframe ${i + 1}: ${iframeInfo.src || '(no src)'}`,
+        ),
       );
 
       // Try to access iframe content
       const frame = await iframe.contentFrame();
 
       if (!frame) {
-        console.debug(
-          `  Skipping iframe ${i + 1}: Cannot access content (cross-origin or not loaded)`,
+        console.log(
+          chalk.yellowBright(
+            `  ⚠ Skipping iframe ${i + 1}: Cannot access content (cross-origin or not loaded)`,
+          ),
         );
         continue;
       }
@@ -140,8 +144,10 @@ export async function extractIframeContent(
       try {
         await frame.waitForSelector('body', { timeout: 5000 });
       } catch {
-        console.debug(
-          `  Skipping iframe ${i + 1}: Body not loaded within timeout`,
+        console.log(
+          chalk.yellowBright(
+            `  ⚠ Skipping iframe ${i + 1}: Body not loaded within timeout`,
+          ),
         );
         continue;
       }
@@ -153,7 +159,9 @@ export async function extractIframeContent(
       });
 
       if (!iframeContent) {
-        console.debug(`  Skipping iframe ${i + 1}: No content found`);
+        console.log(
+          chalk.yellowBright(`  ⚠ Skipping iframe ${i + 1}: No content found`),
+        );
         continue;
       }
 
@@ -162,10 +170,20 @@ export async function extractIframeContent(
         (el: Element) => el.outerHTML,
       );
 
+      // Sanitize iframe attributes to prevent XSS attacks
+      const sanitizedSrc = sanitizeHtml(iframeInfo.src || '', {
+        allowedTags: [],
+        allowedAttributes: {},
+      });
+      const sanitizedTitle = sanitizeHtml(iframeInfo.title || '', {
+        allowedTags: [],
+        allowedAttributes: {},
+      });
+
       // Replace the iframe tag with its content wrapped in a div
-      const replacement = `<div class="iframe-content" data-iframe-src="${iframeInfo.src || ''}" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+      const replacement = `<div class="iframe-content" data-iframe-src="${sanitizedSrc}" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
   <div class="iframe-header" style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
-    <strong>Embedded content:</strong> ${iframeInfo.title || iframeInfo.src || 'iframe'}
+    <strong>Embedded content:</strong> ${sanitizedTitle || sanitizedSrc || 'iframe'}
   </div>
   ${iframeContent}
 </div>`;
@@ -174,7 +192,9 @@ export async function extractIframeContent(
       console.log(chalk.green(`  ✓ Extracted content from iframe ${i + 1}`));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.debug(`  Skipping iframe ${i + 1}: ${message}`);
+      console.log(
+        chalk.yellowBright(`  ⚠ Skipping iframe ${i + 1}: ${message}`),
+      );
       continue;
     }
   }
