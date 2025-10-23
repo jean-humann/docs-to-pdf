@@ -1,2 +1,5 @@
 [tools]
-yarn = "latest"
+yarn = "1.22.22"
+
+[env]
+NODE_NO_WARNINGS = "1"
