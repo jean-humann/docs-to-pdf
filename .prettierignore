@@ -1,3 +1,5 @@
 # Claude workflow files
+# Exclude Claude AI workflow files to preserve their original formatting
+# Pattern matches: claude.yml, claude-code-review.yml, and any future claude-*.yml files
 .claude/
 .github/workflows/claude*.yml

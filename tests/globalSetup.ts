@@ -15,12 +15,26 @@ export default async function globalSetup(): Promise<void> {
   // Check if build directory already exists and is recent
   if (fs.existsSync(buildPath)) {
     const buildStats = fs.statSync(buildPath);
-    const ageInMinutes = (Date.now() - buildStats.mtimeMs) / 1000 / 60;
 
-    // Skip rebuild if build is less than 5 minutes old
-    if (ageInMinutes < 5) {
-      console.log('Test website build is recent, skipping rebuild');
-      return;
+    // Ensure it's actually a directory before checking modification time
+    if (buildStats.isDirectory()) {
+      // Validate that the build is complete by checking for index.html marker
+      const indexPath = path.join(buildPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        const ageInMinutes = (Date.now() - buildStats.mtimeMs) / 1000 / 60;
+
+        // Skip rebuild if build is less than 5 minutes old
+        // This threshold balances CI performance with detecting fresh changes
+        // during active development. Adjust via REBUILD_THRESHOLD_MINUTES env var if needed.
+        if (ageInMinutes < 5) {
+          console.log('Test website build is recent, skipping rebuild');
+          return;
+        }
+      } else {
+        console.log(
+          'Build directory exists but appears incomplete, rebuilding...',
+        );
+      }
     }
   }
 
@@ -41,9 +55,10 @@ export default async function globalSetup(): Promise<void> {
 
     console.log('Test website built successfully');
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Failed to build test website:', error);
     throw new Error(
-      'Could not build test website. Tests require a built Docusaurus site.',
+      `Could not build test website. Tests require a built Docusaurus site. Original error: ${errorMessage}`,
     );
   }
 }
