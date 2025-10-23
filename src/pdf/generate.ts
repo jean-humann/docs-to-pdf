@@ -50,6 +50,16 @@ export class PDF {
     });
 
     console.log(chalk.cyan('Extracting headings from document...'));
+
+    // Listen for console messages from the browser context (for progress updates)
+    const consoleListener = (msg: { text: () => string }) => {
+      const text = msg.text();
+      if (text.startsWith('Processing headings...')) {
+        console.log(chalk.cyan(text));
+      }
+    };
+    page.on('console', consoleListener);
+
     const outline = await getOutline(page, [
       'h1',
       'h2',
@@ -58,6 +68,9 @@ export class PDF {
       'h5',
       'h6',
     ]);
+
+    // Remove the console listener after extraction
+    page.off('console', consoleListener);
 
     const totalHeadings = countTotalHeadings(outline);
     if (totalHeadings > 0) {

@@ -88,6 +88,10 @@ export async function getOutline(
       const tagsToProcess = Array.from(
         document.querySelectorAll(outlineSelector),
       ).reverse();
+      const totalTags = tagsToProcess.length;
+      let processedTags = 0;
+      let lastReportedPercent = 0;
+
       const root: RootOutlineNode = {
         children: [],
         depth: -1,
@@ -102,6 +106,21 @@ export async function getOutline(
 
       while (tagsToProcess.length > 0) {
         const tag = tagsToProcess.pop()!;
+        processedTags++;
+
+        // Report progress every 10% or on last item
+        const percent = Math.floor((processedTags / totalTags) * 100);
+        const isNewTenPercentMilestone =
+          Math.floor(percent / 10) > Math.floor(lastReportedPercent / 10);
+        const isComplete = processedTags === totalTags;
+
+        if (totalTags > 10 && (isNewTenPercentMilestone || isComplete)) {
+          console.log(
+            `Processing headings... ${percent}% (${processedTags}/${totalTags})`,
+          );
+          lastReportedPercent = percent;
+        }
+
         const orderDepth = tags.indexOf(tag.tagName.toLowerCase());
         const dest = encodeURIComponent(tag.id);
 
