@@ -233,6 +233,7 @@ release-please determines version based on commits since last release:
 The test suite includes a `tests/website/` directory containing a Docusaurus test site. To optimize test performance, the project uses `tests/globalSetup.ts` to automatically build this website before running tests.
 
 **How it works:**
+
 1. Before tests run, Jest executes `globalSetup.ts`
 2. Checks if `tests/website/build/` exists and is recent
 3. Skips rebuild if build is less than 5 minutes old (configurable)
@@ -254,6 +255,7 @@ REBUILD_THRESHOLD_MINUTES=0 yarn test
 **Default behavior:** 5-minute threshold balances CI performance with local development iteration speed.
 
 **Build validation:**
+
 - Checks `buildStats.isDirectory()` to ensure path is a directory
 - Verifies `index.html` exists as a marker of complete builds
 - Handles race conditions and permission errors gracefully
@@ -289,32 +291,314 @@ REBUILD_THRESHOLD_MINUTES=0 yarn test
 - Handle large documentation sites (may take 10-30+ minutes)
 - Provide progress feedback to users
 
+## Using GitHub CLI (`gh` command)
+
+This project requires extensive use of the GitHub CLI (`gh`) for managing issues, pull requests, and other GitHub interactions. The `gh` command is the **preferred** way to interact with GitHub.
+
+### Common `gh` Commands
+
+#### Viewing Issues
+
+```bash
+# View a specific issue
+gh issue view 485
+
+# View issue with full details (including comments)
+gh issue view 485 --json title,body,comments
+
+# List all open issues
+gh issue list
+
+# List issues with specific labels
+gh issue list --label bug
+```
+
+#### Creating Issues
+
+```bash
+# Create an issue interactively
+gh issue create
+
+# Create an issue with title and body
+gh issue create --title "Bug: Something is broken" --body "Description of the bug"
+```
+
+#### Commenting on Issues
+
+```bash
+# Add a comment to an issue
+gh issue comment 485 --body "I'm working on this issue"
+```
+
+#### Closing Issues
+
+```bash
+# Close an issue
+gh issue close 485
+
+# Close with a comment
+gh issue close 485 --comment "Fixed in PR #527"
+```
+
+#### Viewing Pull Requests
+
+```bash
+# View a specific PR
+gh pr view 527
+
+# View PR diff
+gh pr diff 527
+
+# List all open PRs
+gh pr list
+
+# Check PR status and checks
+gh pr checks 527
+```
+
+#### Creating Pull Requests
+
+```bash
+# Create a PR interactively
+gh pr create
+
+# Create a PR with title and body
+gh pr create --title "feat: add new feature" --body "Description" --base master
+
+# Create a draft PR
+gh pr create --draft --title "WIP: feature" --body "Work in progress"
+```
+
+#### Managing Pull Requests
+
+```bash
+# Edit PR details
+gh pr edit 527 --title "New title"
+
+# Add reviewers
+gh pr edit 527 --add-reviewer username
+
+# Comment on a PR
+gh pr comment 527 --body "Looks good!"
+
+# Close a PR
+gh pr close 527
+
+# Merge a PR (use with caution)
+gh pr merge 527
+```
+
+## Git Workflow and Branch Management
+
+### CRITICAL: Always Create New Branches from Updated Master
+
+Every new change, feature, or bug fix MUST follow this workflow:
+
+#### 1. Update Master Branch
+
+Before starting ANY new work, ensure your master branch is up to date:
+
+```bash
+# Switch to master
+git checkout master
+
+# Pull latest changes from remote
+git pull origin master
+
+# Verify you're on the latest commit
+git log --oneline -5
+```
+
+#### 2. Create a New Branch
+
+**ALWAYS** create a new branch from the updated master:
+
+```bash
+# Create and switch to a new branch
+git checkout -b feat/your-feature-name
+
+# OR for bug fixes
+git checkout -b fix/issue-number-description
+
+# OR for documentation
+git checkout -b docs/update-readme
+```
+
+**Branch Naming Conventions:**
+
+- `feat/feature-name` - New features
+- `fix/issue-number-description` - Bug fixes
+- `docs/description` - Documentation updates
+- `refactor/description` - Code refactoring
+- `test/description` - Test additions/updates
+- `chore/description` - Maintenance tasks
+
+#### 3. Make Changes and Commit
+
+```bash
+# Make your changes
+# ... edit files ...
+
+# Run all checks
+yarn test
+yarn lint
+yarn build
+
+# Stage and commit
+git add .
+git commit -m "feat: add amazing new feature"
+```
+
+#### 4. Push Branch and Create PR
+
+```bash
+# Push the branch to remote
+git push -u origin feat/your-feature-name
+
+# Create a PR using gh CLI
+gh pr create --title "feat: add amazing new feature" \
+  --body "Description of changes" \
+  --base master
+```
+
+#### 5. Address Review Comments
+
+If reviewers request changes:
+
+```bash
+# Make the requested changes
+# ... edit files ...
+
+# Commit the changes
+git add .
+git commit -m "fix: address review comments"
+
+# Push to the same branch
+git push
+```
+
+The PR will automatically update with your new commits.
+
+#### 6. After PR is Merged
+
+Once your PR is merged, clean up:
+
+```bash
+# Switch back to master
+git checkout master
+
+# Pull the merged changes
+git pull origin master
+
+# Delete the local branch (optional)
+git branch -d feat/your-feature-name
+
+# Delete the remote branch (usually done automatically by GitHub)
+git push origin --delete feat/your-feature-name
+```
+
+### IMPORTANT: Never Commit Directly to Master
+
+- ❌ **NEVER** commit directly to the `master` branch
+- ❌ **NEVER** push directly to `master`
+- ✅ **ALWAYS** create a new branch for changes
+- ✅ **ALWAYS** create a PR for review
+- ✅ **ALWAYS** wait for CI checks to pass before merging
+
+### Multiple Changes in Progress
+
+If you need to work on multiple features/fixes simultaneously:
+
+1. Each change gets its own branch from master
+2. Each branch gets its own PR
+3. Keep branches focused and small
+4. Update each branch if master advances:
+
+```bash
+# While on your feature branch
+git fetch origin
+git rebase origin/master
+
+# Resolve any conflicts
+# ... fix conflicts ...
+
+git add .
+git rebase --continue
+
+# Force push (only for your own branches, never shared branches)
+git push --force-with-lease
+```
+
 ## Common Tasks
 
 ### Adding a New Feature
 
-1. Create feature branch
-2. Implement feature with tests
-3. Run `yarn test && yarn lint && yarn build`
-4. Commit with `feat:` prefix
-5. Open PR with clear description
+1. **Update master**: `git checkout master && git pull origin master`
+2. **Create feature branch**: `git checkout -b feat/feature-name`
+3. **View related issues** (if any): `gh issue view <number>`
+4. **Implement feature with tests**
+5. **Run checks**: `yarn test && yarn lint && yarn build`
+6. **Commit with `feat:` prefix**
+7. **Push branch**: `git push -u origin feat/feature-name`
+8. **Create PR**: `gh pr create --title "feat: description" --body "Details" --base master`
+9. **Reference issues in PR**: Use "Closes #123" in PR body to auto-close issues
 
 ### Fixing a Bug
 
-1. Create bug fix branch
-2. Write failing test that reproduces bug
-3. Fix the bug
-4. Ensure test passes
-5. Run `yarn test && yarn lint && yarn build`
-6. Commit with `fix:` prefix
-7. Open PR referencing issue number
+1. **View the issue**: `gh issue view <issue-number>`
+2. **Update master**: `git checkout master && git pull origin master`
+3. **Create bug fix branch**: `git checkout -b fix/issue-number-description`
+4. **Write failing test that reproduces bug**
+5. **Fix the bug**
+6. **Ensure test passes**
+7. **Run checks**: `yarn test && yarn lint && yarn build`
+8. **Commit with `fix:` prefix**
+9. **Push and create PR**: 
+   ```bash
+   git push -u origin fix/issue-number-description
+   gh pr create --title "fix: description" --body "Fixes #123" --base master
+   ```
+10. **The issue will auto-close when PR is merged** (if you used "Fixes #123" or "Closes #123")
 
 ### Updating Documentation
 
-1. Update relevant `.md` files
-2. Commit with `docs:` prefix
-3. No tests required for docs-only changes
-4. Still run linter to check markdown formatting
+1. **Update master**: `git checkout master && git pull origin master`
+2. **Create docs branch**: `git checkout -b docs/description`
+3. **Update relevant `.md` files**
+4. **Commit with `docs:` prefix**
+5. **No tests required for docs-only changes**
+6. **Still run linter**: `yarn lint` to check markdown formatting
+7. **Push and create PR**:
+   ```bash
+   git push -u origin docs/description
+   gh pr create --title "docs: description" --body "Details" --base master
+   ```
+
+### Working on an Existing Issue
+
+```bash
+# 1. View the issue to understand the problem
+gh issue view 485
+
+# 2. Comment that you're working on it
+gh issue comment 485 --body "I'm working on this issue"
+
+# 3. Update master and create branch
+git checkout master && git pull origin master
+git checkout -b fix/485-iframe-extraction
+
+# 4. Implement the fix
+# ... make changes ...
+
+# 5. Create PR that references the issue
+gh pr create --title "fix: add iframe content extraction" \
+  --body "Fixes #485
+
+This PR adds support for extracting iframe content..." \
+  --base master
+
+# The issue will automatically close when the PR is merged
+```
 
 ## File Structure Reference
 
@@ -367,26 +651,71 @@ docs-to-pdf/
 - Consult README.md and CONTRIBUTING.md
 - Test locally before submitting PR
 
-## Summary: Before Every Commit
+## Summary: Complete Workflow for Any Change
 
 ```bash
-# 1. Ensure correct Node.js version
+# 1. Update master branch
+git checkout master
+git pull origin master
+
+# 2. Create a new branch from master
+git checkout -b feat/feature-name
+
+# 3. Ensure correct Node.js version
 mise install  # or verify with: node --version
 
-# 2. Run all checks
+# 4. Make your changes
+# ... edit files ...
+
+# 5. Run all checks
 yarn test
 yarn lint
 yarn build
 
-# 3. Run Docker tests (if applicable)
+# 6. Run Docker tests (if applicable)
 cd docker && ./test-quick.sh
 
-# 4. Stage and commit with Conventional Commits format
+# 7. Stage and commit with Conventional Commits format
 git add .
 git commit -m "feat: add amazing new feature"
 
-# 5. Push and create PR
-git push origin feature-branch
+# 8. Push branch to remote
+git push -u origin feat/feature-name
+
+# 9. Create PR using gh CLI
+gh pr create --title "feat: add amazing new feature" \
+  --body "Detailed description
+
+Closes #123" \
+  --base master
+
+# 10. After PR is merged, clean up
+git checkout master
+git pull origin master
+git branch -d feat/feature-name
 ```
+
+## Quick Reference: Key Rules
+
+### ✅ DO
+
+- **ALWAYS** update master before creating a new branch
+- **ALWAYS** create a new branch for every change
+- **ALWAYS** use `gh` command for GitHub interactions
+- **ALWAYS** create a PR for every change
+- **ALWAYS** run tests, lint, and build before committing
+- **ALWAYS** use Conventional Commits format
+- **ALWAYS** reference issues in PR body using "Fixes #123" or "Closes #123"
+- **ALWAYS** use mise for Node.js version management
+
+### ❌ DON'T
+
+- **NEVER** commit directly to master
+- **NEVER** push directly to master
+- **NEVER** manually edit CHANGELOG.md
+- **NEVER** manually bump version numbers
+- **NEVER** skip tests or linting
+- **NEVER** create a branch from an outdated master
+- **NEVER** work on multiple unrelated changes in the same branch
 
 Remember: Quality over speed. Take time to ensure all checks pass!
