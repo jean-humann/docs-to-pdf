@@ -16,6 +16,7 @@ describe('PDF class', () => {
     browser = await puppeteer.launch({
       headless: true,
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath(),
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     // Create test output directory
