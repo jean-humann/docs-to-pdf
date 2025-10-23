@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/docs-to-pdf?label=NPM%20STABLE&style=for-the-badge)](https://www.npmjs.com/package/docs-to-pdf)
 ![node-current](https://img.shields.io/node/v/docs-to-pdf?style=for-the-badge)
 ![npm](https://img.shields.io/npm/dt/docs-to-pdf?style=for-the-badge)
-[![Codecov](https://img.shields.io/codecov/c/github/jean-humann/docs-to-pdf/branch/master?style=for-the-badge&token=YMY82958X4)](https://codecov.io/gh/jean-humann/docs-to-pdf)
+[![Codecov](https://img.shields.io/codecov/c/gh/jean-humann/docs-to-pdf/master?token=YMY82958X4&style=for-the-badge)](https://codecov.io/gh/jean-humann/docs-to-pdf)
 ![GitHub](https://img.shields.io/github/license/jean-humann/docs-to-pdf?style=for-the-badge)
 
 ## ⚡ Requirements
