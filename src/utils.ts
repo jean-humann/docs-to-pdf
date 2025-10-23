@@ -233,26 +233,22 @@ export async function getCoverImage(page: puppeteer.Page, url: string) {
 }
 
 /**
- * Generates the HTML code for an image with the specified base64 content, content type, width, and height.
+ * Generates the HTML code for an image with the specified base64 content and content type.
+ * The image will preserve its aspect ratio and be constrained to a maximum width.
  * @param imgBase64 - The base64-encoded content of the image.
  * @param contentType - The content type of the image. Defaults to 'image/png'.
- * @param width - The width of the image. Defaults to 140.
- * @param height - The height of the image. Defaults to 140.
  * @returns The HTML code for the image.
  */
 export function generateImageHtml(
   imgBase64: string,
   contentType = 'image/png',
-  width = 140,
-  height = 140,
 ) {
-  // Return the HTML code for the image with the specified properties
+  // Return the HTML code for the image with CSS to preserve aspect ratio
   return `<img
     class="cover-img"
     src="data:${contentType};base64, ${imgBase64}"
     alt=""
-    width="${width}"
-    height="${height}"
+    style="max-width: 300px; height: auto;"
     />`;
 }
 

@@ -204,21 +204,18 @@ describe('generateCoverHtml', () => {
 });
 
 describe('generateImageHtml', () => {
-  it('should generate the HTML code for the image', () => {
+  it('should generate the HTML code for the image with preserved aspect ratio', () => {
     const imgBase64 = 'base64-encoded-image-content';
     const contentType = 'image/jpeg';
-    const width = 200;
-    const height = 200;
 
     const expectedOutput = `<img
     class="cover-img"
     src="data:image/jpeg;base64, base64-encoded-image-content"
     alt=""
-    width="200"
-    height="200"
+    style="max-width: 300px; height: auto;"
     />`;
 
-    const output = generateImageHtml(imgBase64, contentType, width, height);
+    const output = generateImageHtml(imgBase64, contentType);
     expect(output).toBe(expectedOutput);
   });
 });
