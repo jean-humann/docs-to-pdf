@@ -250,10 +250,15 @@ function buildPdfObjectsForOutline(
     const pageRef = page.ref;
 
     // Calculate Y position on the page (PDF coordinates are from bottom-left)
-    const pageLocalYPixels = item.yPosition % pageHeightInPixels;
+    // First, calculate the HTML height per PDF page
+    const htmlHeightPerPdfPage = pageHeightInPixels / pdfDoc.getPageCount();
+    // Then calculate the Y position within this specific page
+    const pageLocalYPixels =
+      item.yPosition - clampedPageIndex * htmlHeightPerPdfPage;
+    // Convert from HTML pixels to PDF points (accounting for bottom-left origin)
     const yPositionInPoints =
       pdfPageHeightInPoints -
-      pageLocalYPixels * (pdfPageHeightInPoints / pageHeightInPixels);
+      pageLocalYPixels * (pdfPageHeightInPoints / htmlHeightPerPdfPage);
 
     // Create explicit destination array: [pageRef, /XYZ, left, top, zoom]
     // left=0, top=calculated Y position, zoom=null (keep current zoom)
