@@ -2152,6 +2152,11 @@ devtools-protocol@0.0.1508733:
   resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1508733.tgz#047deb3531470efda2c7bf43c10b3ae9e4b3d51b"
   integrity sha512-QJ1R5gtck6nDcdM+nlsaJXcelPEI7ZxSMw1ujHpO1c4+9l+Nue5qlebi9xO1Z2MGr92bFOQTW7/rrheh5hHxDg==
 
+devtools-protocol@0.0.1521046:
+  version "0.0.1521046"
+  resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1521046.tgz#918e6175ea83100fefcb2b78779f15a77aa8a41b"
+  integrity sha512-vhE6eymDQSKWUXwwA37NtTTVEzjtGVfDr3pRbsWEQ5onH/Snp2c+2xZHWJJawG/0hCCJLRGt4xVtEVUVILol4w==
+
 dezalgo@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/dezalgo/-/dezalgo-1.0.4.tgz#751235260469084c132157dfa857f386d4c33d81"
@@ -4318,7 +4323,7 @@ puppeteer-autoscroll-down@^2.0.0:
   resolved "https://registry.yarnpkg.com/puppeteer-autoscroll-down/-/puppeteer-autoscroll-down-2.0.1.tgz#d16fc700f102d302ed73506db49bfbf9878af527"
   integrity sha512-nP30RoaxdcwDcyyv2v6WHZbADhLtxdcwwuO8l6OrrVRFbOagJR96RR+v/BL0N1w2fSzrR1BP47ukfbLOBMcpEA==
 
-puppeteer-core@24.26.0, puppeteer-core@^24.0.0:
+puppeteer-core@24.26.0:
   version "24.26.0"
   resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.26.0.tgz#aba3eac2f3a54c94581d40d1f2ff6b5fcfb3f179"
   integrity sha512-l3aMYhTdSzazZ14rfpNAPGhnYHsd8mwduqybhu5aO/OR+d24P/V/eo8XTB3GB2yX2ZWf9GLAVcx8nnVPFZpP/A==
@@ -4327,6 +4332,19 @@ puppeteer-core@24.26.0, puppeteer-core@^24.0.0:
     chromium-bidi "10.5.1"
     debug "^4.4.3"
     devtools-protocol "0.0.1508733"
+    typed-query-selector "^2.12.0"
+    webdriver-bidi-protocol "0.3.8"
+    ws "^8.18.3"
+
+puppeteer-core@^24.0.0:
+  version "24.27.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.27.0.tgz#dd81d615fc8e4bafad500442e798323f920c89b8"
+  integrity sha512-yubwj2XXmTM3wRIpbhO5nCjbByPgpFHlgrsD4IK+gMPqO7/a5FfnoSXDKjmqi8A2M1Ewusz0rTI/r+IN0GU0MA==
+  dependencies:
+    "@puppeteer/browsers" "2.10.12"
+    chromium-bidi "10.5.1"
+    debug "^4.4.3"
+    devtools-protocol "0.0.1521046"
     typed-query-selector "^2.12.0"
     webdriver-bidi-protocol "0.3.8"
     ws "^8.18.3"
