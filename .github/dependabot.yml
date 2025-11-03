@@ -11,6 +11,10 @@ updates:
     open-pull-requests-limit: 15
     exclude-paths:
       - 'tests/website/**'
+    groups:
+      puppeteer:
+        patterns:
+          - "puppeteer*"
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
