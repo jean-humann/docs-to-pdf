@@ -1858,10 +1858,10 @@ char-regex@^1.0.2:
   resolved "https://registry.yarnpkg.com/char-regex/-/char-regex-1.0.2.tgz#d744358226217f981ed58f479b1d6bcc29545dcf"
   integrity sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==
 
-chromium-bidi@10.5.1:
-  version "10.5.1"
-  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-10.5.1.tgz#2aad9791509442bb39e96c4f3aeef4dfdb424979"
-  integrity sha512-rlj6OyhKhVTnk4aENcUme3Jl9h+cq4oXu4AzBcvr8RMmT6BR4a3zSNT9dbIfXr9/BS6ibzRyDhowuw4n2GgzsQ==
+chromium-bidi@11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-11.0.0.tgz#193433d0722095abca0cada2fa0c5111b447bea3"
+  integrity sha512-cM3DI+OOb89T3wO8cpPSro80Q9eKYJ7hGVXoGS3GkDPxnYSqiv+6xwpIf6XERyJ9Tdsl09hmNmY94BkgZdVekw==
   dependencies:
     mitt "^3.0.1"
     zod "^3.24.1"
@@ -4318,29 +4318,29 @@ puppeteer-autoscroll-down@^2.0.0:
   resolved "https://registry.yarnpkg.com/puppeteer-autoscroll-down/-/puppeteer-autoscroll-down-2.0.1.tgz#d16fc700f102d302ed73506db49bfbf9878af527"
   integrity sha512-nP30RoaxdcwDcyyv2v6WHZbADhLtxdcwwuO8l6OrrVRFbOagJR96RR+v/BL0N1w2fSzrR1BP47ukfbLOBMcpEA==
 
-puppeteer-core@24.28.0, puppeteer-core@^24.0.0:
-  version "24.28.0"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.28.0.tgz#5f7353338d38c131dd229d4d5a69b7ab727bc02e"
-  integrity sha512-QpAqaYgeZHF5/xAZ4jAOzsU+l0Ed4EJoWkRdfw8rNqmSN7itcdYeCJaSPQ0s5Pyn/eGNC4xNevxbgY+5bzNllw==
+puppeteer-core@24.31.0, puppeteer-core@^24.0.0:
+  version "24.31.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.31.0.tgz#a00daa971fb6a9f722264afda7290dd0bfd566f0"
+  integrity sha512-pnAohhSZipWQoFpXuGV7xCZfaGhqcBR9C4pVrU0QSrcMi7tQMH9J9lDBqBvyMAHQqe8HCARuREqFuVKRQOgTvg==
   dependencies:
     "@puppeteer/browsers" "2.10.13"
-    chromium-bidi "10.5.1"
+    chromium-bidi "11.0.0"
     debug "^4.4.3"
     devtools-protocol "0.0.1521046"
     typed-query-selector "^2.12.0"
-    webdriver-bidi-protocol "0.3.8"
+    webdriver-bidi-protocol "0.3.9"
     ws "^8.18.3"
 
 puppeteer@^24.0.0:
-  version "24.28.0"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.28.0.tgz#fe79687f6ae2d1039d80992a54c59a3624648860"
-  integrity sha512-KLRGFNCGmXJpocEBbEIoHJB0vNRZLQNBjl5ExXEv0z7MIU+qqVEQcfWTyat+qxPDk/wZvSf+b30cQqAfWxX0zg==
+  version "24.31.0"
+  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.31.0.tgz#cacd8c4563ff8bd49ee62bd03ae80e11944e698a"
+  integrity sha512-q8y5yLxLD8xdZdzNWqdOL43NbfvUOp60SYhaLZQwHC9CdKldxQKXOyJAciOr7oUJfyAH/KgB2wKvqT2sFKoVXA==
   dependencies:
     "@puppeteer/browsers" "2.10.13"
-    chromium-bidi "10.5.1"
+    chromium-bidi "11.0.0"
     cosmiconfig "^9.0.0"
     devtools-protocol "0.0.1521046"
-    puppeteer-core "24.28.0"
+    puppeteer-core "24.31.0"
     typed-query-selector "^2.12.0"
 
 pure-rand@^7.0.0:
@@ -5096,10 +5096,10 @@ walker@^1.0.8:
   dependencies:
     makeerror "1.0.12"
 
-webdriver-bidi-protocol@0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/webdriver-bidi-protocol/-/webdriver-bidi-protocol-0.3.8.tgz#9c822b2647fd16d22b1b6fd730d4a3b863c93b93"
-  integrity sha512-21Yi2GhGntMc671vNBCjiAeEVknXjVRoyu+k+9xOMShu+ZQfpGQwnBqbNz/Sv4GXZ6JmutlPAi2nIJcrymAWuQ==
+webdriver-bidi-protocol@0.3.9:
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/webdriver-bidi-protocol/-/webdriver-bidi-protocol-0.3.9.tgz#89abf021f2a557a2dd81772f9ce7172b01f8a0f0"
+  integrity sha512-uIYvlRQ0PwtZR1EzHlTMol1G0lAlmOe6wPykF9a77AK3bkpvZHzIVxRE2ThOx5vjy2zISe0zhwf5rzuUfbo1PQ==
 
 webidl-conversions@^7.0.0:
   version "7.0.0"
