@@ -998,9 +998,9 @@
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
 "@tsconfig/node20@^20.1.4":
-  version "20.1.6"
-  resolved "https://registry.yarnpkg.com/@tsconfig/node20/-/node20-20.1.6.tgz#cdf11db8322e1c245d5a4bb2e398239c82ae78b2"
-  integrity sha512-sz+Hqx9zwZDpZIV871WSbUzSqNIsXzghZydypnfgzPKLltVJfkINfUeTct31n/tTSa9ZE1ZOfKdRre1uHHquYQ==
+  version "20.1.8"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node20/-/node20-20.1.8.tgz#a11034b1f3362ffaeb7255f6c975040d8a395d70"
+  integrity sha512-Em+IdPfByIzWRRpqWL4Z7ArLHZGxmc36BxE3jCz9nBFSm+5aLaPMZyjwu4yetvyKXeogWcxik4L1jB5JTWfw7A==
 
 "@tybys/wasm-util@^0.10.0":
   version "0.10.1"
