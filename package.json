@@ -1,6 +1,6 @@
 {
-  "name": "docs-to-pdf",
-  "version": "1.1.0",
+  "name": "@ashleyharwood/docs-to-pdf",
+  "version": "1.1.0-fork.4",
   "description": "Generate PDF from Docusaurus",
   "main": "lib/cli.js",
   "scripts": {
@@ -21,11 +21,11 @@
     "docusaurus",
     "gitbook"
   ],
-  "homepage": "https://github.com/jean-humann/docs-to-pdf",
+  "homepage": "https://github.com/ashleythedeveloper/docs-to-pdf",
   "author": "Jean Humann <jean.humann@gmail.com> (https://github.com/jean-humann)",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.6.2",
+    "chalk": "4.1.2",
     "commander": "^14.0.1",
     "console-stamp": "^3.1.2",
     "express": "^5.1.0",

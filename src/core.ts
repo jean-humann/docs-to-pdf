@@ -63,7 +63,7 @@ export async function generatePDF({
   waitForRender,
   headerTemplate,
   footerTemplate,
-  protocolTimeout,
+  protocolTimeout = 600000,
   filterKeyword,
   baseUrl,
   excludePaths,
