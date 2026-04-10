@@ -508,6 +508,28 @@ describeIfChrome('openDetails function', () => {
     expect(waitFunction).toHaveBeenCalledTimes(2);
     expect(waitFunction).toHaveBeenCalledWith(800);
   });
+
+  it('should skip details elements that are already open', async () => {
+    const clickFunction = jest.fn(async () => {});
+    const waitFunction = jest.fn(async () => {});
+
+    await page.setContent(`
+      <details open>
+        <summary>Already open</summary>
+        <div>Visible content</div>
+      </details>
+      <details>
+        <summary>Closed one</summary>
+        <div>Hidden content</div>
+      </details>
+    `);
+
+    await openDetails(page, clickFunction, waitFunction);
+
+    // Only the closed details element should be clicked
+    expect(clickFunction).toHaveBeenCalledTimes(1);
+    expect(waitFunction).toHaveBeenCalledTimes(1);
+  });
 });
 
 describeIfChrome('extractIframeContent function', () => {

@@ -314,15 +314,23 @@ export async function openDetails(
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
     if (summaryHandle) {
-      const summaryText = await summaryHandle.evaluate(
-        (node) => node.textContent,
-      );
-      await clickSummary(
-        summaryHandle,
-        summaryText,
-        clickFunction,
-        waitFunction,
-      );
+      const isOpen = await detailsHandle.evaluate((el) => el.open);
+      if (!isOpen) {
+        const summaryText = await summaryHandle.evaluate(
+          (node) => node.textContent,
+        );
+        await clickSummary(
+          summaryHandle,
+          summaryText,
+          clickFunction,
+          waitFunction,
+        );
+      } else {
+        const summaryText = await summaryHandle.evaluate(
+          (node) => node.textContent,
+        );
+        console.debug(`Skipping already-open details: ${summaryText}`);
+      }
     }
   }
 }
