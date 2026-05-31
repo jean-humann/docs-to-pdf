@@ -8,6 +8,18 @@ import {
 } from '../src/pdf/outline';
 import { PDFDocument, PDFName } from 'pdf-lib';
 import { chromeExecPath } from '../src/browser';
+import * as fs from 'fs';
+
+// Skip browser-dependent suites when the Chrome binary that beforeAll launches
+// is not present (e.g. in the Node CI runner, which has no downloaded Chrome).
+let chromeAvailable = false;
+try {
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
+  chromeAvailable = Boolean(execPath) && fs.existsSync(execPath);
+} catch {
+  console.warn('Chrome not found, skipping puppeteer tests');
+}
+const describeIfChrome = chromeAvailable ? describe : describe.skip;
 
 describe('formatOutlineContainerSelector', () => {
   test('should return empty string for empty input', () => {
@@ -31,7 +43,7 @@ describe('formatOutlineContainerSelector', () => {
   });
 });
 
-describe('getOutline', () => {
+describeIfChrome('getOutline', () => {
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
 

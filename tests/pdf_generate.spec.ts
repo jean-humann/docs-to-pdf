@@ -6,7 +6,18 @@ import * as path from 'path';
 import { PDFDocument, PDFName } from 'pdf-lib';
 import { chromeExecPath } from '../src/browser';
 
-describe('PDF class', () => {
+// Skip browser-dependent suites when the Chrome binary that beforeAll launches
+// is not present (e.g. in the Node CI runner, which has no downloaded Chrome).
+let chromeAvailable = false;
+try {
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
+  chromeAvailable = Boolean(execPath) && fs.existsSync(execPath);
+} catch {
+  console.warn('Chrome not found, skipping puppeteer tests');
+}
+const describeIfChrome = chromeAvailable ? describe : describe.skip;
+
+describeIfChrome('PDF class', () => {
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
   const testOutputDir = path.join(__dirname, 'test-output');
