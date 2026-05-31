@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write # required for npm provenance attestation
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -26,7 +27,10 @@ jobs:
       - name: Build packages
         run: yarn build
       - name: Publish packages
-        run: yarn publish
+        # `npm publish --provenance` generates a signed provenance attestation
+        # via the workflow's OIDC token (id-token: write), linking the published
+        # package to this repo + commit. Works with the existing NPM_TOKEN.
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
   publish-docker:
