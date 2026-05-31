@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.3.0...v1.4.0) (2026-05-31)
+
+
+### Features
+
+* make in-PDF hyperlinks jump to the target heading ([#605](https://github.com/jean-humann/docs-to-pdf/issues/605)) ([be2791c](https://github.com/jean-humann/docs-to-pdf/commit/be2791c0dead31e70e3547c455a16a192b235392)), closes [#336](https://github.com/jean-humann/docs-to-pdf/issues/336)
+
 ## [1.3.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.2.0...v1.3.0) (2026-05-31)
 
 
