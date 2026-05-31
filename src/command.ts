@@ -90,7 +90,11 @@ export function makeProgram() {
     )
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
-      console.debug(options);
+      // Redact the Basic Auth password so it is never written to logs/CI output.
+      console.debug({
+        ...options,
+        httpAuthPassword: options.httpAuthPassword ? '***' : undefined,
+      });
       handleCommandCompletion(generateDocusaurusPDF(options));
     });
 
