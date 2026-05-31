@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Phase 0 e2e: acquire IR golden + render acquires a deterministically-ordered, dense IR (serial): serial-crawl-paths 1`] = `
+[
+  "/docs/intro",
+  "/docs/category/tutorial---basics",
+  "/docs/tutorial-basics/create-a-page",
+  "/docs/tutorial-basics/create-a-document",
+  "/docs/tutorial-basics/create-a-blog-post",
+  "/docs/tutorial-basics/markdown-features",
+  "/docs/tutorial-basics/deploy-your-site",
+  "/docs/tutorial-basics/congratulations",
+  "/docs/tutorial-basics/details",
+  "/docs/category/tutorial---extras",
+  "/docs/tutorial-extras/manage-docs-versions",
+  "/docs/tutorial-extras/translate-your-site",
+  "/docs/faq",
+]
+`;

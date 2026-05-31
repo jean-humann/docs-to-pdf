@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import * as puppeteer from 'puppeteer-core';
+import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
 import { delay } from './utils';
@@ -264,8 +265,10 @@ export async function discoverSitemapURLs(
 ): Promise<string[] | null> {
   const sitemapURL = `${baseOrigin}/sitemap.xml`;
   try {
+    // A sitemap is a static XML file: 'domcontentloaded' is reliable, whereas
+    // 'networkidle0' can hang/timeout on Chrome's built-in XML viewer.
     const res = await page.goto(sitemapURL, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'domcontentloaded',
       timeout: 15000,
     });
     if (!res || !res.ok()) {
@@ -363,19 +366,26 @@ export async function crawlParallel(
           `[acquire] --seedFrom=sitemap: included-page SET differs from the next-link chain (sitemap order). Found ${sitemap.length} URLs.`,
         ),
       );
-      frontier = sitemap.filter((u) => {
-        try {
-          const parsed = new URL(u);
-          if (parsed.origin !== baseOrigin) return false;
+      frontier = sitemap
+        .map((loc) => {
+          // Remap each sitemap entry's PATH onto the crawl origin. Docusaurus
+          // sitemaps carry the production siteUrl, so this makes sitemap
+          // seeding work both for live sites (same origin, no-op) and for
+          // locally-served builds (origin becomes 127.0.0.1:PORT).
+          try {
+            return new URL(new URL(loc).pathname, baseOrigin).href;
+          } catch {
+            return null;
+          }
+        })
+        .filter((u): u is string => u !== null)
+        .filter((u) => {
           if (options.excludeURLs?.includes(u)) return false;
           if (options.excludePaths?.some((x) => u.includes(x))) return false;
           if (options.restrictPaths && !urlPaths.some((up) => u.includes(up)))
             return false;
           return true;
-        } catch {
-          return false;
-        }
-      });
+        });
       // Always include the initial URLs even if absent from the sitemap.
       for (const u of options.initialDocURLs) {
         if (!frontier.includes(u)) {
@@ -483,8 +493,7 @@ export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
     await browser.close();
     console.log(chalk.green('[acquire] Browser closed'));
     if (chromeTmpDataDir) {
-      const { removeSync } = await import('fs-extra');
-      removeSync(chromeTmpDataDir);
+      fs.removeSync(chromeTmpDataDir);
       console.debug(chalk.cyan('[acquire] Chrome user data dir removed'));
     }
   }
