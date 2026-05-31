@@ -42,8 +42,12 @@ describeIfLightpanda('Phase 1 e2e: lightpanda acquire engine', () => {
   }, 180000);
 
   it('reaches the same docs pages as Chromium (set parity)', async () => {
-    const lp = await acquire(v3Options([introURL], { acquireEngine: 'lightpanda' }));
-    const cr = await acquire(v3Options([introURL], { acquireEngine: 'chromium' }));
+    const lp = await acquire(
+      v3Options([introURL], { acquireEngine: 'lightpanda' }),
+    );
+    const cr = await acquire(
+      v3Options([introURL], { acquireEngine: 'chromium' }),
+    );
     expect(new Set(lp.chunks.map((c) => c.url))).toEqual(
       new Set(cr.chunks.map((c) => c.url)),
     );

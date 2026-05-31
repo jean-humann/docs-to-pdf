@@ -53,7 +53,9 @@ describe('configurePage engine behaviour', () => {
 
   it('swallows a basic-auth failure for lightpanda (warns, resolves)', async () => {
     const page = fakePage();
-    (page.authenticate as jest.Mock).mockRejectedValue(new Error('unsupported'));
+    (page.authenticate as jest.Mock).mockRejectedValue(
+      new Error('unsupported'),
+    );
     await expect(
       configurePage(
         page,
