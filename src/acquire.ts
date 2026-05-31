@@ -6,6 +6,12 @@ import * as utils from './utils';
 import { delay } from './utils';
 import { normalizePageKey } from './links';
 import { AcquireIR, ContentChunk, CoverImage } from './ir';
+import {
+  AcquireEngine,
+  CHROMIUM_ENGINE,
+  LIGHTPANDA_ENGINE,
+  launchLightpanda,
+} from './engines/lightpanda';
 import type { GeneratePDFOptions } from './core';
 
 /**
@@ -59,36 +65,54 @@ export class Semaphore {
 export async function configurePage(
   page: puppeteer.Page,
   options: Pick<GeneratePDFOptions, 'httpAuthUser' | 'httpAuthPassword'>,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<puppeteer.Page> {
   const { httpAuthUser, httpAuthPassword } = options;
   if (httpAuthUser && httpAuthPassword) {
-    await page.authenticate({
-      username: httpAuthUser,
-      password: httpAuthPassword,
+    try {
+      await page.authenticate({
+        username: httpAuthUser,
+        password: httpAuthPassword,
+      });
+    } catch (err) {
+      // lightpanda may not implement Network.setExtraHTTPHeaders/auth.
+      if (engine.name === 'lightpanda') {
+        console.log(
+          chalk.yellow(
+            `[acquire] lightpanda: HTTP Basic Auth not supported (${(err as Error).message}); pages needing auth may 401`,
+          ),
+        );
+      } else {
+        throw err;
+      }
+    }
+  }
+  // lightpanda's request interception is incomplete; skip it (its only purpose
+  // is aborting .pdf navigations, which the crawl rarely hits anyway).
+  if (engine.supportsInterception) {
+    await page.setRequestInterception(true);
+    const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
+    page.on('request', (request) => {
+      if (handledRequests.has(request)) {
+        return;
+      }
+      handledRequests.add(request);
+      if (request.url().endsWith('.pdf')) {
+        console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
+        request.abort().catch((err) => {
+          console.debug(
+            `Request abort error (usually safe to ignore): ${err.message}`,
+          );
+        });
+      } else {
+        request.continue().catch((err) => {
+          console.debug(
+            `Request continue error (usually safe to ignore): ${err.message}`,
+          );
+        });
+      }
     });
   }
-  await page.setRequestInterception(true);
-  const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
-  page.on('request', (request) => {
-    if (handledRequests.has(request)) {
-      return;
-    }
-    handledRequests.add(request);
-    if (request.url().endsWith('.pdf')) {
-      console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
-      request.abort().catch((err) => {
-        console.debug(
-          `Request abort error (usually safe to ignore): ${err.message}`,
-        );
-      });
-    } else {
-      request.continue().catch((err) => {
-        console.debug(
-          `Request continue error (usually safe to ignore): ${err.message}`,
-        );
-      });
-    }
-  });
   return page;
 }
 
@@ -115,6 +139,7 @@ export class CrawlPagePool implements PagePool {
     private readonly browser: puppeteer.Browser,
     private readonly options: GeneratePDFOptions,
     concurrency: number,
+    private readonly engine: AcquireEngine = CHROMIUM_ENGINE,
   ) {
     this.sem = new Semaphore(concurrency);
   }
@@ -126,6 +151,7 @@ export class CrawlPagePool implements PagePool {
       const page = await configurePage(
         await this.browser.newPage(),
         this.options,
+        this.engine,
       );
       slot = { page, busy: true };
       this.slots.push(slot);
@@ -142,9 +168,15 @@ export class CrawlPagePool implements PagePool {
 
   async closeAll(): Promise<void> {
     for (const s of this.slots) {
-      await s.page.close().catch(() => {
-        // ignore close errors during teardown
-      });
+      // lightpanda can hang on `await page.close()` (a frame_loaded CDP
+      // dispatch hits a broken pipe), so fire-and-forget for that engine.
+      if (this.engine.fireAndForgetClose) {
+        s.page.close().catch(() => undefined);
+      } else {
+        await s.page.close().catch(() => {
+          // ignore close errors during teardown
+        });
+      }
     }
     this.slots = [];
   }
@@ -160,6 +192,7 @@ export async function crawlOnePage(
   url: string,
   urlPath: string,
   options: GeneratePDFOptions,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<{ kept: boolean; html: string }> {
   const {
     waitForRender,
@@ -172,7 +205,10 @@ export async function crawlOnePage(
     restrictPaths,
   } = options;
   console.log(chalk.cyan(`Retrieving html from ${url}`));
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
+  await page.goto(url, {
+    waitUntil: engine.waitUntil,
+    timeout: engine.gotoTimeout,
+  });
   if (waitForRender) {
     console.log(chalk.green('Waiting for render...'));
     await delay(waitForRender);
@@ -210,8 +246,15 @@ export async function crawlOnePageWithNext(
   url: string,
   urlPath: string,
   options: GeneratePDFOptions,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<{ kept: boolean; html: string; nextURL: string }> {
-  const { kept, html } = await crawlOnePage(page, url, urlPath, options);
+  const { kept, html } = await crawlOnePage(
+    page,
+    url,
+    urlPath,
+    options,
+    engine,
+  );
   const nextURL = await utils.findNextUrl(page, options.paginationSelector);
   return { kept, html, nextURL };
 }
@@ -224,6 +267,7 @@ export async function crawlOnePageWithNext(
 export async function crawlSerial(
   pool: PagePool,
   options: GeneratePDFOptions,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<ContentChunk[]> {
   const { initialDocURLs } = options;
   const chunks: ContentChunk[] = [];
@@ -244,7 +288,7 @@ export async function crawlSerial(
       visitedURLs.add(nextPageURL);
       const current = nextPageURL;
       const { kept, html, nextURL } = await pool.withPage((p) =>
-        crawlOnePageWithNext(p, current, urlPath, options),
+        crawlOnePageWithNext(p, current, urlPath, options, engine),
       );
       if (kept) {
         chunks.push({ order: order++, url: current, html });
@@ -295,6 +339,7 @@ export async function discoverSitemapURLs(
 export async function buildFrontierByNextLink(
   pool: PagePool,
   options: GeneratePDFOptions,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<string[]> {
   const ordered: string[] = [];
   const visited = new Set<string>();
@@ -308,7 +353,10 @@ export async function buildFrontierByNextLink(
       visited.add(next);
       const current = next;
       const { kept, nextURL } = await pool.withPage(async (p) => {
-        await p.goto(current, { waitUntil: 'networkidle0', timeout: 0 });
+        await p.goto(current, {
+          waitUntil: engine.waitUntil,
+          timeout: engine.gotoTimeout,
+        });
         if (options.waitForRender) {
           await delay(options.waitForRender);
         }
@@ -343,6 +391,7 @@ export async function buildFrontierByNextLink(
 export async function crawlParallel(
   pool: PagePool,
   options: GeneratePDFOptions,
+  engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<ContentChunk[]> {
   const baseOrigin = new URL(options.initialDocURLs[0]).origin;
   const urlPaths = options.initialDocURLs.map((u) => new URL(u).pathname);
@@ -359,7 +408,7 @@ export async function crawlParallel(
           `[acquire] --seedFrom=sitemap requested but ${baseOrigin}/sitemap.xml unavailable; falling back to next-link discovery`,
         ),
       );
-      frontier = await buildFrontierByNextLink(pool, options);
+      frontier = await buildFrontierByNextLink(pool, options, engine);
     } else {
       console.log(
         chalk.yellow(
@@ -421,7 +470,7 @@ export async function crawlParallel(
       // (documented limitation, matches the common single-seed case).
       const urlPath = urlPaths[0];
       const { kept, html } = await pool.withPage((p) =>
-        crawlOnePage(p, url, urlPath, options),
+        crawlOnePage(p, url, urlPath, options, engine),
       );
       if (kept) {
         results[idx] = { order: idx, url, html };
@@ -443,13 +492,10 @@ export async function crawlParallel(
  * parallel crawler.
  */
 /* c8 ignore start */
-export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
-  const concurrency = options.concurrency ?? 1;
-  if (!Number.isInteger(concurrency) || concurrency < 1) {
-    throw new RangeError(
-      `--concurrency must be a positive integer, got ${concurrency}`,
-    );
-  }
+/** Launch a Chromium browser for acquisition, plus a cleanup function. */
+async function launchChromium(
+  options: GeneratePDFOptions,
+): Promise<{ browser: puppeteer.Browser; cleanup: () => Promise<void> }> {
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`[acquire] Using Chromium from ${execPath}`));
   const browser = await puppeteer.launch({
@@ -462,17 +508,66 @@ export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
     .process()
     ?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))
     ?.split('=')[1] as string | undefined;
-  console.debug(
-    chalk.cyan(`[acquire] Chrome user data dir: ${chromeTmpDataDir}`),
-  );
+  return {
+    browser,
+    cleanup: async () => {
+      await browser.close();
+      if (chromeTmpDataDir) {
+        fs.removeSync(chromeTmpDataDir);
+      }
+    },
+  };
+}
 
-  const pool = new CrawlPagePool(browser, options, concurrency);
+/**
+ * Resolve the acquisition engine: try lightpanda when requested, falling back to
+ * Chromium (loudly) if it is unavailable. Returns the connected browser, the
+ * engine descriptor that drives crawl behaviour, and a cleanup function.
+ */
+async function launchAcquireBrowser(options: GeneratePDFOptions): Promise<{
+  browser: puppeteer.Browser;
+  engine: AcquireEngine;
+  cleanup: () => Promise<void>;
+}> {
+  if (options.acquireEngine === 'lightpanda') {
+    try {
+      const handle = await launchLightpanda();
+      console.log(
+        chalk.cyan('[acquire] using lightpanda engine (Chromium for render)'),
+      );
+      return {
+        browser: handle.browser,
+        engine: LIGHTPANDA_ENGINE,
+        cleanup: handle.cleanup,
+      };
+    } catch (err) {
+      console.log(
+        chalk.yellow(
+          `[acquire] lightpanda unavailable (${(err as Error).message}); falling back to Chromium`,
+        ),
+      );
+    }
+  }
+  const { browser, cleanup } = await launchChromium(options);
+  return { browser, engine: CHROMIUM_ENGINE, cleanup };
+}
+
+export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
+  const concurrency = options.concurrency ?? 1;
+  if (!Number.isInteger(concurrency) || concurrency < 1) {
+    throw new RangeError(
+      `--concurrency must be a positive integer, got ${concurrency}`,
+    );
+  }
+  const { browser, engine, cleanup } = await launchAcquireBrowser(options);
+
+  const pool = new CrawlPagePool(browser, options, concurrency, engine);
   try {
     console.debug(`InitialDocURLs: ${options.initialDocURLs}`);
     const chunks =
       concurrency > 1
-        ? await crawlParallel(pool, options)
-        : await crawlSerial(pool, options);
+        ? await crawlParallel(pool, options, engine)
+        : await crawlSerial(pool, options, engine);
 
     let coverImage: CoverImage | null = null;
     if (options.coverImage) {
@@ -490,12 +585,8 @@ export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
     };
   } finally {
     await pool.closeAll();
-    await browser.close();
+    await cleanup();
     console.log(chalk.green('[acquire] Browser closed'));
-    if (chromeTmpDataDir) {
-      fs.removeSync(chromeTmpDataDir);
-      console.debug(chalk.cyan('[acquire] Chrome user data dir removed'));
-    }
   }
 }
 /* c8 ignore stop */

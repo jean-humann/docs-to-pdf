@@ -73,6 +73,7 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlif
 | `--httpAuthPassword`   | No       | HTTP Basic Auth password for protected documentation sites                                                                                                                         |
 | `--concurrency`        | No       | Number of pages to fetch in parallel. Default `1` (serial, identical output to before). `>1` parallelises fetching while preserving page order. See [Parallel crawling](#-parallel-crawling-experimental).         |
 | `--seedFrom`           | No       | Frontier source when `--concurrency>1`: `next-link` (default, same pages as serial) or `sitemap` (uses `sitemap.xml`; **changes the included-page set**).                          |
+| `--acquireEngine`      | No       | Crawl engine: `chromium` (default) or `lightpanda` (a fast Zig DOM engine; opt-in, auto-falls back to Chromium if unavailable; render always uses Chromium). See [Faster crawling with lightpanda](#-faster-crawling-with-lightpanda-experimental). |
 
 ## Docusaurus Options
 
@@ -234,6 +235,40 @@ Notes and trade-offs:
   concurrency. For byte-stable output, keep `--concurrency=1` or raise
   `--waitForRender`. High concurrency also increases peak memory (one Chromium
   tab per in-flight page).
+
+## 🐼 Faster crawling with lightpanda (experimental)
+
+The crawl (acquire) stage can run on [lightpanda](https://lightpanda.io) — a
+Zig + V8 **DOM-only** headless browser — instead of Chromium. lightpanda is far
+lighter and faster for crawling because it skips layout/raster/compositing,
+which the crawl never needs. **Render still uses Chromium** (lightpanda cannot
+produce PDFs), so the output is unchanged.
+
+```shell
+# install lightpanda (https://lightpanda.io), then point docs-to-pdf at it:
+export LIGHTPANDA_BIN=/path/to/lightpanda     # or put `lightpanda` on PATH
+npx docs-to-pdf docusaurus --docsDir build --initialDocURLs https://your-site.com/docs/intro \
+  --version 3 --acquireEngine lightpanda
+```
+
+How it behaves:
+
+- **Opt-in and safe.** Default is `chromium`. If lightpanda can't be launched
+  (binary missing, fails to start), docs-to-pdf logs a warning and
+  **automatically falls back to Chromium** — the run still succeeds.
+- **It auto-manages the engine.** docs-to-pdf spawns `lightpanda serve` on a
+  free port and drives it over CDP with puppeteer, or connects to an existing
+  server via `LIGHTPANDA_WS=ws://host:port`.
+- **Speed.** On a static Docusaurus build the crawl is several times faster
+  per page (no `networkidle0` quiet-window, no layout). End-to-end speedup is
+  bounded by the Chromium render stage that always runs.
+
+Fidelity caveats (lightpanda is beta): content is extracted from the
+pre-rendered DOM (`domcontentloaded`), which matches Chromium for standard
+Docusaurus pages, but client-only widgets (`<BrowserOnly>`, live code blocks),
+HTTP Basic Auth, and lazy-loaded images may differ or be unsupported. When in
+doubt, use the default Chromium engine. The auto-fallback also protects you if
+lightpanda is unavailable on a given platform.
 
 ### Docusaurus v1 - Legacy
 

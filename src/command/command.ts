@@ -217,6 +217,11 @@ export function makeProgram() {
         '--seedFrom <source>',
         "frontier source when --concurrency>1: 'next-link' (default, same pages as serial) or 'sitemap' (CHANGES the included-page set; uses sitemap.xml order)",
         'next-link',
+      )
+      .option(
+        '--acquireEngine <engine>',
+        "crawl engine: 'chromium' (default) or 'lightpanda' (fast Zig DOM engine; opt-in, auto-falls back to Chromium if unavailable; render always uses Chromium)",
+        'chromium',
       );
   });
 
