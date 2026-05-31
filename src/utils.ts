@@ -2,6 +2,14 @@ import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
 import sanitizeHtml from 'sanitize-html';
+import {
+  buildPageSlug,
+  normalizePageKey,
+  rewriteContentLinks,
+  slugify,
+  PageAnchorEntry,
+  PageAnchorMap,
+} from './links';
 
 console_stamp(console);
 
@@ -532,6 +540,65 @@ export function generateToc(
   return { modifiedContentHTML, tocHTML };
 }
 
+/**
+ * Like {@link generateToc}, but processes the crawled pages as separate
+ * `{ url, html }` chunks so each heading gets a deterministic, page-namespaced
+ * id and a map of crawled-page URL -> in-PDF anchor is built. Cross-page content
+ * links are then rewritten to bare `#anchor` fragments, which Chromium renders
+ * as internal PDF links (issue #336).
+ */
+export function generateTocFromChunks(
+  chunks: Array<{ url: string; html: string }>,
+  options?: { maxLevel?: number; tocTitle?: string },
+): { modifiedContentHTML: string; tocHTML: string; anchorMap: PageAnchorMap } {
+  const maxLevel = options?.maxLevel ?? 4;
+  const tocTitle = options?.tocTitle;
+
+  const headers: HeaderItem[] = [];
+  const anchorMap: PageAnchorMap = {};
+  const re = new RegExp(
+    '<h[1-' + maxLevel + '](.+?)</h[1-' + maxLevel + ']( )*>',
+    'gs',
+  );
+
+  console.log(chalk.cyan('Start generating TOC...'));
+
+  // Pass 1: assign deterministic, page-namespaced ids and build the anchor map.
+  const staged = chunks.map(({ url, html }) => {
+    const pageKey = normalizePageKey(url, url) ?? '/';
+    const pageSlug = buildPageSlug(pageKey);
+    const pageTopId = `page-top-${pageSlug}`;
+    const entry: PageAnchorEntry = { pageTopId, headings: {} };
+
+    const modified = html.replace(re, (matchedStr) => {
+      const { headerText, headerId, level, originalId } = generateHeader(
+        headers,
+        matchedStr,
+        pageSlug,
+      );
+      headers.push({ header: headerText, level, id: headerId });
+      if (originalId) {
+        entry.headings[originalId] = headerId;
+      }
+      return replaceHeader(matchedStr, headerId, maxLevel);
+    });
+
+    anchorMap[pageKey] = entry;
+    // Hidden anchor so a whole-page link has an in-document destination.
+    return { url, html: `<a id="${pageTopId}"></a>${modified}` };
+  });
+
+  // Pass 2: with every page in the map, rewrite cross-page links - resolving
+  // each chunk's hrefs against its own URL so relative links work too.
+  const modifiedContentHTML = staged
+    .map((chunk) => rewriteContentLinks(chunk.html, anchorMap, chunk.url))
+    .join('');
+
+  const tocHTML = generateTocHtml(headers, tocTitle);
+
+  return { modifiedContentHTML, tocHTML, anchorMap };
+}
+
 interface HeaderItem {
   level: number;
   id: string;
@@ -573,7 +640,11 @@ export function generateTocHtml(
  * @param matchedStr - The matched string containing the header information.
  * @returns An object containing the header text, header ID, and level.
  */
-export function generateHeader(headers: HeaderItem[], matchedStr: string) {
+export function generateHeader(
+  headers: HeaderItem[],
+  matchedStr: string,
+  pageSlug?: string,
+) {
   // Remove anchor tags inserted by Docusaurus for direct links to the header
   // Extract text content by removing all HTML tags using sanitize-html to avoid ReDoS
   const headerText = sanitizeHtml(matchedStr, {
@@ -581,15 +652,31 @@ export function generateHeader(headers: HeaderItem[], matchedStr: string) {
     allowedAttributes: {},
   }).trim();
 
-  // Generate a random header ID using a combination of random characters and the headers array length
-  const headerId = `${Math.random().toString(36).slice(2, 5)}-${
-    headers.length
-  }`;
+  // The heading's original id (the Docusaurus slug, used to resolve cross-page
+  // links like `page#section`), falling back to a slug of the heading text.
+  const originalId = extractHeadingId(matchedStr) || slugify(headerText);
+
+  // When a pageSlug is provided, generate a deterministic, page-namespaced id so
+  // a link's target URL+fragment can be mapped to the rewritten anchor (#336).
+  // The trailing counter keeps ids globally unique even when two pages share the
+  // same heading id. Without a pageSlug, keep the previous random behaviour.
+  const headerId = pageSlug
+    ? `${pageSlug}--${slugify(originalId)}-${headers.length}`
+    : `${Math.random().toString(36).slice(2, 5)}-${headers.length}`;
 
   // Extract the level from the matched string (e.g., h1, h2, etc.)
   const level = Number(matchedStr[matchedStr.indexOf('h') + 1]);
 
-  return { headerText, headerId, level };
+  return { headerText, headerId, level, originalId };
+}
+
+/**
+ * Extract the `id` attribute from a heading tag, or '' if it has none.
+ * Runs on the matched heading string before `replaceHeader` overwrites the id.
+ */
+export function extractHeadingId(matchedStr: string): string {
+  const match = matchedStr.match(/<h[1-6][^>]*\sid\s*=\s*"([^"]*)"/i);
+  return match ? match[1] : '';
 }
 
 /**

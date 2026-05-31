@@ -31,6 +31,7 @@ export interface GeneratePDFOptions extends PDFOptions {
   restrictPaths: boolean;
   openDetail: boolean;
   extractIframes: boolean;
+  noInternalLinks: boolean;
   httpAuthUser?: string;
   httpAuthPassword?: string;
 }
@@ -59,6 +60,7 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
     restrictPaths,
     openDetail = true,
     extractIframes = false,
+    noInternalLinks = false,
     httpAuthUser,
     httpAuthPassword,
   } = options;
@@ -124,8 +126,9 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
 
     console.debug(`InitialDocURLs: ${initialDocURLs}`);
 
-    // Local variable to accumulate HTML content from all pages
-    let contentHTML = '';
+    // Accumulate the HTML content of each crawled page, keyed by its URL so
+    // cross-page hyperlinks can be rewritten as internal PDF links (#336).
+    const contentChunks: Array<{ url: string; html: string }> = [];
     // Track visited URLs across all initial URLs to prevent infinite loops
     // from circular pagination, including cross-references between different initial URLs
     const visitedURLs = new Set<string>();
@@ -175,11 +178,14 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
             await utils.openDetails(page);
           }
           // Get the HTML string of the content section.
-          contentHTML += await utils.getHtmlContent(
-            page,
-            contentSelector,
-            extractIframes,
-          );
+          contentChunks.push({
+            url: nextPageURL,
+            html: await utils.getHtmlContent(
+              page,
+              contentSelector,
+              extractIframes,
+            ),
+          });
           console.log(chalk.green('Success'));
         }
 
@@ -206,10 +212,13 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
       coverSub,
     );
 
-    // Generate Toc
-    const { modifiedContentHTML, tocHTML } = utils.generateToc(contentHTML, {
-      tocTitle,
-    });
+    // Generate Toc. Unless disabled, rewrite cross-page hyperlinks to internal
+    // PDF links (#336) via the per-page chunk pipeline.
+    const { modifiedContentHTML, tocHTML } = noInternalLinks
+      ? utils.generateToc(contentChunks.map((chunk) => chunk.html).join(''), {
+          tocTitle,
+        })
+      : utils.generateTocFromChunks(contentChunks, { tocTitle });
 
     // Restructuring the HTML of a document
     console.log(chalk.cyan('Restructuring the html of a document...'));
