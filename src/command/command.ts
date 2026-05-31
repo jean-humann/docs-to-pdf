@@ -192,6 +192,10 @@ export function makeProgram() {
         'open details elements in the PDF, default is open',
       )
       .option(
+        '--noInternalLinks',
+        'do not rewrite cross-page hyperlinks as internal PDF jump links',
+      )
+      .option(
         '--extractIframes',
         'extract and inline content from iframes (only same-origin or accessible iframes)',
       )

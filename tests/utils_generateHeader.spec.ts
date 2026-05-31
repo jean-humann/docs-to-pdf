@@ -47,3 +47,35 @@ describe('generateHeader', () => {
     expect(level).toBe(3);
   });
 });
+
+describe('generateHeader with pageSlug (deterministic ids)', () => {
+  it('namespaces the original heading id with the page slug', () => {
+    const { headerId, originalId } = generateHeader(
+      [],
+      '<h1 id="my-section">Title</h1>',
+      'docs-intro',
+    );
+    expect(originalId).toBe('my-section');
+    expect(headerId).toBe('docs-intro--my-section-0');
+  });
+
+  it('derives the id from the heading text when the tag has no id', () => {
+    const { headerId, originalId } = generateHeader(
+      [],
+      '<h2>Getting Started</h2>',
+      'docs-intro',
+    );
+    expect(originalId).toBe('getting-started');
+    expect(headerId).toBe('docs-intro--getting-started-0');
+  });
+
+  it('appends a counter so ids stay unique across pages', () => {
+    const headers = [{ header: 'X', level: 1, id: 'docs-intro--foo-0' }];
+    const { headerId } = generateHeader(
+      headers,
+      '<h1 id="foo">Foo</h1>',
+      'docs-intro',
+    );
+    expect(headerId).toBe('docs-intro--foo-1');
+  });
+});
