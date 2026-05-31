@@ -16,6 +16,12 @@ updates:
       # breaks CJS consumers with ERR_REQUIRE_ESM (see #562). Stay on v4.
       - dependency-name: 'chalk'
         update-type: 'version-update:semver-major'
+      # commitlint v21+ requires Node >= 22.12 and drops Node 20, which this
+      # project still supports (engines: >=20, CI tests 20.x). Stay on v20.
+      - dependency-name: 'commitlint'
+        update-type: 'version-update:semver-major'
+      - dependency-name: '@commitlint/*'
+        update-type: 'version-update:semver-major'
     groups:
       puppeteer:
         patterns:
