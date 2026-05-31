@@ -39,8 +39,18 @@ export default {
   // A list of reporter names that Jest uses when writing coverage reports
   coverageReporters: ['lcov', 'text'],
 
-  // An object that configures minimum threshold enforcement for coverage results
-  // coverageThreshold: undefined,
+  // Minimum global coverage. Deliberately conservative starting floors that sit
+  // well below the suite's actual coverage (browser-dependent suites only run
+  // where Chrome is available, e.g. CI/local, so the floor must clear the
+  // no-Chrome case too). Acts as a catastrophic-regression guard; raise over time.
+  coverageThreshold: {
+    global: {
+      statements: 55,
+      branches: 65,
+      functions: 45,
+      lines: 55,
+    },
+  },
 
   // A path to a custom dependency extractor
   // dependencyExtractor: undefined,
