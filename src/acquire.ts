@@ -1,70 +1,236 @@
 import chalk from 'chalk';
 import * as puppeteer from 'puppeteer-core';
+import { chromeExecPath } from './browser';
 import * as utils from './utils';
 import { delay } from './utils';
+import { normalizePageKey } from './links';
+import { AcquireIR, ContentChunk, CoverImage } from './ir';
+import type { GeneratePDFOptions } from './core';
 
-/** One crawled page: its URL and the extracted content-section HTML. */
-export interface PageChunk {
-  url: string;
-  html: string;
+/**
+ * A counting semaphore. acquire() resolves with a release function once a permit
+ * is free; release() returns the permit and wakes the next FIFO waiter. Used to
+ * bound how many heavy Chromium pages are open at once during a parallel crawl.
+ */
+export class Semaphore {
+  private count: number;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(count: number) {
+    if (!Number.isInteger(count) || count < 1) {
+      throw new RangeError(
+        `Semaphore count must be a positive integer, got ${count}`,
+      );
+    }
+    this.count = count;
+  }
+
+  async acquire(): Promise<() => void> {
+    return new Promise((resolve) => {
+      const grab = () => {
+        if (this.count > 0) {
+          this.count--;
+          let released = false;
+          resolve(() => {
+            // Idempotent: a double release must not over-grant permits.
+            if (released) return;
+            released = true;
+            this.count++;
+            const next = this.queue.shift();
+            if (next) next();
+          });
+        } else {
+          this.queue.push(grab);
+        }
+      };
+      grab();
+    });
+  }
 }
 
 /**
- * Options consumed by the acquisition stage. A structural subset of
- * GeneratePDFOptions, so acquire() is decoupled from rendering.
+ * Configure a fresh page exactly as the v1 single-page crawl did: optional HTTP
+ * Basic Auth, plus request interception that aborts `.pdf` requests (puppeteer
+ * cannot render them) and continues everything else. Must run before the first
+ * navigation. Shared by the crawl pool and the render page so the two browsers
+ * behave identically.
  */
-export interface AcquireOptions {
-  initialDocURLs: Array<string>;
-  excludeURLs: Array<string>;
-  contentSelector: string;
-  paginationSelector: string;
-  filterKeyword: string;
-  excludePaths: Array<string>;
-  restrictPaths: boolean;
-  openDetail?: boolean;
-  extractIframes?: boolean;
-  waitForRender: number;
-}
-
-/**
- * ACQUISITION stage of the pipeline (v2 decoupling): crawl the documentation
- * site by following the pagination next-link chain from each initial URL, and
- * return the content HTML of every kept page in deterministic crawl order.
- *
- * This is the stable intermediate representation that decouples crawling from
- * rendering, so the same chunks can feed different render backends. The crawl
- * behaviour is identical to the previous inline loop in generatePDF.
- */
-/* c8 ignore start */
-export async function acquire(
+export async function configurePage(
   page: puppeteer.Page,
-  options: AcquireOptions,
-): Promise<PageChunk[]> {
+  options: Pick<GeneratePDFOptions, 'httpAuthUser' | 'httpAuthPassword'>,
+): Promise<puppeteer.Page> {
+  const { httpAuthUser, httpAuthPassword } = options;
+  if (httpAuthUser && httpAuthPassword) {
+    await page.authenticate({
+      username: httpAuthUser,
+      password: httpAuthPassword,
+    });
+  }
+  await page.setRequestInterception(true);
+  const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
+  page.on('request', (request) => {
+    if (handledRequests.has(request)) {
+      return;
+    }
+    handledRequests.add(request);
+    if (request.url().endsWith('.pdf')) {
+      console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
+      request.abort().catch((err) => {
+        console.debug(
+          `Request abort error (usually safe to ignore): ${err.message}`,
+        );
+      });
+    } else {
+      request.continue().catch((err) => {
+        console.debug(
+          `Request continue error (usually safe to ignore): ${err.message}`,
+        );
+      });
+    }
+  });
+  return page;
+}
+
+/** Minimal page-pool surface, so crawlers can be unit-tested with a fake pool. */
+export interface PagePool {
+  withPage<T>(fn: (page: puppeteer.Page) => Promise<T>): Promise<T>;
+}
+
+interface Slot {
+  page: puppeteer.Page;
+  busy: boolean;
+}
+
+/**
+ * A bounded pool of reused Chromium pages. At most `concurrency` pages are open
+ * and busy at once (enforced by the Semaphore); slots are reused rather than
+ * churned, keeping memory bounded under parallel crawling.
+ */
+export class CrawlPagePool implements PagePool {
+  private slots: Slot[] = [];
+  private readonly sem: Semaphore;
+
+  constructor(
+    private readonly browser: puppeteer.Browser,
+    private readonly options: GeneratePDFOptions,
+    concurrency: number,
+  ) {
+    this.sem = new Semaphore(concurrency);
+  }
+
+  async withPage<T>(fn: (page: puppeteer.Page) => Promise<T>): Promise<T> {
+    const release = await this.sem.acquire();
+    let slot = this.slots.find((s) => !s.busy);
+    if (!slot) {
+      const page = await configurePage(
+        await this.browser.newPage(),
+        this.options,
+      );
+      slot = { page, busy: true };
+      this.slots.push(slot);
+    } else {
+      slot.busy = true;
+    }
+    try {
+      return await fn(slot.page);
+    } finally {
+      slot.busy = false;
+      release();
+    }
+  }
+
+  async closeAll(): Promise<void> {
+    for (const s of this.slots) {
+      await s.page.close().catch(() => {
+        // ignore close errors during teardown
+      });
+    }
+    this.slots = [];
+  }
+}
+
+/**
+ * Navigate to one page and extract its content HTML, applying the same
+ * keep/drop, details-expansion, and iframe rules as the v1 crawl. Returns
+ * `kept: false` (and empty html) for pages filtered out by isPageKept.
+ */
+export async function crawlOnePage(
+  page: puppeteer.Page,
+  url: string,
+  urlPath: string,
+  options: GeneratePDFOptions,
+): Promise<{ kept: boolean; html: string }> {
   const {
-    initialDocURLs,
-    excludeURLs,
+    waitForRender,
     contentSelector,
-    paginationSelector,
+    extractIframes = false,
+    openDetail = true,
+    excludeURLs,
     filterKeyword,
     excludePaths,
     restrictPaths,
-    openDetail = true,
-    extractIframes = false,
-    waitForRender,
   } = options;
+  console.log(chalk.cyan(`Retrieving html from ${url}`));
+  await page.goto(url, { waitUntil: 'networkidle0', timeout: 0 });
+  if (waitForRender) {
+    console.log(chalk.green('Waiting for render...'));
+    await delay(waitForRender);
+  }
+  const kept = await utils.isPageKept(
+    page,
+    url,
+    urlPath,
+    excludeURLs,
+    filterKeyword,
+    excludePaths,
+    restrictPaths,
+  );
+  if (!kept) {
+    return { kept: false, html: '' };
+  }
+  if (openDetail) {
+    await utils.openDetails(page);
+  }
+  const html = await utils.getHtmlContent(
+    page,
+    contentSelector,
+    extractIframes,
+  );
+  console.log(chalk.green('Success'));
+  return { kept: true, html };
+}
 
-  // Accumulate the HTML content of each crawled page, keyed by its URL so
-  // cross-page hyperlinks can be rewritten as internal PDF links (#336).
-  const chunks: PageChunk[] = [];
-  // Track visited URLs across all initial URLs to prevent infinite loops from
-  // circular pagination, including cross-references between different seeds.
+/**
+ * Serial-only helper: read the pagination next-link from the SAME already-loaded
+ * DOM (no second navigation), so the next-link chain is followed exactly as v1.
+ */
+export async function crawlOnePageWithNext(
+  page: puppeteer.Page,
+  url: string,
+  urlPath: string,
+  options: GeneratePDFOptions,
+): Promise<{ kept: boolean; html: string; nextURL: string }> {
+  const { kept, html } = await crawlOnePage(page, url, urlPath, options);
+  const nextURL = await utils.findNextUrl(page, options.paginationSelector);
+  return { kept, html, nextURL };
+}
+
+/**
+ * Serial crawl (concurrency === 1) — a faithful reproduction of the v1 inline
+ * loop. Dedup stays raw-string (matching v1's visitedURLs), and chunk order is
+ * insertion order, so the IR is identical to v1's contentChunks mapping.
+ */
+export async function crawlSerial(
+  pool: PagePool,
+  options: GeneratePDFOptions,
+): Promise<ContentChunk[]> {
+  const { initialDocURLs } = options;
+  const chunks: ContentChunk[] = [];
   const visitedURLs = new Set<string>();
-
+  let order = 0;
   for (const url of initialDocURLs) {
     let nextPageURL = url;
     const urlPath = new URL(url).pathname;
-
-    // Create a list of HTML for the content section of all pages by looping
     while (nextPageURL) {
       if (visitedURLs.has(nextPageURL)) {
         console.log(
@@ -75,51 +241,252 @@ export async function acquire(
         break;
       }
       visitedURLs.add(nextPageURL);
-
-      console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
-
-      // Go to the page specified by nextPageURL
-      await page.goto(`${nextPageURL}`, {
-        waitUntil: 'networkidle0',
-        timeout: 0,
-      });
-      if (waitForRender) {
-        console.log(chalk.green('Waiting for render...'));
-        await delay(waitForRender);
+      const current = nextPageURL;
+      const { kept, html, nextURL } = await pool.withPage((p) =>
+        crawlOnePageWithNext(p, current, urlPath, options),
+      );
+      if (kept) {
+        chunks.push({ order: order++, url: current, html });
       }
-
-      if (
-        await utils.isPageKept(
-          page,
-          nextPageURL,
-          urlPath,
-          excludeURLs,
-          filterKeyword,
-          excludePaths,
-          restrictPaths,
-        )
-      ) {
-        // Open all <details> elements on the page
-        if (openDetail) {
-          await utils.openDetails(page);
-        }
-        // Get the HTML string of the content section.
-        chunks.push({
-          url: nextPageURL,
-          html: await utils.getHtmlContent(
-            page,
-            contentSelector,
-            extractIframes,
-          ),
-        });
-        console.log(chalk.green('Success'));
-      }
-
-      // Find next page url before DOM operations
-      nextPageURL = await utils.findNextUrl(page, paginationSelector);
+      nextPageURL = nextURL;
     }
   }
-
   return chunks;
+}
+
+/**
+ * Fetch and parse `${baseOrigin}/sitemap.xml`, returning the list of <loc> URLs
+ * in document order, or null if the sitemap is missing/empty/unreachable.
+ */
+export async function discoverSitemapURLs(
+  page: puppeteer.Page,
+  baseOrigin: string,
+): Promise<string[] | null> {
+  const sitemapURL = `${baseOrigin}/sitemap.xml`;
+  try {
+    const res = await page.goto(sitemapURL, {
+      waitUntil: 'networkidle0',
+      timeout: 15000,
+    });
+    if (!res || !res.ok()) {
+      return null;
+    }
+    const text = await page.evaluate(
+      () => document.documentElement.textContent ?? '',
+    );
+    const locs = Array.from(text.matchAll(/<loc>([^<]+)<\/loc>/gi), (m) =>
+      m[1].trim(),
+    );
+    return locs.length ? locs : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Default discovery for parallel mode: walk the next-link chain serially but
+ * cheaply (goto + isPageKept + findNextUrl only — no details/iframes/autoscroll)
+ * to materialize the exact next-link ordered, filtered URL list. The expensive
+ * content extraction then runs in parallel over this frontier.
+ */
+export async function buildFrontierByNextLink(
+  pool: PagePool,
+  options: GeneratePDFOptions,
+): Promise<string[]> {
+  const ordered: string[] = [];
+  const visited = new Set<string>();
+  for (const url of options.initialDocURLs) {
+    let next = url;
+    const urlPath = new URL(url).pathname;
+    while (next) {
+      if (visited.has(next)) {
+        break;
+      }
+      visited.add(next);
+      const current = next;
+      const { kept, nextURL } = await pool.withPage(async (p) => {
+        await p.goto(current, { waitUntil: 'networkidle0', timeout: 0 });
+        if (options.waitForRender) {
+          await delay(options.waitForRender);
+        }
+        const keep = await utils.isPageKept(
+          p,
+          current,
+          urlPath,
+          options.excludeURLs,
+          options.filterKeyword,
+          options.excludePaths,
+          options.restrictPaths,
+        );
+        const nxt = await utils.findNextUrl(p, options.paginationSelector);
+        return { kept: keep, nextURL: nxt };
+      });
+      if (kept) {
+        ordered.push(current);
+      }
+      next = nextURL;
+    }
+  }
+  return ordered;
+}
+
+/**
+ * Parallel crawl (concurrency > 1). Builds an ordered frontier (next-link
+ * discovery by default, or sitemap order when --seedFrom=sitemap), dedupes it
+ * synchronously by normalized page key, then fetches content into a PRE-SIZED
+ * array indexed by frontier position — assembly order is the frontier index,
+ * never the completion order, so the global heading counter stays stable.
+ */
+export async function crawlParallel(
+  pool: PagePool,
+  options: GeneratePDFOptions,
+): Promise<ContentChunk[]> {
+  const baseOrigin = new URL(options.initialDocURLs[0]).origin;
+  const urlPaths = options.initialDocURLs.map((u) => new URL(u).pathname);
+
+  // 1. Choose the ordered frontier source.
+  let frontier: string[];
+  if (options.seedFrom === 'sitemap') {
+    const sitemap = await pool.withPage((p) =>
+      discoverSitemapURLs(p, baseOrigin),
+    );
+    if (!sitemap) {
+      console.log(
+        chalk.yellow(
+          `[acquire] --seedFrom=sitemap requested but ${baseOrigin}/sitemap.xml unavailable; falling back to next-link discovery`,
+        ),
+      );
+      frontier = await buildFrontierByNextLink(pool, options);
+    } else {
+      console.log(
+        chalk.yellow(
+          `[acquire] --seedFrom=sitemap: included-page SET differs from the next-link chain (sitemap order). Found ${sitemap.length} URLs.`,
+        ),
+      );
+      frontier = sitemap.filter((u) => {
+        try {
+          const parsed = new URL(u);
+          if (parsed.origin !== baseOrigin) return false;
+          if (options.excludeURLs?.includes(u)) return false;
+          if (options.excludePaths?.some((x) => u.includes(x))) return false;
+          if (options.restrictPaths && !urlPaths.some((up) => u.includes(up)))
+            return false;
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      // Always include the initial URLs even if absent from the sitemap.
+      for (const u of options.initialDocURLs) {
+        if (!frontier.includes(u)) {
+          frontier.unshift(u);
+        }
+      }
+    }
+  } else {
+    frontier = await buildFrontierByNextLink(pool, options);
+  }
+
+  // 2. Normalize-dedup the frontier synchronously. The stable index is the
+  //    position in this deduped list — assigned before any parallelism.
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const u of frontier) {
+    const key = normalizePageKey(u, u) ?? u;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    ordered.push(u);
+  }
+
+  // 3. Fetch content into a PRE-SIZED array indexed by frontier position. The
+  //    pool's semaphore bounds simultaneity; we never push on completion.
+  const results: Array<ContentChunk | null> = new Array(ordered.length).fill(
+    null,
+  );
+  await Promise.all(
+    ordered.map(async (url, idx) => {
+      // Single-seed-correct; multi-seed parallel uses the first seed path
+      // (documented limitation, matches the common single-seed case).
+      const urlPath = urlPaths[0];
+      const { kept, html } = await pool.withPage((p) =>
+        crawlOnePage(p, url, urlPath, options),
+      );
+      if (kept) {
+        results[idx] = { order: idx, url, html };
+      }
+    }),
+  );
+
+  // 4. Compact (drop filtered-out) preserving index order; renumber densely.
+  return results
+    .filter((c): c is ContentChunk => c !== null)
+    .map((c, i) => ({ ...c, order: i }));
+}
+
+/**
+ * ACQUISITION stage (v2): launch a browser, crawl the documentation site into
+ * the intermediate representation (deterministically-ordered content chunks +
+ * cover image + base metadata), and return it. concurrency === 1 (default) runs
+ * the unchanged serial loop for IR-identity with v1; concurrency > 1 enables the
+ * parallel crawler.
+ */
+/* c8 ignore start */
+export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
+  const concurrency = options.concurrency ?? 1;
+  if (!Number.isInteger(concurrency) || concurrency < 1) {
+    throw new RangeError(
+      `--concurrency must be a positive integer, got ${concurrency}`,
+    );
+  }
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
+  console.debug(chalk.cyan(`[acquire] Using Chromium from ${execPath}`));
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: execPath,
+    args: options.puppeteerArgs,
+    protocolTimeout: options.protocolTimeout,
+  });
+  const chromeTmpDataDir = browser
+    .process()
+    ?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))
+    ?.split('=')[1] as string | undefined;
+  console.debug(
+    chalk.cyan(`[acquire] Chrome user data dir: ${chromeTmpDataDir}`),
+  );
+
+  const pool = new CrawlPagePool(browser, options, concurrency);
+  try {
+    console.debug(`InitialDocURLs: ${options.initialDocURLs}`);
+    const chunks =
+      concurrency > 1
+        ? await crawlParallel(pool, options)
+        : await crawlSerial(pool, options);
+
+    let coverImage: CoverImage | null = null;
+    if (options.coverImage) {
+      console.log(chalk.cyan('[acquire] Fetching cover image...'));
+      coverImage = await pool.withPage((p) =>
+        utils.getCoverImage(p, options.coverImage),
+      );
+    }
+
+    return {
+      chunks,
+      baseOrigin: new URL(options.initialDocURLs[0]).origin,
+      firstInitialURL: options.initialDocURLs[0],
+      coverImage,
+    };
+  } finally {
+    await pool.closeAll();
+    await browser.close();
+    console.log(chalk.green('[acquire] Browser closed'));
+    if (chromeTmpDataDir) {
+      const { removeSync } = await import('fs-extra');
+      removeSync(chromeTmpDataDir);
+      console.debug(chalk.cyan('[acquire] Chrome user data dir removed'));
+    }
+  }
 }
 /* c8 ignore stop */

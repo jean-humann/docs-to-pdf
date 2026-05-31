@@ -1,11 +1,9 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-import * as puppeteer from 'puppeteer-core';
-import * as fs from 'fs-extra';
-import { chromeExecPath } from './browser';
-import * as utils from './utils';
 import { acquire } from './acquire';
-import { PDF, PDFOptions } from './pdf/generate';
+import { render } from './render';
+import { AcquireIR } from './ir';
+import { PDFOptions } from './pdf/generate';
 
 console_stamp(console);
 
@@ -34,174 +32,27 @@ export interface GeneratePDFOptions extends PDFOptions {
   noInternalLinks: boolean;
   httpAuthUser?: string;
   httpAuthPassword?: string;
+  /** Number of pages to fetch in parallel. Default 1 (serial, IR-identical to v1). */
+  concurrency?: number;
+  /** Frontier source when concurrency > 1: 'next-link' (default) or 'sitemap'. */
+  seedFrom?: 'sitemap' | 'next-link';
 }
 
+// Re-export the render stage so alternative pipelines/backends can consume the IR.
+export { render };
+
+/**
+ * Generate a PDF from a documentation site. v2 pipeline: ACQUIRE the content
+ * into a stable intermediate representation, then RENDER the IR into a PDF.
+ * The two stages run in separate browsers with a clean IR boundary between them.
+ */
 /* c8 ignore start */
 export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
-  const {
-    initialDocURLs,
-    excludeSelectors,
-    cssStyle,
-    puppeteerArgs,
-    coverTitle,
-    coverImage,
-    disableTOC,
-    tocTitle,
-    disableCover,
-    coverSub,
-    protocolTimeout,
-    baseUrl,
-    noInternalLinks = false,
-    httpAuthUser,
-    httpAuthPassword,
-  } = options;
-  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
-  console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: execPath,
-    args: puppeteerArgs,
-    protocolTimeout: protocolTimeout,
-  });
-
-  const chromeTmpDataDir = browser
-    .process()
-    ?.spawnargs.find((arg) => arg.startsWith('--user-data-dir'))
-    ?.split('=')[1] as string;
-  console.debug(chalk.cyan(`Chrome user data dir: ${chromeTmpDataDir}`));
-
-  try {
-    const page = await browser.newPage();
-
-    // Set HTTP Basic Auth credentials if provided
-    if (httpAuthUser && httpAuthPassword) {
-      console.debug(
-        chalk.cyan(
-          `Setting HTTP Basic Auth credentials for user: ${httpAuthUser}`,
-        ),
-      );
-      await page.authenticate({
-        username: httpAuthUser,
-        password: httpAuthPassword,
-      });
-    }
-
-    // Block PDFs as puppeteer can not access them
-    await page.setRequestInterception(true);
-    // Track handled requests to prevent race conditions
-    const handledRequests = new WeakSet<puppeteer.HTTPRequest>();
-    page.on('request', (request) => {
-      // Skip if request already handled
-      if (handledRequests.has(request)) {
-        return;
-      }
-      handledRequests.add(request);
-
-      if (request.url().endsWith('.pdf')) {
-        console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
-        request.abort().catch((err) => {
-          // Ignore abort errors - request may already be handled
-          console.debug(
-            `Request abort error (usually safe to ignore): ${err.message}`,
-          );
-        });
-      } else {
-        request.continue().catch((err) => {
-          // Ignore continue errors - request may already be handled
-          console.debug(
-            `Request continue error (usually safe to ignore): ${err.message}`,
-          );
-        });
-      }
-    });
-
-    console.debug(`InitialDocURLs: ${initialDocURLs}`);
-
-    // ACQUISITION stage (v2 decoupling): crawl the site into the intermediate
-    // representation - per-page content chunks in deterministic order. This is
-    // decoupled from the render stage below so the same chunks could later feed
-    // alternative render backends.
-    const contentChunks = await acquire(page, options);
-
-    console.log(chalk.cyan('Start generating PDF...'));
-
-    // Generate cover Image if declared
-    let coverImageHtml = '';
-    if (coverImage) {
-      console.log(chalk.cyan('Get coverImage...'));
-      const image = await utils.getCoverImage(page, coverImage);
-      coverImageHtml = utils.generateImageHtml(image.base64, image.type);
-    }
-
-    // Generate Cover
-    console.log(chalk.cyan('Generate cover...'));
-    const coverHTML = utils.generateCoverHtml(
-      coverTitle,
-      coverImageHtml,
-      coverSub,
-    );
-
-    // Generate Toc. Unless disabled, rewrite cross-page hyperlinks to internal
-    // PDF links (#336) via the per-page chunk pipeline.
-    const { modifiedContentHTML, tocHTML } = noInternalLinks
-      ? utils.generateToc(contentChunks.map((chunk) => chunk.html).join(''), {
-          tocTitle,
-        })
-      : utils.generateTocFromChunks(contentChunks, { tocTitle });
-
-    // Restructuring the HTML of a document
-    console.log(chalk.cyan('Restructuring the html of a document...'));
-
-    // Go to initial page
-    await page.goto(`${initialDocURLs[0]}`, { waitUntil: 'networkidle0' });
-
-    await page.evaluate(
-      utils.concatHtml,
-      coverHTML,
-      tocHTML,
-      modifiedContentHTML,
-      disableTOC,
-      disableCover,
-      baseUrl,
-    );
-
-    // Remove unnecessary HTML by using excludeSelectors
-    if (excludeSelectors) {
-      console.log(chalk.cyan('Remove unnecessary HTML...'));
-      await utils.removeExcludeSelector(page, excludeSelectors);
-    }
-
-    // Default print styles (e.g. keep headings with their following content),
-    // injected before user CSS so `--cssStyle` can override them.
-    await page.addStyleTag({ content: utils.DEFAULT_PDF_STYLESHEET });
-
-    // Add CSS to HTML
-    if (cssStyle) {
-      console.log(chalk.cyan('Add CSS to HTML...'));
-      await page.addStyleTag({ content: cssStyle });
-    }
-
-    // Scroll to the bottom of the page with puppeteer-autoscroll-down
-    // This forces lazy-loading images to load.
-    // Imported dynamically because puppeteer-autoscroll-down is ESM-only and this
-    // package builds to CommonJS - a static import would emit require() and throw
-    // ERR_REQUIRE_ESM on Node versions without require(ESM) support.
-    console.log(chalk.cyan('Scroll to the bottom of the page...'));
-    const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
-    await scrollPageToBottom(page, {}); //cast to puppeteer-core type
-
-    // Generate PDF
-    const pdf = new PDF(options);
-    await pdf.generate(page, disableCover ? undefined : coverHTML);
-  } finally {
-    // Always close browser and cleanup temp directory, even if PDF generation fails
-    await browser.close();
-    console.log(chalk.green('Browser closed'));
-
-    if (chromeTmpDataDir) {
-      fs.removeSync(chromeTmpDataDir);
-      console.debug(chalk.cyan('Chrome user data dir removed'));
-    }
-  }
+  console.log(chalk.cyan('Start acquiring content...'));
+  const ir: AcquireIR = await acquire(options);
+  console.log(
+    chalk.cyan(`Acquired ${ir.chunks.length} pages. Start generating PDF...`),
+  );
+  await render(ir, options);
 }
 /* c8 ignore stop */
