@@ -23,6 +23,48 @@ export interface PDFOptions {
   pdfMargin: puppeteer.PDFOptions['margin'];
   headerTemplate: string;
   footerTemplate: string;
+  excludeCoverPageHeaderFooter?: boolean;
+}
+
+/**
+ * Replace the leading cover page(s) of a PDF with header/footer-free versions.
+ *
+ * Puppeteer's running header/footer are global to every page, so to omit them
+ * from the cover the cover is rendered a second time without them; this swaps
+ * the first `coverPdf.pageCount` pages of `fullPdf` for those cover pages.
+ * Because the cover content (and paper size/margin) is identical, the page
+ * count is preserved, so bookmark page destinations computed for the body stay
+ * valid.
+ *
+ * @param fullPdfBytes - the full document rendered with header/footer
+ * @param coverPdfBytes - the cover rendered without header/footer
+ * @returns the merged PDF bytes
+ */
+export async function swapLeadingCoverPages(
+  fullPdfBytes: Uint8Array,
+  coverPdfBytes: Uint8Array,
+): Promise<Uint8Array> {
+  const fullDoc = await PDFDocument.load(fullPdfBytes);
+  const coverDoc = await PDFDocument.load(coverPdfBytes);
+
+  const coverPageCount = Math.min(
+    coverDoc.getPageCount(),
+    fullDoc.getPageCount(),
+  );
+  const coverPages = await fullDoc.copyPages(
+    coverDoc,
+    coverDoc.getPageIndices().slice(0, coverPageCount),
+  );
+
+  // Remove the original (header/footer'd) cover pages, then insert the clean ones.
+  for (let i = coverPageCount - 1; i >= 0; i--) {
+    fullDoc.removePage(i);
+  }
+  coverPages.forEach((coverPage, index) =>
+    fullDoc.insertPage(index, coverPage),
+  );
+
+  return fullDoc.save();
 }
 
 export class PDF {
@@ -38,7 +80,10 @@ export class PDF {
    * @returns
    * @throws {Error} - if page.pdf() fails
    */
-  public async generate(page: puppeteer.Page): Promise<void> {
+  public async generate(
+    page: puppeteer.Page,
+    coverHtml?: string,
+  ): Promise<void> {
     console.log(chalk.cyan('Generate PDF...'));
 
     // Get page dimensions for coordinate mapping
@@ -105,7 +150,32 @@ export class PDF {
       console.error(chalk.red(err));
       throw err; // Re-throw original error to preserve stack trace
     });
-    const pdfDoc = await PDFDocument.load(pdf);
+
+    let pdfBytes: Uint8Array = pdf;
+
+    // Optionally omit the running header/footer from the cover page by
+    // re-rendering the cover on its own (without header/footer) and swapping it
+    // into the leading page(s). Only meaningful when a header/footer is shown.
+    if (
+      this.options.excludeCoverPageHeaderFooter &&
+      coverHtml &&
+      pdfExportOptions.displayHeaderFooter
+    ) {
+      console.log(chalk.cyan('Rendering cover page without header/footer...'));
+      await page.evaluate((html: string) => {
+        document.body.innerHTML = html;
+      }, coverHtml);
+      const coverPdf = await page.pdf({
+        ...pdfExportOptions,
+        path: undefined,
+        displayHeaderFooter: false,
+        headerTemplate: '',
+        footerTemplate: '',
+      });
+      pdfBytes = await swapLeadingCoverPages(pdf, coverPdf);
+    }
+
+    const pdfDoc = await PDFDocument.load(pdfBytes);
 
     // Get PDF page dimensions (first page, assuming all pages same size)
     const pdfPage = pdfDoc.getPage(0);

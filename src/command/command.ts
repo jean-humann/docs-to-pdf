@@ -160,6 +160,10 @@ export function makeProgram() {
       .option('--headerTemplate <html>', 'html template for page header')
       .option('--footerTemplate <html>', 'html template for page footer')
       .option(
+        '--excludeCoverPageHeaderFooter',
+        'do not render the header/footer on the cover page',
+      )
+      .option(
         '--puppeteerArgs <selectors>',
         'add puppeteer arguments ex: --sandbox',
         commaSeparatedList,

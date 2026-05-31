@@ -53,4 +53,10 @@ describe('makeProgram', () => {
     expect(longs).toContain('--httpAuthPassword');
     expect(longs).toContain('--extractIframes');
   });
+
+  it('wires the --excludeCoverPageHeaderFooter option', () => {
+    const core = program.commands.find((c) => c.name() === 'core');
+    const longs = core?.options.map((o) => o.long) ?? [];
+    expect(longs).toContain('--excludeCoverPageHeaderFooter');
+  });
 });
