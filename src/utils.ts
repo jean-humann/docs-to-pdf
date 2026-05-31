@@ -6,6 +6,21 @@ import sanitizeHtml from 'sanitize-html';
 console_stamp(console);
 
 /**
+ * Default print styles applied to every generated PDF, before any user
+ * `--cssStyle` (so they can be overridden).
+ *
+ * `break-after: avoid` keeps a heading attached to the content that follows it,
+ * so a heading is never left orphaned as the last thing on a page (#275).
+ * `break-inside: avoid` stops a heading from being split across two pages.
+ */
+export const DEFAULT_PDF_STYLESHEET = `
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+`;
+
+/**
  * Helper function to create a delay promise
  * @param ms - milliseconds to wait
  * @returns Promise that resolves after the specified delay

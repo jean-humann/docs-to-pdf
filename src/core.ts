@@ -233,6 +233,10 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
       await utils.removeExcludeSelector(page, excludeSelectors);
     }
 
+    // Default print styles (e.g. keep headings with their following content),
+    // injected before user CSS so `--cssStyle` can override them.
+    await page.addStyleTag({ content: utils.DEFAULT_PDF_STYLESHEET });
+
     // Add CSS to HTML
     if (cssStyle) {
       console.log(chalk.cyan('Add CSS to HTML...'));
