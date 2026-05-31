@@ -1,7 +1,15 @@
 {
   "name": "docs-to-pdf",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Generate PDF from Docusaurus",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jean-humann/docs-to-pdf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jean-humann/docs-to-pdf/issues"
+  },
+  "homepage": "https://github.com/jean-humann/docs-to-pdf#readme",
   "main": "lib/cli.js",
   "scripts": {
     "dev": "tsc --watch",
@@ -25,11 +33,13 @@
   "author": "Jean Humann <jean.humann@gmail.com> (https://github.com/jean-humann)",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.6.2",
+    "chalk": "^4.1.2",
     "commander": "^14.0.1",
     "console-stamp": "^3.1.2",
     "express": "^5.1.0",
     "fs-extra": "^11.2.0",
+    "html-entities": "^2.5.2",
+    "pdf-lib": "^1.17.1",
     "puppeteer": "^24.0.0",
     "puppeteer-autoscroll-down": "^2.0.0",
     "puppeteer-core": "^24.0.0",

@@ -51,6 +51,24 @@ describe('generateToc', () => {
       expect(result.modifiedContentHTML).toBe(html);
       expect(result.tocHTML).toContain('toc-page');
     });
+
+    it('should match headings whose tags span multiple lines', () => {
+      // Docusaurus v3 emits opening heading tags with attributes across lines.
+      // Without the dotAll flag the regex skips these headings entirely.
+      const html = `
+        <h2
+          id="old-multiline"
+          class="anchor anchorWithStickyNavbar"
+        >
+          Multiline Heading
+        </h2>
+      `;
+
+      const result = generateToc(html);
+
+      expect(result.tocHTML).toContain('Multiline Heading');
+      expect(result.modifiedContentHTML).not.toContain('old-multiline');
+    });
   });
 
   describe('maxLevel option', () => {

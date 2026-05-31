@@ -311,10 +311,14 @@ describe('generateFromBuild', () => {
       }),
     );
 
-    // Verify the URL path is preserved
+    // Verify every URL path is preserved (not just the first one)
     const callArgs = mockGeneratePDF.mock.calls[0][0];
+    expect(callArgs.initialDocURLs).toHaveLength(2);
     expect(callArgs.initialDocURLs[0]).toMatch(
       /http:\/\/127\.0\.0\.1:\d+\/docs\/intro/,
+    );
+    expect(callArgs.initialDocURLs[1]).toMatch(
+      /http:\/\/127\.0\.0\.1:\d+\/docs\/next/,
     );
 
     mockGeneratePDF.mockRestore();
