@@ -186,6 +186,18 @@ export function makeProgram() {
       .option(
         '--openDetail',
         'open details elements in the PDF, default is open',
+      )
+      .option(
+        '--extractIframes',
+        'extract and inline content from iframes (only same-origin or accessible iframes)',
+      )
+      .option(
+        '--httpAuthUser <username>',
+        'HTTP Basic Auth username for protected documentation sites',
+      )
+      .option(
+        '--httpAuthPassword <password>',
+        'HTTP Basic Auth password for protected documentation sites',
       );
   });
 
