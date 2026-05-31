@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.1.0...v1.2.0) (2026-05-31)
+
+
+### Features
+
+* add PDF outline/bookmarks from HTML headings ([#532](https://github.com/jean-humann/docs-to-pdf/issues/532)) ([5f0c80a](https://github.com/jean-humann/docs-to-pdf/commit/5f0c80a804d3a836ddf949fcaef67c0751817c67))
+* **details:** skip already open details elements in openDetails function ([#581](https://github.com/jean-humann/docs-to-pdf/issues/581)) ([07a87e0](https://github.com/jean-humann/docs-to-pdf/commit/07a87e0a6f0c0b21048f97611fca9a5978d14568))
+
+
+### Bug Fixes
+
+* correct CLI option parsing and crawl edge cases ([#593](https://github.com/jean-humann/docs-to-pdf/issues/593)) ([50e1362](https://github.com/jean-humann/docs-to-pdf/commit/50e1362856aa0d517c04becb0c1240021137ac37))
+* redact basic-auth password in debug logging ([#594](https://github.com/jean-humann/docs-to-pdf/issues/594)) ([9ecb003](https://github.com/jean-humann/docs-to-pdf/commit/9ecb00349b4ccd852cb0aad73025649a23f4607b))
+* restore CommonJS compatibility for ESM-only dependencies ([#597](https://github.com/jean-humann/docs-to-pdf/issues/597)) ([f399f90](https://github.com/jean-humann/docs-to-pdf/commit/f399f90e70e75e4c1a402d6ff27db37a74a18b1a)), closes [#562](https://github.com/jean-humann/docs-to-pdf/issues/562)
+
 ## [1.1.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.0.0...v1.1.0) (2025-10-23)
 
 
