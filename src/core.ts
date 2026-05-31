@@ -254,7 +254,7 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
 
     // Generate PDF
     const pdf = new PDF(options);
-    await pdf.generate(page);
+    await pdf.generate(page, disableCover ? undefined : coverHTML);
   } finally {
     // Always close browser and cleanup temp directory, even if PDF generation fails
     await browser.close();
