@@ -4,7 +4,7 @@ import * as puppeteer from 'puppeteer-core';
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
-import { delay } from './utils';
+import { acquire } from './acquire';
 import { PDF, PDFOptions } from './pdf/generate';
 
 console_stamp(console);
@@ -40,9 +40,6 @@ export interface GeneratePDFOptions extends PDFOptions {
 export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
   const {
     initialDocURLs,
-    excludeURLs,
-    contentSelector,
-    paginationSelector,
     excludeSelectors,
     cssStyle,
     puppeteerArgs,
@@ -52,14 +49,8 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
     tocTitle,
     disableCover,
     coverSub,
-    waitForRender,
     protocolTimeout,
-    filterKeyword,
     baseUrl,
-    excludePaths,
-    restrictPaths,
-    openDetail = true,
-    extractIframes = false,
     noInternalLinks = false,
     httpAuthUser,
     httpAuthPassword,
@@ -126,73 +117,11 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
 
     console.debug(`InitialDocURLs: ${initialDocURLs}`);
 
-    // Accumulate the HTML content of each crawled page, keyed by its URL so
-    // cross-page hyperlinks can be rewritten as internal PDF links (#336).
-    const contentChunks: Array<{ url: string; html: string }> = [];
-    // Track visited URLs across all initial URLs to prevent infinite loops
-    // from circular pagination, including cross-references between different initial URLs
-    const visitedURLs = new Set<string>();
-
-    for (const url of initialDocURLs) {
-      let nextPageURL = url;
-      const urlPath = new URL(url).pathname;
-
-      // Create a list of HTML for the content section of all pages by looping
-      while (nextPageURL) {
-        // Check if we've already visited this URL to prevent infinite loops
-        if (visitedURLs.has(nextPageURL)) {
-          console.log(
-            chalk.yellow(
-              `Skipping already visited URL (circular pagination detected): ${nextPageURL}`,
-            ),
-          );
-          break;
-        }
-        visitedURLs.add(nextPageURL);
-
-        console.log(chalk.cyan(`Retrieving html from ${nextPageURL}`));
-
-        // Go to the page specified by nextPageURL
-        await page.goto(`${nextPageURL}`, {
-          waitUntil: 'networkidle0',
-          timeout: 0,
-        });
-        if (waitForRender) {
-          console.log(chalk.green('Waiting for render...'));
-          await delay(waitForRender);
-        }
-
-        if (
-          await utils.isPageKept(
-            page,
-            nextPageURL,
-            urlPath,
-            excludeURLs,
-            filterKeyword,
-            excludePaths,
-            restrictPaths,
-          )
-        ) {
-          // Open all <details> elements on the page
-          if (openDetail) {
-            await utils.openDetails(page);
-          }
-          // Get the HTML string of the content section.
-          contentChunks.push({
-            url: nextPageURL,
-            html: await utils.getHtmlContent(
-              page,
-              contentSelector,
-              extractIframes,
-            ),
-          });
-          console.log(chalk.green('Success'));
-        }
-
-        // Find next page url before DOM operations
-        nextPageURL = await utils.findNextUrl(page, paginationSelector);
-      }
-    }
+    // ACQUISITION stage (v2 decoupling): crawl the site into the intermediate
+    // representation - per-page content chunks in deterministic order. This is
+    // decoupled from the render stage below so the same chunks could later feed
+    // alternative render backends.
+    const contentChunks = await acquire(page, options);
 
     console.log(chalk.cyan('Start generating PDF...'));
 
