@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
 import * as puppeteer from 'puppeteer-core';
-import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
 import * as fs from 'fs-extra';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
@@ -241,8 +240,12 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<void> {
     }
 
     // Scroll to the bottom of the page with puppeteer-autoscroll-down
-    // This forces lazy-loading images to load
+    // This forces lazy-loading images to load.
+    // Imported dynamically because puppeteer-autoscroll-down is ESM-only and this
+    // package builds to CommonJS - a static import would emit require() and throw
+    // ERR_REQUIRE_ESM on Node versions without require(ESM) support.
     console.log(chalk.cyan('Scroll to the bottom of the page...'));
+    const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
     await scrollPageToBottom(page, {}); //cast to puppeteer-core type
 
     // Generate PDF

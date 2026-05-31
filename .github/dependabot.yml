@@ -11,10 +11,15 @@ updates:
     open-pull-requests-limit: 15
     exclude-paths:
       - 'tests/website/**'
+    ignore:
+      # chalk v5+ is ESM-only; this package builds to CommonJS, so a major bump
+      # breaks CJS consumers with ERR_REQUIRE_ESM (see #562). Stay on v4.
+      - dependency-name: 'chalk'
+        update-type: 'version-update:semver-major'
     groups:
       puppeteer:
         patterns:
-          - "puppeteer*"
+          - 'puppeteer*'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
