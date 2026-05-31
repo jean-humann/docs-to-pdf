@@ -19,7 +19,7 @@ jobs:
       id-token: write # OIDC token for npm Trusted Publishing + provenance
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -49,7 +49,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: yarn
       - name: Build packages
