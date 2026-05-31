@@ -1,17 +1,18 @@
 import * as puppeteer from 'puppeteer-core';
 import {
-  getHtmlContent,
+  extractIframeContent,
   findNextUrl,
-  removeExcludeSelector,
+  generateCoverHtml,
+  generateImageHtml,
   generateTocHtml,
   getCoverImage,
-  generateImageHtml,
-  generateCoverHtml,
-  replaceHeader,
-  matchKeyword,
+  getHtmlContent,
   isPageKept,
+  mapUrlToOrigin,
+  matchKeyword,
   openDetails,
-  extractIframeContent,
+  removeExcludeSelector,
+  replaceHeader,
 } from '../src/utils';
 
 // Try to find Chrome executable, skip tests if not available
@@ -666,5 +667,100 @@ describeIfChrome('getHtmlContent with iframe extraction', () => {
     expect(html).toContain('<iframe');
     expect(html).not.toContain('class="iframe-content"');
     expect(html).not.toContain('Embedded content:');
+  });
+});
+
+describe('mapUrlToOrigin', () => {
+  it('should map a URL to use a different origin', () => {
+    const url = 'https://docs.example.com/guide/intro';
+    const targetOrigin = 'http://localhost:3000';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:3000/guide/intro');
+  });
+
+  it('should preserve path, query parameters, and fregments when mapping', () => {
+    const url =
+      'https://docs.example.com/api/reference?version=v2&lang=en#section-1';
+    const targetOrigin = 'http://localhost:8080';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe(
+      'http://localhost:8080/api/reference?version=v2&lang=en#section-1',
+    );
+  });
+
+  it('should handle protocol changes (http to https)', () => {
+    const url = 'http://baseurl.example.com/docs/page';
+    const targetOrigin = 'https://crawl.example.com';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('https://crawl.example.com/docs/page');
+  });
+
+  it('should handle protocol changes (https to http)', () => {
+    const url = 'https://baseurl.example.com/docs/page';
+    const targetOrigin = 'http://crawl.example.com';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://crawl.example.com/docs/page');
+  });
+
+  it('should handle different TLDs', () => {
+    const url = 'https://external-docs.com/docs/guide';
+    const targetOrigin = 'https://internal.company.net';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('https://internal.company.net/docs/guide');
+  });
+
+  it('should handle ports in the target origin', () => {
+    const url = 'https://docs.example.com/guide';
+    const targetOrigin = 'http://localhost:4000';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:4000/guide');
+  });
+
+  it('should handle ports in both URL and target origin', () => {
+    const url = 'https://docs.example.com:8443/guide';
+    const targetOrigin = 'http://localhost:3000';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:3000/guide');
+  });
+
+  it('should handle root path URLs', () => {
+    const url = 'https://docs.example.com/';
+    const targetOrigin = 'http://localhost:3000';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:3000/');
+  });
+
+  it('should handle URLs with only query parameters', () => {
+    const url = 'https://api.example.com/?search=test&page=2';
+    const targetOrigin = 'http://localhost:8080';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:8080/?search=test&page=2');
+  });
+
+  it('should handle URLs with only fragments', () => {
+    const url = 'https://docs.example.com/#introduction';
+    const targetOrigin = 'http://localhost:3000';
+
+    const result = mapUrlToOrigin(url, targetOrigin);
+
+    expect(result).toBe('http://localhost:3000/#introduction');
   });
 });

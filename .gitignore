@@ -19,6 +19,7 @@ coverage/
 .nyc_output/
 *.lcov
 junit.xml
+test-output/
 tests/website/build/
 tests/website/.docusaurus/
 tests/website/.cache/

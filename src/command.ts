@@ -162,8 +162,8 @@ export function makeProgram() {
       )
       .option(
         '--protocolTimeout <timeout>',
-        'timeout setting for individual protocol calls in milliseconds',
-        commaSeparatedList,
+        'timeout setting for individual protocol calls in milliseconds (default: 600000)',
+        (value: string) => Number(value),
       )
       .option('--filterKeyword <filterKeyword>', 'meta keyword to filter pages')
       .option(

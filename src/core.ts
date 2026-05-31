@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-import * as puppeteer from 'puppeteer-core';
 import * as fs from 'fs-extra';
+import { scrollPageToBottom } from 'puppeteer-autoscroll-down';
+import * as puppeteer from 'puppeteer-core';
 import { chromeExecPath } from './browser';
 import * as utils from './utils';
 import { delay } from './utils';
@@ -62,7 +63,7 @@ export async function generatePDF({
   waitForRender,
   headerTemplate,
   footerTemplate,
-  protocolTimeout,
+  protocolTimeout = 600000,
   filterKeyword,
   baseUrl,
   excludePaths,
@@ -74,6 +75,13 @@ export async function generatePDF({
 }: GeneratePDFOptions): Promise<void> {
   const execPath = process.env.PUPPETEER_EXECUTABLE_PATH ?? chromeExecPath();
   console.debug(chalk.cyan(`Using Chromium from ${execPath}`));
+
+  const initialOrigin =
+    initialDocURLs && initialDocURLs.length > 0
+      ? new URL(initialDocURLs[0]).origin
+      : undefined;
+  const baseOrigin = baseUrl ? new URL(baseUrl).origin : undefined;
+
   const browser = await puppeteer.launch({
     headless: true,
     executablePath: execPath,
@@ -114,22 +122,52 @@ export async function generatePDF({
       }
       handledRequests.add(request);
 
-      if (request.url().endsWith('.pdf')) {
-        console.log(chalk.yellowBright(`ignore pdf: ${request.url()}`));
+      const url = request.url();
+
+      // Ignore PDFs
+      if (url.endsWith('.pdf')) {
+        console.log(chalk.yellowBright(`ignore pdf: ${url}`));
         request.abort().catch((err) => {
-          // Ignore abort errors - request may already be handled
           console.debug(
             `Request abort error (usually safe to ignore): ${err.message}`,
           );
         });
-      } else {
-        request.continue().catch((err) => {
-          // Ignore continue errors - request may already be handled
-          console.debug(
-            `Request continue error (usually safe to ignore): ${err.message}`,
-          );
-        });
+        return;
       }
+
+      // When baseUrl origin differs from crawl origin, rewrite
+      if (baseOrigin && initialOrigin && baseOrigin !== initialOrigin) {
+        try {
+          const reqUrl = new URL(url);
+          if (reqUrl.origin === baseOrigin) {
+            const mappedUrl = utils.mapUrlToOrigin(url, initialOrigin);
+
+            console.debug(
+              chalk.cyan(
+                `Rewriting request ${url} -> ${mappedUrl} to use crawl origin with baseUrl`,
+              ),
+            );
+
+            request.continue({ url: mappedUrl }).catch((err: Error) => {
+              console.debug(
+                `Request continue error (usually safe to ignore): ${err.message}`,
+              );
+            });
+            return;
+          }
+        } catch (err: unknown) {
+          console.debug(
+            `URL parse failed for ${url}, using default request continuation: ${err instanceof Error ? err.message : 'Unknown error'}`,
+          );
+        }
+      }
+
+      // Default behaviour
+      request.continue().catch((err: Error) => {
+        console.debug(
+          `Request continue error (usually safe to ignore): ${err.message}`,
+        );
+      });
     });
 
     console.debug(`InitialDocURLs: ${initialDocURLs}`);
@@ -252,7 +290,6 @@ export async function generatePDF({
     // Scroll to the bottom of the page with puppeteer-autoscroll-down
     // This forces lazy-loading images to load
     console.log(chalk.cyan('Scroll to the bottom of the page...'));
-    const { scrollPageToBottom } = await import('puppeteer-autoscroll-down');
     await scrollPageToBottom(page, {}); //cast to puppeteer-core type
 
     // Generate PDF

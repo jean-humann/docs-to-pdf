@@ -669,3 +669,21 @@ export async function isPageKept(
 
   return true;
 }
+
+/**
+ * Maps a URL to use a different origin (protocol + host).
+ * This is useful for rewriting requests from a baseUrl origin to the actual crawl origin.
+ *
+ * @param url - The URL string to rewrite
+ * @param targetOrigin - The origin string to map to (e.g., "https://example.com")
+ * @returns The rewritten URL string with the target origin's protocol and host
+ */
+export function mapUrlToOrigin(url: string, targetOrigin: string): string {
+  const urlObj = new URL(url);
+  const targetOriginObj = new URL(targetOrigin);
+
+  urlObj.protocol = targetOriginObj.protocol;
+  urlObj.host = targetOriginObj.host; // host = hostname + port
+
+  return urlObj.toString();
+}
