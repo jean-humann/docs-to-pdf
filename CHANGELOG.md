@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.2.0...v1.3.0) (2026-05-31)
+
+
+### Features
+
+* add --excludeCoverPageHeaderFooter to omit header/footer on the cover ([#603](https://github.com/jean-humann/docs-to-pdf/issues/603)) ([dcb265e](https://github.com/jean-humann/docs-to-pdf/commit/dcb265eab96886e8f79d044cc028d6a83b3a8340)), closes [#582](https://github.com/jean-humann/docs-to-pdf/issues/582)
+* avoid page breaks immediately after headings ([#600](https://github.com/jean-humann/docs-to-pdf/issues/600)) ([cec4b8a](https://github.com/jean-humann/docs-to-pdf/commit/cec4b8a47415871a890a5b7bbc1858845ab8181f)), closes [#275](https://github.com/jean-humann/docs-to-pdf/issues/275)
+
+
+### Bug Fixes
+
+* restore CLI options dropped in the PDF outline refactor ([#601](https://github.com/jean-humann/docs-to-pdf/issues/601)) ([40eddd6](https://github.com/jean-humann/docs-to-pdf/commit/40eddd6c64c45c9d03d7d83a7e73d926b774f587))
+
 ## [1.2.0](https://github.com/jean-humann/docs-to-pdf/compare/v1.1.0...v1.2.0) (2026-05-31)
 
 
