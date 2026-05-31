@@ -1,6 +1,6 @@
 {
   "name": "docs-to-pdf",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Generate PDF from Docusaurus",
   "repository": {
     "type": "git",
