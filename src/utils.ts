@@ -314,15 +314,23 @@ export async function openDetails(
   for (const detailsHandle of detailsHandles) {
     const summaryHandle = await detailsHandle.$('summary');
     if (summaryHandle) {
-      const summaryText = await summaryHandle.evaluate(
-        (node) => node.textContent,
-      );
-      await clickSummary(
-        summaryHandle,
-        summaryText,
-        clickFunction,
-        waitFunction,
-      );
+      const isOpen = await detailsHandle.evaluate((el) => el.open);
+      if (!isOpen) {
+        const summaryText = await summaryHandle.evaluate(
+          (node) => node.textContent,
+        );
+        await clickSummary(
+          summaryHandle,
+          summaryText,
+          clickFunction,
+          waitFunction,
+        );
+      } else {
+        const summaryText = await summaryHandle.evaluate(
+          (node) => node.textContent,
+        );
+        console.debug(`Skipping already-open details: ${summaryText}`);
+      }
     }
   }
 }
@@ -487,9 +495,11 @@ export function generateToc(
   console.log(chalk.cyan('Start generating TOC...'));
   // Create TOC only for h1~h${maxLevel}
   // Regex to match all header tags
+  // `s` (dotAll) lets `.` match newlines so multi-line heading tags (common in
+  // Docusaurus v3 output, where attributes span several lines) are not skipped.
   const re = new RegExp(
     '<h[1-' + maxLevel + '](.+?)</h[1-' + maxLevel + ']( )*>',
-    'g',
+    'gs',
   );
   const modifiedContentHTML = contentHtml.replace(re, htmlReplacer);
 
@@ -579,7 +589,8 @@ export function replaceHeader(
   maxLevel = 3,
 ) {
   // Create a regular expression to match the header tags
-  const re = new RegExp('<h[1-' + maxLevel + '].*?>', 'g');
+  // `s` (dotAll) so multi-line opening tags (attributes across lines) match.
+  const re = new RegExp('<h[1-' + maxLevel + '].*?>', 'gs');
   // Replaces the ID attribute of the headers using regular expressions and the headerId parameter
   const modifiedContentHTML = matchedStr.replace(re, (header) => {
     if (header.match(/id( )*=( )*"/g)) {

@@ -6,6 +6,9 @@ name: Publish
 on:
   release:
     types: [published]
+  # Allow re-publishing the current version manually (e.g. if a release-time
+  # publish failed). Publishes whatever version is in package.json on the ref.
+  workflow_dispatch:
 
 jobs:
   publish-npm:
@@ -13,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      id-token: write # OIDC token for npm Trusted Publishing + provenance
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -25,12 +28,18 @@ jobs:
         run: yarn
       - name: Build packages
         run: yarn build
+      # npm Trusted Publishing (OIDC) requires npm >= 11.5.1; node 22 ships npm 10.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
       - name: Publish packages
-        run: yarn publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        # Authentication is via the GitHub OIDC token + the npm Trusted Publisher
+        # configured for this repo/workflow - no NPM_TOKEN needed. --provenance
+        # generates a signed attestation linking the package to this repo + commit.
+        run: npm publish --provenance --access public
   publish-docker:
     name: Publish docker images
+    # Only on real releases; manual workflow_dispatch re-publishes npm only.
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read

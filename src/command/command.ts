@@ -3,14 +3,14 @@ import {
   commaSeparatedList,
   generatePuppeteerPDFMargin,
 } from './commander-options';
-import { generatePDF, GeneratePDFOptions } from './core';
+import { generatePDF, GeneratePDFOptions } from '../core';
 import {
   generateDocusaurusPDF,
   DocusaurusOptions,
-} from './provider/docusaurus';
+} from '../provider/docusaurus';
 import chalk from 'chalk';
 import console_stamp from 'console-stamp';
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 
 const version = packageJson.version;
 
@@ -90,7 +90,11 @@ export function makeProgram() {
     )
     .action((options: DocusaurusOptions) => {
       console.debug('Generate from Docusaurus');
-      console.debug(options);
+      // Redact the Basic Auth password so it is never written to logs/CI output.
+      console.debug({
+        ...options,
+        httpAuthPassword: options.httpAuthPassword ? '***' : undefined,
+      });
       handleCommandCompletion(generateDocusaurusPDF(options));
     });
 
@@ -163,7 +167,7 @@ export function makeProgram() {
       .option(
         '--protocolTimeout <timeout>',
         'timeout setting for individual protocol calls in milliseconds',
-        commaSeparatedList,
+        (value) => Number.parseInt(value, 10),
       )
       .option('--filterKeyword <filterKeyword>', 'meta keyword to filter pages')
       .option(
@@ -182,18 +186,6 @@ export function makeProgram() {
       .option(
         '--openDetail',
         'open details elements in the PDF, default is open',
-      )
-      .option(
-        '--extractIframes',
-        'extract and inline content from iframes (only same-origin or accessible iframes)',
-      )
-      .option(
-        '--httpAuthUser <username>',
-        'HTTP Basic Auth username for protected documentation sites',
-      )
-      .option(
-        '--httpAuthPassword <password>',
-        'HTTP Basic Auth password for protected documentation sites',
       );
   });
 

@@ -221,10 +221,12 @@ export async function generateFromBuild(
   );
 
   try {
-    const urlPath = new URL(options.initialDocURLs[0]).pathname;
-    options.initialDocURLs = [
-      `http://127.0.0.1:${serverInstance.port}${urlPath}`,
-    ];
+    // Remap every initial URL to the local server, preserving its path - not
+    // just the first one (previously the rest were silently dropped).
+    options.initialDocURLs = options.initialDocURLs.map(
+      (docUrl) =>
+        `http://127.0.0.1:${serverInstance.port}${new URL(docUrl).pathname}`,
+    );
     await generatePDF(options);
   } finally {
     // Always stop the server, even if PDF generation fails
