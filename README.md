@@ -245,30 +245,43 @@ which the crawl never needs. **Render still uses Chromium** (lightpanda cannot
 produce PDFs), so the output is unchanged.
 
 ```shell
-# install lightpanda (https://lightpanda.io), then point docs-to-pdf at it:
-export LIGHTPANDA_BIN=/path/to/lightpanda     # or put `lightpanda` on PATH
+# No manual install needed — the binary is fetched on first use:
 npx docs-to-pdf docusaurus --docsDir build --initialDocURLs https://your-site.com/docs/intro \
   --version 3 --acquireEngine lightpanda
 ```
 
 How it behaves:
 
-- **Opt-in and safe.** Default is `chromium`. If lightpanda can't be launched
-  (binary missing, fails to start), docs-to-pdf logs a warning and
-  **automatically falls back to Chromium** — the run still succeeds.
-- **It auto-manages the engine.** docs-to-pdf spawns `lightpanda serve` on a
-  free port and drives it over CDP with puppeteer, or connects to an existing
-  server via `LIGHTPANDA_WS=ws://host:port`.
-- **Speed.** On a static Docusaurus build the crawl is several times faster
-  per page (no `networkidle0` quiet-window, no layout). End-to-end speedup is
-  bounded by the Chromium render stage that always runs.
+- **Zero-install.** On first `--acquireEngine=lightpanda` use, the right binary
+  for your platform is downloaded from lightpanda's GitHub releases and cached
+  under `~/.cache/docs-to-pdf/lightpanda`. Override with `LIGHTPANDA_BIN=/path`,
+  put `lightpanda` on `PATH`, or set `LIGHTPANDA_WS=ws://host:port` to use an
+  already-running server. `LIGHTPANDA_NO_DOWNLOAD=1` disables the download.
+- **Opt-in and safe.** Default is `chromium`. If lightpanda is unavailable
+  (unsupported platform — there is no Windows or musl/Alpine binary — download
+  fails, or it won't run), docs-to-pdf logs a warning and **automatically falls
+  back to Chromium** — the run still succeeds.
+- **Speed.** On a static Docusaurus build the crawl is several times faster per
+  page (no `networkidle0` quiet-window, no layout) — roughly **~3× faster
+  acquire** in practice. End-to-end speedup is bounded by the Chromium render
+  stage that always runs.
+
+### Combining with `--concurrency`
+
+lightpanda allows one page per CDP connection, so concurrency uses **N
+connections** (it's light enough to afford them). Guidance:
+
+- For the default `next-link` discovery, **`--concurrency 1` (the default) is
+  fastest** — `>1` adds a serial discovery pass that outweighs the parallel
+  fetch on a linear chain.
+- To actually parallelise, combine concurrency with **`--seedFrom sitemap`**
+  (no discovery pass): `--acquireEngine lightpanda --concurrency 8 --seedFrom sitemap`.
 
 Fidelity caveats (lightpanda is beta): content is extracted from the
 pre-rendered DOM (`domcontentloaded`), which matches Chromium for standard
 Docusaurus pages, but client-only widgets (`<BrowserOnly>`, live code blocks),
 HTTP Basic Auth, and lazy-loaded images may differ or be unsupported. When in
-doubt, use the default Chromium engine. The auto-fallback also protects you if
-lightpanda is unavailable on a given platform.
+doubt, use the default Chromium engine.
 
 ### Docusaurus v1 - Legacy
 

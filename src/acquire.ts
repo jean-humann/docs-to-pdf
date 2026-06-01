@@ -183,6 +183,64 @@ export class CrawlPagePool implements PagePool {
 }
 
 /**
+ * Page pool for lightpanda. lightpanda allows only ONE page (target) per CDP
+ * connection (a second Target.createTarget fails `TargetAlreadyLoaded`), so
+ * concurrency is achieved with N independent connections to the same lightpanda
+ * server — each slot owns its own connection + a single reused page. Bounded by
+ * the Semaphore exactly like CrawlPagePool.
+ */
+export class LightpandaPagePool implements PagePool {
+  private slots: Array<{
+    browser: puppeteer.Browser;
+    page: puppeteer.Page;
+    busy: boolean;
+  }> = [];
+  private readonly sem: Semaphore;
+
+  constructor(
+    private readonly wsEndpoint: string,
+    private readonly options: GeneratePDFOptions,
+    concurrency: number,
+  ) {
+    this.sem = new Semaphore(concurrency);
+  }
+
+  async withPage<T>(fn: (page: puppeteer.Page) => Promise<T>): Promise<T> {
+    const release = await this.sem.acquire();
+    let slot = this.slots.find((s) => !s.busy);
+    if (!slot) {
+      const browser = await puppeteer.connect({
+        browserWSEndpoint: this.wsEndpoint,
+      });
+      const page = await configurePage(
+        await browser.newPage(),
+        this.options,
+        LIGHTPANDA_ENGINE,
+      );
+      slot = { browser, page, busy: true };
+      this.slots.push(slot);
+    } else {
+      slot.busy = true;
+    }
+    try {
+      return await fn(slot.page);
+    } finally {
+      slot.busy = false;
+      release();
+    }
+  }
+
+  async closeAll(): Promise<void> {
+    for (const s of this.slots) {
+      // fire-and-forget close (await can hang on lightpanda), then disconnect.
+      s.page.close().catch(() => undefined);
+      await s.browser.disconnect().catch(() => undefined);
+    }
+    this.slots = [];
+  }
+}
+
+/**
  * Navigate to one page and extract its content HTML, applying the same
  * keep/drop, details-expansion, and iframe rules as the v1 crawl. Returns
  * `kept: false` (and empty html) for pages filtered out by isPageKept.
@@ -520,25 +578,33 @@ async function launchChromium(
 }
 
 /**
- * Resolve the acquisition engine: try lightpanda when requested, falling back to
- * Chromium (loudly) if it is unavailable. Returns the connected browser, the
- * engine descriptor that drives crawl behaviour, and a cleanup function.
+ * Resolve the acquisition engine and build the matching page pool. Tries
+ * lightpanda when requested, falling back (loudly) to Chromium if it is
+ * unavailable. Chromium uses one browser with N reused pages; lightpanda uses N
+ * connections with one page each (it allows only one target per connection).
  */
-async function launchAcquireBrowser(options: GeneratePDFOptions): Promise<{
-  browser: puppeteer.Browser;
+async function launchAcquirePool(
+  options: GeneratePDFOptions,
+  concurrency: number,
+): Promise<{
+  pool: PagePool;
   engine: AcquireEngine;
   cleanup: () => Promise<void>;
 }> {
   if (options.acquireEngine === 'lightpanda') {
     try {
-      const handle = await launchLightpanda();
+      const { wsEndpoint, cleanup } = await launchLightpanda();
       console.log(
         chalk.cyan('[acquire] using lightpanda engine (Chromium for render)'),
       );
+      const pool = new LightpandaPagePool(wsEndpoint, options, concurrency);
       return {
-        browser: handle.browser,
+        pool,
         engine: LIGHTPANDA_ENGINE,
-        cleanup: handle.cleanup,
+        cleanup: async () => {
+          await pool.closeAll();
+          await cleanup();
+        },
       };
     } catch (err) {
       console.log(
@@ -549,7 +615,20 @@ async function launchAcquireBrowser(options: GeneratePDFOptions): Promise<{
     }
   }
   const { browser, cleanup } = await launchChromium(options);
-  return { browser, engine: CHROMIUM_ENGINE, cleanup };
+  const pool = new CrawlPagePool(
+    browser,
+    options,
+    concurrency,
+    CHROMIUM_ENGINE,
+  );
+  return {
+    pool,
+    engine: CHROMIUM_ENGINE,
+    cleanup: async () => {
+      await pool.closeAll();
+      await cleanup();
+    },
+  };
 }
 
 export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
@@ -559,9 +638,11 @@ export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
       `--concurrency must be a positive integer, got ${concurrency}`,
     );
   }
-  const { browser, engine, cleanup } = await launchAcquireBrowser(options);
+  const { pool, engine, cleanup } = await launchAcquirePool(
+    options,
+    concurrency,
+  );
 
-  const pool = new CrawlPagePool(browser, options, concurrency, engine);
   try {
     console.debug(`InitialDocURLs: ${options.initialDocURLs}`);
     const chunks =
@@ -584,7 +665,6 @@ export async function acquire(options: GeneratePDFOptions): Promise<AcquireIR> {
       coverImage,
     };
   } finally {
-    await pool.closeAll();
     await cleanup();
     console.log(chalk.green('[acquire] Browser closed'));
   }

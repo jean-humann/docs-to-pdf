@@ -2,6 +2,8 @@ import {
   CHROMIUM_ENGINE,
   LIGHTPANDA_ENGINE,
   launchLightpanda,
+  lightpandaAssetName,
+  resolveLightpandaBinary,
 } from '../../src/engines/lightpanda';
 import { configurePage } from '../../src/acquire';
 import * as puppeteer from 'puppeteer-core';
@@ -74,18 +76,58 @@ describe('configurePage engine behaviour', () => {
   });
 });
 
+describe('lightpandaAssetName', () => {
+  it('maps supported platforms to release assets', () => {
+    expect(lightpandaAssetName('darwin', 'arm64')).toBe(
+      'lightpanda-aarch64-macos',
+    );
+    expect(lightpandaAssetName('darwin', 'x64')).toBe('lightpanda-x86_64-macos');
+    expect(lightpandaAssetName('linux', 'arm64')).toBe(
+      'lightpanda-aarch64-linux',
+    );
+    expect(lightpandaAssetName('linux', 'x64')).toBe('lightpanda-x86_64-linux');
+  });
+
+  it('returns null for unsupported platforms (Windows)', () => {
+    expect(lightpandaAssetName('win32', 'x64')).toBeNull();
+  });
+});
+
+describe('resolveLightpandaBinary', () => {
+  const saved = {
+    bin: process.env.LIGHTPANDA_BIN,
+    nodl: process.env.LIGHTPANDA_NO_DOWNLOAD,
+  };
+  afterEach(() => {
+    if (saved.bin === undefined) delete process.env.LIGHTPANDA_BIN;
+    else process.env.LIGHTPANDA_BIN = saved.bin;
+    if (saved.nodl === undefined) delete process.env.LIGHTPANDA_NO_DOWNLOAD;
+    else process.env.LIGHTPANDA_NO_DOWNLOAD = saved.nodl;
+  });
+
+  it('returns null without downloading when nothing is available and downloads are disabled', async () => {
+    process.env.LIGHTPANDA_BIN = '/nonexistent/lightpanda-binary-xyz';
+    process.env.LIGHTPANDA_NO_DOWNLOAD = '1';
+    await expect(resolveLightpandaBinary()).resolves.toBeNull();
+  }, 20000);
+});
+
 describe('launchLightpanda', () => {
-  it('rejects when the binary is missing (so acquire falls back to Chromium)', async () => {
+  it('rejects when no binary is available (so acquire falls back to Chromium)', async () => {
     const prevBin = process.env.LIGHTPANDA_BIN;
     const prevWs = process.env.LIGHTPANDA_WS;
+    const prevNodl = process.env.LIGHTPANDA_NO_DOWNLOAD;
     delete process.env.LIGHTPANDA_WS;
     process.env.LIGHTPANDA_BIN = '/nonexistent/lightpanda-binary-xyz';
+    process.env.LIGHTPANDA_NO_DOWNLOAD = '1'; // don't hit the network in tests
     try {
       await expect(launchLightpanda()).rejects.toThrow();
     } finally {
       if (prevBin === undefined) delete process.env.LIGHTPANDA_BIN;
       else process.env.LIGHTPANDA_BIN = prevBin;
       if (prevWs !== undefined) process.env.LIGHTPANDA_WS = prevWs;
+      if (prevNodl === undefined) delete process.env.LIGHTPANDA_NO_DOWNLOAD;
+      else process.env.LIGHTPANDA_NO_DOWNLOAD = prevNodl;
     }
   }, 20000);
 });
