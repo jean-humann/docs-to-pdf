@@ -81,7 +81,9 @@ describe('lightpandaAssetName', () => {
     expect(lightpandaAssetName('darwin', 'arm64')).toBe(
       'lightpanda-aarch64-macos',
     );
-    expect(lightpandaAssetName('darwin', 'x64')).toBe('lightpanda-x86_64-macos');
+    expect(lightpandaAssetName('darwin', 'x64')).toBe(
+      'lightpanda-x86_64-macos',
+    );
     expect(lightpandaAssetName('linux', 'arm64')).toBe(
       'lightpanda-aarch64-linux',
     );
