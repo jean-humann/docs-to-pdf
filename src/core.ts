@@ -36,6 +36,12 @@ export interface GeneratePDFOptions extends PDFOptions {
   concurrency?: number;
   /** Frontier source when concurrency > 1: 'next-link' (default) or 'sitemap'. */
   seedFrom?: 'sitemap' | 'next-link';
+  /**
+   * Acquisition (crawl) engine: 'chromium' (default) or 'lightpanda' (a fast
+   * Zig DOM engine, opt-in, auto-falls back to Chromium if unavailable).
+   * Render always uses Chromium.
+   */
+  acquireEngine?: 'chromium' | 'lightpanda';
 }
 
 // Re-export the render stage so alternative pipelines/backends can consume the IR.
