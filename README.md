@@ -261,10 +261,10 @@ How it behaves:
   (unsupported platform — there is no Windows or musl/Alpine binary — download
   fails, or it won't run), docs-to-pdf logs a warning and **automatically falls
   back to Chromium** — the run still succeeds.
-- **Speed.** On a static Docusaurus build the crawl is several times faster per
-  page (no `networkidle0` quiet-window, no layout) — roughly **~3× faster
-  acquire** in practice. End-to-end speedup is bounded by the Chromium render
-  stage that always runs.
+- **Speed.** On a static Docusaurus build the crawl is **roughly an order of
+  magnitude faster** (no `networkidle0` quiet-window, no layout, and a single
+  in-page extraction per page rather than several CDP round-trips). End-to-end
+  speedup is bounded by the Chromium **render** stage, which always runs.
 
 ### Combining with `--concurrency`
 

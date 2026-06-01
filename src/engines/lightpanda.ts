@@ -36,6 +36,13 @@ export interface AcquireEngine {
   supportsInterception: boolean;
   /** Don't await page.close() (avoids a lightpanda teardown hang). */
   fireAndForgetClose: boolean;
+  /**
+   * Extract content + next link + keywords + expand <details> in ONE in-page
+   * evaluate instead of several CDP round-trips. Big win for lightpanda (where
+   * round-trips dominate); off for Chromium to preserve its click-based
+   * openDetails semantics. Only used when extractIframes is false.
+   */
+  batchExtract: boolean;
 }
 
 export const CHROMIUM_ENGINE: AcquireEngine = {
@@ -44,6 +51,7 @@ export const CHROMIUM_ENGINE: AcquireEngine = {
   gotoTimeout: 0,
   supportsInterception: true,
   fireAndForgetClose: false,
+  batchExtract: false,
 };
 
 export const LIGHTPANDA_ENGINE: AcquireEngine = {
@@ -52,6 +60,7 @@ export const LIGHTPANDA_ENGINE: AcquireEngine = {
   gotoTimeout: 15000,
   supportsInterception: false,
   fireAndForgetClose: true,
+  batchExtract: true,
 };
 
 /** A running lightpanda CDP server: its WS endpoint plus a cleanup function. */

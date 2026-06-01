@@ -5,7 +5,7 @@ import {
   lightpandaAssetName,
   resolveLightpandaBinary,
 } from '../../src/engines/lightpanda';
-import { configurePage } from '../../src/acquire';
+import { configurePage, keptFromExtract } from '../../src/acquire';
 import * as puppeteer from 'puppeteer-core';
 
 function fakePage() {
@@ -27,14 +27,51 @@ describe('AcquireEngine descriptors', () => {
     });
   });
 
-  it('lightpanda: domcontentloaded, finite timeout, no interception, fire-and-forget close', () => {
+  it('lightpanda: domcontentloaded, finite timeout, no interception, fire-and-forget close, batched', () => {
     expect(LIGHTPANDA_ENGINE).toMatchObject({
       name: 'lightpanda',
       waitUntil: 'domcontentloaded',
       supportsInterception: false,
       fireAndForgetClose: true,
+      batchExtract: true,
     });
     expect(LIGHTPANDA_ENGINE.gotoTimeout).toBeGreaterThan(0);
+  });
+
+  it('chromium does not batch-extract (preserves click-based openDetails)', () => {
+    expect(CHROMIUM_ENGINE.batchExtract).toBe(false);
+  });
+});
+
+describe('keptFromExtract (pure keep/drop mirroring isPageKept)', () => {
+  const U = 'http://x/docs/page';
+  it('keeps a normal page', () => {
+    expect(keptFromExtract(U, '/docs', [], '', [], false, null)).toBe(true);
+  });
+  it('drops excludeURLs', () => {
+    expect(keptFromExtract(U, '/docs', [U], '', [], false, null)).toBe(false);
+  });
+  it('drops when filterKeyword set but no meta keywords', () => {
+    expect(keptFromExtract(U, '/docs', [], 'api', [], false, null)).toBe(false);
+  });
+  it('keeps when filterKeyword present in meta keywords', () => {
+    expect(
+      keptFromExtract(U, '/docs', [], 'api', [], false, 'guide,api,ref'),
+    ).toBe(true);
+  });
+  it('drops when filterKeyword absent from meta keywords', () => {
+    expect(keptFromExtract(U, '/docs', [], 'api', [], false, 'guide,ref')).toBe(
+      false,
+    );
+  });
+  it('drops excludePaths match', () => {
+    expect(keptFromExtract(U, '/docs', [], '', ['/page'], false, null)).toBe(
+      false,
+    );
+  });
+  it('drops restrictPaths violation, keeps when within', () => {
+    expect(keptFromExtract(U, '/other', [], '', [], true, null)).toBe(false);
+    expect(keptFromExtract(U, '/docs', [], '', [], true, null)).toBe(true);
   });
 });
 

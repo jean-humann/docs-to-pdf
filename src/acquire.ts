@@ -240,10 +240,78 @@ export class LightpandaPagePool implements PagePool {
   }
 }
 
+/** Raw values read from the page in a single batched evaluate. */
+interface BatchExtract {
+  html: string;
+  nextURL: string;
+  metaKeywords: string | null;
+}
+
+/**
+ * Runs IN-PAGE (serialized by page.evaluate). Expands every <details> (via
+ * `.open = true` — no clicks, no round-trips), marks the content element for a
+ * PDF page break (matching getHtmlFromSelector), and returns the content
+ * outerHTML, the next pagination href, and the meta keywords — all in ONE CDP
+ * round-trip. Collapses the ~5 per-page calls the slow path makes.
+ */
+/* c8 ignore start */
+function batchExtractInPage(args: {
+  contentSelector: string;
+  paginationSelector: string;
+  openDetail: boolean;
+}): { html: string; nextURL: string; metaKeywords: string | null } {
+  if (args.openDetail) {
+    document
+      .querySelectorAll('details')
+      .forEach((d) => ((d as HTMLDetailsElement).open = true));
+  }
+  let html = '';
+  const el = document.querySelector(args.contentSelector) as HTMLElement | null;
+  if (el) {
+    el.style.breakAfter = 'page';
+    html = el.outerHTML;
+  }
+  const nextEl = document.querySelector(
+    args.paginationSelector,
+  ) as HTMLAnchorElement | null;
+  const nextURL = nextEl ? nextEl.href : '';
+  const meta = document.querySelector(
+    "head > meta[name='keywords']",
+  ) as HTMLMetaElement | null;
+  return { html, nextURL, metaKeywords: meta ? meta.content : null };
+}
+/* c8 ignore stop */
+
+/**
+ * Pure keep/drop decision mirroring utils.isPageKept + matchKeyword, using the
+ * meta keywords already read by the batched evaluate (so no extra round-trip).
+ */
+export function keptFromExtract(
+  url: string,
+  urlPath: string,
+  excludeURLs: string[] | undefined,
+  filterKeyword: string | undefined,
+  excludePaths: string[] | undefined,
+  restrictPaths: boolean | undefined,
+  metaKeywords: string | null,
+): boolean {
+  if (excludeURLs && excludeURLs.includes(url)) return false;
+  if (filterKeyword) {
+    const found =
+      metaKeywords != null && metaKeywords.split(',').includes(filterKeyword);
+    if (!found) return false;
+  }
+  if (excludePaths && excludePaths.some((p) => url.includes(p))) return false;
+  if (restrictPaths && !url.includes(urlPath)) return false;
+  return true;
+}
+
 /**
  * Navigate to one page and extract its content HTML, applying the same
  * keep/drop, details-expansion, and iframe rules as the v1 crawl. Returns
- * `kept: false` (and empty html) for pages filtered out by isPageKept.
+ * `kept: false` (and empty html) for pages filtered out by isPageKept. When the
+ * engine opts into batchExtract (and iframes aren't being inlined), all per-page
+ * DOM work happens in a single evaluate and `nextURL` is returned too.
  */
 export async function crawlOnePage(
   page: puppeteer.Page,
@@ -251,10 +319,11 @@ export async function crawlOnePage(
   urlPath: string,
   options: GeneratePDFOptions,
   engine: AcquireEngine = CHROMIUM_ENGINE,
-): Promise<{ kept: boolean; html: string }> {
+): Promise<{ kept: boolean; html: string; nextURL?: string }> {
   const {
     waitForRender,
     contentSelector,
+    paginationSelector,
     extractIframes = false,
     openDetail = true,
     excludeURLs,
@@ -271,6 +340,29 @@ export async function crawlOnePage(
     console.log(chalk.green('Waiting for render...'));
     await delay(waitForRender);
   }
+
+  // Fast path: one in-page evaluate instead of isPageKept + openDetails +
+  // getHtmlContent + findNextUrl. Skipped when iframes must be inlined (that
+  // needs cross-frame handles the slow path provides).
+  if (engine.batchExtract && !extractIframes) {
+    const e: BatchExtract = await page.evaluate(batchExtractInPage, {
+      contentSelector,
+      paginationSelector,
+      openDetail,
+    });
+    const kept = keptFromExtract(
+      url,
+      urlPath,
+      excludeURLs,
+      filterKeyword,
+      excludePaths,
+      restrictPaths,
+      e.metaKeywords,
+    );
+    if (kept) console.log(chalk.green('Success'));
+    return { kept, html: kept ? e.html : '', nextURL: e.nextURL };
+  }
+
   const kept = await utils.isPageKept(
     page,
     url,
@@ -298,6 +390,7 @@ export async function crawlOnePage(
 /**
  * Serial-only helper: read the pagination next-link from the SAME already-loaded
  * DOM (no second navigation), so the next-link chain is followed exactly as v1.
+ * In batchExtract mode the next link came from the same evaluate (no extra call).
  */
 export async function crawlOnePageWithNext(
   page: puppeteer.Page,
@@ -306,15 +399,18 @@ export async function crawlOnePageWithNext(
   options: GeneratePDFOptions,
   engine: AcquireEngine = CHROMIUM_ENGINE,
 ): Promise<{ kept: boolean; html: string; nextURL: string }> {
-  const { kept, html } = await crawlOnePage(
+  const { kept, html, nextURL } = await crawlOnePage(
     page,
     url,
     urlPath,
     options,
     engine,
   );
-  const nextURL = await utils.findNextUrl(page, options.paginationSelector);
-  return { kept, html, nextURL };
+  const resolvedNext =
+    nextURL !== undefined
+      ? nextURL
+      : await utils.findNextUrl(page, options.paginationSelector);
+  return { kept, html, nextURL: resolvedNext };
 }
 
 /**
