@@ -339,13 +339,13 @@
     tinyexec "^1.0.0"
     yargs "^17.0.0"
 
-"@commitlint/config-conventional@^20.0.0":
-  version "20.2.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/config-conventional/-/config-conventional-20.2.0.tgz#3c53c9d2939a0cc5ef8ef1f2c682eab2484e860e"
-  integrity sha512-MsRac+yNIbTB4Q/psstKK4/ciVzACHicSwz+04Sxve+4DW+PiJeTjU0JnS4m/oOnulrXYN+yBPlKaBSGemRfgQ==
+"@commitlint/config-conventional@^21.2.0":
+  version "21.2.0"
+  resolved "https://registry.yarnpkg.com/@commitlint/config-conventional/-/config-conventional-21.2.0.tgz#9ce2b1f5a24e94883ed1e4c5530fb1b8c1d531eb"
+  integrity sha512-Qf8WRDVcyVd14if6VTWenebxFbKnVnbzPUJjlzjkyJGeHK2xCGd63Dr1XZzj0plXKQb9P0BfOxoc1HVeCo2BWQ==
   dependencies:
-    "@commitlint/types" "^20.2.0"
-    conventional-changelog-conventionalcommits "^7.0.2"
+    "@commitlint/types" "^21.2.0"
+    conventional-changelog-conventionalcommits "^10.0.0"
 
 "@commitlint/config-validator@^20.2.0":
   version "20.2.0"
@@ -480,6 +480,19 @@
   dependencies:
     "@types/conventional-commits-parser" "^5.0.0"
     chalk "^5.3.0"
+
+"@commitlint/types@^21.2.0":
+  version "21.2.0"
+  resolved "https://registry.yarnpkg.com/@commitlint/types/-/types-21.2.0.tgz#da93897b416f788323f639cce6045310aeb03096"
+  integrity sha512-7zVFCDB2reMvJH5dmbKnOQPjZEvjdJTH8jc0U/PIPU1r3/+vf5pD1HlfitV2MWsWXrvu7u39iY1lyLUPOaN0Gw==
+  dependencies:
+    conventional-commits-parser "^7.0.0"
+    picocolors "^1.1.1"
+
+"@conventional-changelog/template@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@conventional-changelog/template/-/template-1.2.0.tgz#1de6f07fb55a67f9e32d67aab3124c56148163f2"
+  integrity sha512-12qHxvlKjHmP0PQ+17EREgC7lWyLwbph1RKcZQZ7k7ZWGmrxfxC9gadHGfvzr0g0u8BhiBGg3tks93txodlyRQ==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -1036,6 +1049,11 @@
     semver "^7.7.3"
     tar-fs "^3.1.1"
     yargs "^17.7.2"
+
+"@simple-libs/stream-utils@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@simple-libs/stream-utils/-/stream-utils-2.0.0.tgz#758d2a0876b4d672dac1eae212cdbab452670d3c"
+  integrity sha512-fCTuZK4QBa+39Oz9l4OGfJfz+GpwCp3AqO7Zch3to99xHPgstVsRFpeQ8LNd2o1Gv8raL2mCFwiaHh7bFSp5DQ==
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.41"
@@ -2122,12 +2140,12 @@ conventional-changelog-angular@^7.0.0:
   dependencies:
     compare-func "^2.0.0"
 
-conventional-changelog-conventionalcommits@^7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/conventional-changelog-conventionalcommits/-/conventional-changelog-conventionalcommits-7.0.2.tgz#aa5da0f1b2543094889e8cf7616ebe1a8f5c70d5"
-  integrity sha512-NKXYmMR/Hr1DevQegFB4MwfM5Vv0m4UIxKZTTYuD98lpTknaZlSRrDOG4X7wIXpGkfsYxZTghUN+Qq+T0YQI7w==
+conventional-changelog-conventionalcommits@^10.0.0:
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/conventional-changelog-conventionalcommits/-/conventional-changelog-conventionalcommits-10.2.0.tgz#83c4657069f6eb5fd3a7bab14c463590f8b7ff86"
+  integrity sha512-UtlM9GqolY7OmlQh5L/UEVoKsTUpTgUVy1PU8JN5gl5Ydaejb7WRklGliG1SKPxxj7hzA173eG3Kt5fYWE2pmg==
   dependencies:
-    compare-func "^2.0.0"
+    "@conventional-changelog/template" "^1.2.0"
 
 conventional-commits-parser@^5.0.0:
   version "5.0.0"
@@ -2138,6 +2156,14 @@ conventional-commits-parser@^5.0.0:
     is-text-path "^2.0.0"
     meow "^12.0.1"
     split2 "^4.0.0"
+
+conventional-commits-parser@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/conventional-commits-parser/-/conventional-commits-parser-7.0.0.tgz#d14bb22946745adf824d21bf62aaa00b6eb3fc07"
+  integrity sha512-dZe/p+FgGQLNJFqaCgNdl8j6a7gI8xuaN30Wy5g7nvyK3jqOpNUEUZ3pGJ5D68h89uRh038FtkeOk/bnGmYkmg==
+  dependencies:
+    "@simple-libs/stream-utils" "^2.0.0"
+    meow "^14.0.0"
 
 convert-source-map@^2.0.0:
   version "2.0.0"
@@ -4052,6 +4078,11 @@ meow@^12.0.1:
   version "12.1.1"
   resolved "https://registry.yarnpkg.com/meow/-/meow-12.1.1.tgz#e558dddbab12477b69b2e9a2728c327f191bace6"
   integrity sha512-BhXM0Au22RwUneMPwSCnyhTOizdWoIEPU9sp0Aqa1PnDMR5Wv2FGXYDjuzJEIX+Eo2Rb8xuYe5jrnm5QowQFkw==
+
+meow@^14.0.0:
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/meow/-/meow-14.1.0.tgz#3cd2d16ad534829ab12fcb5010fc2fdb89facd31"
+  integrity sha512-EDYo6VlmtnumlcBCbh1gLJ//9jvM/ndXHfVXIFrZVr6fGcwTUyCTFNTLCKuY3ffbK8L/+3Mzqnd58RojiZqHVw==
 
 merge-descriptors@^2.0.0:
   version "2.0.0"
