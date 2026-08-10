@@ -1344,23 +1344,14 @@
     ts-api-utils "^2.5.0"
 
 "@typescript-eslint/parser@^8.18.2":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-8.65.0.tgz#5295c1058c0a1dd746ef28baaf9c0341dbdf03dc"
-  integrity sha512-CZ4nMxWwgu1HEEFNkeaCptra9QCtkmKdgf3sWh1rl1trIhmxLilgTV4cwcbQ4wemnT4sWQN8CaKOmdYx+g2gMA==
+  version "8.66.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-8.66.0.tgz#88e3865ecf73b0118134e7cb831da87a961a57a1"
+  integrity sha512-X6ypGChaWYk6PBtUg2BwuTZEFFcHJAtGTVJ9/lCTOufhZ4i9fNolQNnktq+kkMCwMj7V8Svsq7+TxSDslmhE0g==
   dependencies:
-    "@typescript-eslint/scope-manager" "8.65.0"
-    "@typescript-eslint/types" "8.65.0"
-    "@typescript-eslint/typescript-estree" "8.65.0"
-    "@typescript-eslint/visitor-keys" "8.65.0"
-    debug "^4.4.3"
-
-"@typescript-eslint/project-service@8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/project-service/-/project-service-8.65.0.tgz#65fbbc9a1591abffaeab5513200f848271cb0aa5"
-  integrity sha512-SxnPhbTsGahizDgbu7oqFH/xVtzIqMd/s+WtnSxNxJZJpLbdT5IPdzg8EZxO3+PoKahXmwJLeNQOpKJb3/bi7Q==
-  dependencies:
-    "@typescript-eslint/tsconfig-utils" "^8.65.0"
-    "@typescript-eslint/types" "^8.65.0"
+    "@typescript-eslint/scope-manager" "8.66.0"
+    "@typescript-eslint/types" "8.66.0"
+    "@typescript-eslint/typescript-estree" "8.66.0"
+    "@typescript-eslint/visitor-keys" "8.66.0"
     debug "^4.4.3"
 
 "@typescript-eslint/project-service@8.66.0":
@@ -1372,14 +1363,6 @@
     "@typescript-eslint/types" "^8.66.0"
     debug "^4.4.3"
 
-"@typescript-eslint/scope-manager@8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/scope-manager/-/scope-manager-8.65.0.tgz#9547202ce7e608e7b6283df585703b980a0ea70d"
-  integrity sha512-Esbl8OSYiVxBokYgWPf7VVWg/BE798wXhimnn9ML9Pt5qoDf8bfQlgjlKXR/k98+AcNzlLKYrpCcrcuZ9DZLgg==
-  dependencies:
-    "@typescript-eslint/types" "8.65.0"
-    "@typescript-eslint/visitor-keys" "8.65.0"
-
 "@typescript-eslint/scope-manager@8.66.0":
   version "8.66.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/scope-manager/-/scope-manager-8.66.0.tgz#4fffcc6ebd0df9fe7983c0256967567ea6f5ac63"
@@ -1387,11 +1370,6 @@
   dependencies:
     "@typescript-eslint/types" "8.66.0"
     "@typescript-eslint/visitor-keys" "8.66.0"
-
-"@typescript-eslint/tsconfig-utils@8.65.0", "@typescript-eslint/tsconfig-utils@^8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/tsconfig-utils/-/tsconfig-utils-8.65.0.tgz#36f168fcdbb1295f7446ff0379667f98c3cf1bf3"
-  integrity sha512-j6GzGqCiRdA7Qhur2VVmKZAkBLfnHFQfx4TaJGL9RMveZqCo48jSHHO0DTgizEnGhtWnqmbtCUSrqSkdiY/0Hg==
 
 "@typescript-eslint/tsconfig-utils@8.66.0":
   version "8.66.0"
@@ -1414,11 +1392,6 @@
     debug "^4.4.3"
     ts-api-utils "^2.5.0"
 
-"@typescript-eslint/types@8.65.0", "@typescript-eslint/types@^8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-8.65.0.tgz#3e86738416a777c8b8925ab46745f48ecf904c9f"
-  integrity sha512-JSSwWNy+H0E/01jJEM+hrX6N0OFDzFzeIhHFSAS01tlVaevpG8cFyYRPhS5yjGOvBUx3sqQHVMjCL1CAZZMxBg==
-
 "@typescript-eslint/types@8.66.0":
   version "8.66.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-8.66.0.tgz#3cacab94d3b564c1d48c56eb37b89f89a6d48479"
@@ -1428,21 +1401,6 @@
   version "8.67.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-8.67.0.tgz#4a8d00cc1faba5c14feabc60f85b7a32652f34b6"
   integrity sha512-sBtgslww8nsMYUjhdPBiSyUqSzT8uR6g93A2QXnQC8+cGdjz0CyaOdqHDRJb1AtORbZCNUJBBeFA/tNR2uQmww==
-
-"@typescript-eslint/typescript-estree@8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-8.65.0.tgz#f1f514808f6aa713e2d678ae8ff592a65e1632af"
-  integrity sha512-JboAE2swaYt4tb1fHhHTABE2K+OLy09XfcTbhnk4Pw96f9dd2e9iYsJ28gBggHlo5z5x1rkyWvcPoTuNTd4oGg==
-  dependencies:
-    "@typescript-eslint/project-service" "8.65.0"
-    "@typescript-eslint/tsconfig-utils" "8.65.0"
-    "@typescript-eslint/types" "8.65.0"
-    "@typescript-eslint/visitor-keys" "8.65.0"
-    debug "^4.4.3"
-    minimatch "^10.2.2"
-    semver "^7.7.3"
-    tinyglobby "^0.2.15"
-    ts-api-utils "^2.5.0"
 
 "@typescript-eslint/typescript-estree@8.66.0":
   version "8.66.0"
@@ -1468,14 +1426,6 @@
     "@typescript-eslint/scope-manager" "8.66.0"
     "@typescript-eslint/types" "8.66.0"
     "@typescript-eslint/typescript-estree" "8.66.0"
-
-"@typescript-eslint/visitor-keys@8.65.0":
-  version "8.65.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/visitor-keys/-/visitor-keys-8.65.0.tgz#e3704c13cb4a1c22454c1abf28ff4737e15018c6"
-  integrity sha512-8C71BQkGjiMmXtop7pHVJu1l2NNShFdkCyD6a2ezzs5vU/L3LRtb69EtcteFwz0mYMPzIgOw0n6OV4VBUWZd7A==
-  dependencies:
-    "@typescript-eslint/types" "8.65.0"
-    eslint-visitor-keys "^5.0.0"
 
 "@typescript-eslint/visitor-keys@8.66.0":
   version "8.66.0"
