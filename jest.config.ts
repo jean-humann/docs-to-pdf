@@ -194,6 +194,14 @@ export default {
         diagnostics: {
           ignoreCodes: ['TS151002'],
         },
+        // Force CommonJS output under Jest (the project tsconfig extends
+        // @tsconfig/node20 -> module "node16", which preserves native dynamic
+        // import() and fails in Jest's VM). With CommonJS, `await import(...)`
+        // becomes require(), so render()'s ESM-only puppeteer-autoscroll-down
+        // import resolves via the node_modules transform below.
+        tsconfig: {
+          module: 'commonjs',
+        },
       },
     ],
     // Transform JS files from ES module packages in node_modules
@@ -202,6 +210,7 @@ export default {
       {
         tsconfig: {
           allowJs: true,
+          module: 'commonjs',
         },
       },
     ],
