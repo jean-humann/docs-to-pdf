@@ -728,17 +728,17 @@
   resolved "https://registry.yarnpkg.com/@jest/diff-sequences/-/diff-sequences-30.5.0.tgz#b896d470df751cc0c7d1a0c5078f80a67ce108d4"
   integrity sha512-OsqBjHXCn8cadasoAZBP6nWYvMsRhpMzGXTpxJ5aO04NlbdhIz+FVe3q49l0AwVhsz/cEmIpBes6gAFl1/dWQg==
 
-"@jest/environment-jsdom-abstract@30.5.0":
-  version "30.5.0"
-  resolved "https://registry.yarnpkg.com/@jest/environment-jsdom-abstract/-/environment-jsdom-abstract-30.5.0.tgz#8a2a571dc8db6fc87c1c1a0d7153f6d7d88cb035"
-  integrity sha512-825vac4Dmysbn2kU7VUQPoKuj/HNUpSTgv98KCByMOSPvHuj1/HpVZeLRsP/itDB2HFiDcoTUrsg8fSu3PxKBw==
+"@jest/environment-jsdom-abstract@30.5.1":
+  version "30.5.1"
+  resolved "https://registry.yarnpkg.com/@jest/environment-jsdom-abstract/-/environment-jsdom-abstract-30.5.1.tgz#52e982ddfe299c7797e050d7627169de4fef23cd"
+  integrity sha512-J395vmP3Fb2Te0JmF7pe4si4jpfbXef1YsY4UpHYL6OOxS2molu9Dsie1VmIiUalXdtmz1P5QRgc+5hBD+ssBg==
   dependencies:
-    "@jest/environment" "30.5.0"
-    "@jest/fake-timers" "30.5.0"
-    "@jest/types" "30.5.0"
+    "@jest/environment" "30.5.1"
+    "@jest/fake-timers" "30.5.1"
+    "@jest/types" "30.5.1"
     "@types/node" "*"
-    jest-mock "30.5.0"
-    jest-util "30.5.0"
+    jest-mock "30.5.1"
+    jest-util "30.5.1"
 
 "@jest/environment@30.5.0":
   version "30.5.0"
@@ -3675,12 +3675,12 @@ jest-each@30.5.0:
     pretty-format "30.5.0"
 
 jest-environment-jsdom@^30.2.0:
-  version "30.5.0"
-  resolved "https://registry.yarnpkg.com/jest-environment-jsdom/-/jest-environment-jsdom-30.5.0.tgz#64f8a21ff5b07743473dda4a1fad77cc0b35d50c"
-  integrity sha512-VVHN/G3zrxsQR398jvMalM76ALX6YBAftsYLCGtTeKRmz4f42YJAP05AGpk0VF5SLtoHdkfKunYGfnKPnmcEOA==
+  version "30.5.1"
+  resolved "https://registry.yarnpkg.com/jest-environment-jsdom/-/jest-environment-jsdom-30.5.1.tgz#ec5514912c9c1f7165d43e574015c5c2d9c68ed6"
+  integrity sha512-8lzKbC/SRbQE24wr1OOJV+aYtDAuVNKBryN6YcFiCcaZZ3I7grcZY7w91BwNvGET0ubKDmomEHZFHMaF+6pAlA==
   dependencies:
-    "@jest/environment" "30.5.0"
-    "@jest/environment-jsdom-abstract" "30.5.0"
+    "@jest/environment" "30.5.1"
+    "@jest/environment-jsdom-abstract" "30.5.1"
     "@types/jsdom" "^21.1.7"
     jsdom "^26.1.0"
 
