@@ -39,9 +39,9 @@
     "fs-extra": "^11.2.0",
     "html-entities": "^2.5.2",
     "pdf-lib": "^1.17.1",
-    "puppeteer": "^24.0.0",
+    "puppeteer": "^25.9.0",
     "puppeteer-autoscroll-down": "^2.0.0",
-    "puppeteer-core": "^24.0.0",
+    "puppeteer-core": "^25.9.0",
     "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
