@@ -71,6 +71,8 @@ npx docs-to-pdf --initialDocURLs="https://docusaurus-archive-october-2023.netlif
 | `--extractIframes`     | No       | Extract and inline content from iframes (only same-origin or accessible iframes). Default is `false`                                                                               |
 | `--httpAuthUser`       | No       | HTTP Basic Auth username for protected documentation sites                                                                                                                         |
 | `--httpAuthPassword`   | No       | HTTP Basic Auth password for protected documentation sites                                                                                                                         |
+| `--concurrency`        | No       | Number of pages to fetch in parallel. Default `1` (serial, identical output to before). `>1` parallelises fetching while preserving page order. See [Parallel crawling](#-parallel-crawling-experimental).         |
+| `--seedFrom`           | No       | Frontier source when `--concurrency>1`: `next-link` (default, same pages as serial) or `sitemap` (uses `sitemap.xml`; **changes the included-page set**).                          |
 
 ## Docusaurus Options
 
@@ -198,6 +200,40 @@ npx docs-to-pdf docusaurus --initialDocURLs="https://protected-docs.example.com/
 ```
 
 **Security Note**: Be cautious when using credentials in command-line arguments, as they may be visible in shell history. Consider using environment variables or other secure methods for sensitive credentials in production environments.
+
+## ⚡ Parallel crawling (experimental)
+
+The pipeline is split into an **acquire** stage (crawl pages into an intermediate
+representation) and a **render** stage (write the PDF). By default the crawl is
+serial and produces exactly the same output as before. You can opt into fetching
+pages in parallel with `--concurrency`:
+
+```shell
+# Fetch up to 4 pages at once. Page order, the table of contents, and internal
+# links are preserved (assembly is by frontier position, not arrival order).
+npx docs-to-pdf docusaurus --initialDocURLs="https://your-site.com/docs/intro" --concurrency=4
+```
+
+Notes and trade-offs:
+
+- **`--concurrency=1` (default)** runs the original serial crawl; output is
+  unchanged.
+- **`--concurrency>1` with the default `next-link` discovery** first walks the
+  prev/next chain serially to determine the exact same page set and order as the
+  serial crawl, then fetches that list in parallel. The wall-clock win is modest
+  on navigation-bound sites (the discovery pass is serial) but real on sites
+  where per-page work dominates (e.g. `--extractIframes`, many `<details>`).
+- **`--seedFrom=sitemap`** skips the serial discovery pass by reading
+  `sitemap.xml` (paths are remapped onto the crawl origin, so it also works for
+  locally-served builds). This gives the largest speedup but **changes the
+  included-page set** — the sitemap usually contains pages (blog, tags, …) that
+  the docs prev/next chain does not. If the sitemap is missing it logs a warning
+  and falls back to `next-link` discovery.
+- Parallel and serial crawls extract identical page **content**; only cosmetic
+  attribute differences from client-side hydration timing may occur under high
+  concurrency. For byte-stable output, keep `--concurrency=1` or raise
+  `--waitForRender`. High concurrency also increases peak memory (one Chromium
+  tab per in-flight page).
 
 ### Docusaurus v1 - Legacy
 
