@@ -206,6 +206,17 @@ export function makeProgram() {
       .option(
         '--httpAuthPassword <password>',
         'HTTP Basic Auth password for protected documentation sites',
+      )
+      .option(
+        '--concurrency <n>',
+        'number of pages to fetch in parallel (default: 1 = serial; >1 parallelises fetching only, page order is preserved)',
+        (value) => Number.parseInt(value, 10),
+        1,
+      )
+      .option(
+        '--seedFrom <source>',
+        "frontier source when --concurrency>1: 'next-link' (default, same pages as serial) or 'sitemap' (CHANGES the included-page set; uses sitemap.xml order)",
+        'next-link',
       );
   });
 
